@@ -1,11 +1,12 @@
 package main
 
-import "DemoLanguage/parser"
+import (
+	"DemoLanguage/parser"
+	"os"
+)
 
 func main() {
-	content := `
-		var a = 1
-	`
-	parser := parser.CreateParser(content)
+	content, _ := os.ReadFile("./example/example1.dl")
+	parser := parser.CreateParser(string(content))
 	parser.Parse()
 }

@@ -9,7 +9,8 @@ type Parser struct {
 func (parser *Parser) Parse() {
 	lexer := parser.lexer
 	for lexer.token != token.EOF {
-		println(lexer.scan())
+		tkn, literal := lexer.scan()
+		println(tkn.String(), literal)
 	}
 }
 

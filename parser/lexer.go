@@ -2,6 +2,7 @@ package parser
 
 import (
 	"DemoLanguage/token"
+	"strings"
 )
 
 type Lexer struct {
@@ -31,6 +32,7 @@ func (lexer *Lexer) scan() (tkn token.Token, literal string) {
 			tkn = token.NUMBER
 			break
 		default:
+			lexer.readChr()
 			switch chr {
 			case '+':
 				tkn = token.ADD
@@ -44,9 +46,23 @@ func (lexer *Lexer) scan() (tkn token.Token, literal string) {
 			case '/':
 				tkn = token.DIVIDE
 				break
+			case '(':
+				tkn = token.LEFT_PARENTHESIS
+				break
+			case ')':
+				tkn = token.RIGHT_PARENTHESIS
+				break
+			case '{':
+				tkn = token.LEFT_BRACE
+				break
+			case '}':
+				tkn = token.RIGHT_BRACE
+				break
+			case '!':
+				tkn = lexer.switchs("=", token.NOT_EQUAL, token.NOT)
+				break
 			case '=':
-				tkn = token.ASSIGN
-				lexer.readChr()
+				tkn = lexer.switchs("=", token.EQUAL, token.ASSIGN)
 				break
 			}
 		}
@@ -85,7 +101,18 @@ func (lexer *Lexer) scanIdentifier() string {
 }
 
 func (lexer *Lexer) scanNumericLiteral() string {
-	return lexer.scanByFilter(isNumeric)
+	return lexer.scanByFilter(isNumericPart)
+}
+
+func (lexer *Lexer) switchs(keysStr string, tkns ...token.Token) token.Token {
+	keys := strings.Split(keysStr, ",")
+	for i, key := range keys {
+		if lexer.chr == rune(key[0]) {
+			lexer.readChr()
+			return tkns[i]
+		}
+	}
+	return tkns[len(tkns)-1]
 }
 
 func isIdentifierStart(chr rune) bool {
@@ -96,4 +123,7 @@ func isIdentifierPart(chr rune) bool {
 }
 func isNumeric(chr rune) bool {
 	return chr >= '0' && chr <= '9'
+}
+func isNumericPart(chr rune) bool {
+	return chr == '.' || isNumeric(chr)
 }

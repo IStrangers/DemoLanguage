@@ -1,0 +1,5 @@
+var a = 1.53
+fun isOne = (a) {
+    return a == 1
+}
+isOne(a)
