@@ -55,6 +55,9 @@ func (lexer *Lexer) scan() (tkn token.Token, literal string) {
 					literal = lexer.scanComment()
 				}
 				break
+			case '%':
+				tkn = token.REMAINDER
+				break
 			case '(':
 				tkn = token.LEFT_PARENTHESIS
 				break

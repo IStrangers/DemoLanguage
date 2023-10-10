@@ -25,10 +25,11 @@ const (
 	NUMBER
 	STRING
 
-	ADD      // +
-	SUBTRACT // -
-	MULTIPLY // *
-	DIVIDE   // /
+	ADD       // +
+	SUBTRACT  // -
+	MULTIPLY  // *
+	DIVIDE    // /
+	REMAINDER // %
 
 	VAR    // var
 	FUN    // fun
@@ -58,10 +59,11 @@ var tokenStringMap = [...]string{
 	NUMBER: "NUMBER",
 	STRING: "STRING",
 
-	ADD:      "+",
-	SUBTRACT: "-",
-	MULTIPLY: "*",
-	DIVIDE:   "/",
+	ADD:       "+",
+	SUBTRACT:  "-",
+	MULTIPLY:  "*",
+	DIVIDE:    "/",
+	REMAINDER: "%",
 
 	VAR:    "var",
 	FUN:    "fun",
