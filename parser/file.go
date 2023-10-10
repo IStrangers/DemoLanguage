@@ -2,7 +2,6 @@ package parser
 
 import (
 	"sort"
-	"strings"
 	"sync"
 )
 
@@ -64,12 +63,12 @@ func (file *File) Position(offset int) *Position {
 
 func (file *File) scanToOffset(offset int) ([]int, int) {
 	for file.LastScannedOffset < offset {
-		offsetIndex := strings.Index(file.Content[file.LastScannedOffset:], "\r\n")
-		if offsetIndex == -1 {
+		lineOffset := file.findLineOffset(file.Content[file.LastScannedOffset:])
+		if lineOffset == -1 {
 			file.LastScannedOffset = len(file.Content)
 			return file.LineOffsets, len(file.LineOffsets) - 1
 		}
-		file.LastScannedOffset = file.LastScannedOffset + (offsetIndex + 2)
+		file.LastScannedOffset = file.LastScannedOffset + lineOffset
 		file.LineOffsets = append(file.LineOffsets, file.LastScannedOffset)
 	}
 
@@ -77,6 +76,21 @@ func (file *File) scanToOffset(offset int) ([]int, int) {
 		return file.LineOffsets, len(file.LineOffsets) - 1
 	}
 	return file.LineOffsets, len(file.LineOffsets) - 2
+}
+
+func (file *File) findLineOffset(content string) int {
+	for index, ch := range content {
+		switch ch {
+		case '\r':
+			if index < len(content)-1 && content[index+1] == '\n' {
+				return index + 2
+			}
+			return index + 1
+		case '\n':
+			return index + 1
+		}
+	}
+	return -1
 }
 
 func CreateFile(baseOffset int, name string, content string) *File {
