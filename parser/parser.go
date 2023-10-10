@@ -19,7 +19,7 @@ func CreateParser(content string) Parser {
 		lexer: Lexer{
 			content:   content,
 			length:    len(content),
-			chr:       ' ',
+			chr:       rune(content[0]),
 			chrOffset: 0,
 		},
 	}

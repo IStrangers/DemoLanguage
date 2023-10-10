@@ -27,6 +27,12 @@ func (lexer *Lexer) scan() (tkn token.Token, literal string) {
 				tkn = token.IDENTIFIER
 			}
 			break
+		case isStringSymbol(chr):
+			lexer.readChr()
+			literal = lexer.scanString()
+			tkn = token.STRING
+			lexer.readChr()
+			break
 		case isNumeric(chr):
 			literal = lexer.scanNumericLiteral()
 			tkn = token.NUMBER
@@ -104,6 +110,10 @@ func (lexer *Lexer) scanNumericLiteral() string {
 	return lexer.scanByFilter(isNumericPart)
 }
 
+func (lexer *Lexer) scanString() string {
+	return lexer.scanByFilter(isNotStringSymbol)
+}
+
 func (lexer *Lexer) switchToken(keysStr string, tkns ...token.Token) token.Token {
 	keys := strings.Split(keysStr, ",")
 	for i, key := range keys {
@@ -121,9 +131,17 @@ func isIdentifierStart(chr rune) bool {
 func isIdentifierPart(chr rune) bool {
 	return isIdentifierStart(chr) || isNumeric(chr)
 }
+
 func isNumeric(chr rune) bool {
 	return chr >= '0' && chr <= '9'
 }
 func isNumericPart(chr rune) bool {
 	return chr == '.' || isNumeric(chr)
+}
+
+func isStringSymbol(chr rune) bool {
+	return chr == '"' || chr == '\''
+}
+func isNotStringSymbol(chr rune) bool {
+	return !isStringSymbol(chr)
 }

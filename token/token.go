@@ -23,6 +23,7 @@ const (
 	RIGHT_BRACE       // }
 
 	NUMBER
+	STRING
 
 	ADD      // +
 	SUBTRACT // -
@@ -32,6 +33,10 @@ const (
 	VAR    // var
 	FUN    // fun
 	RETURN // return
+
+	IF     // if
+	FOR    // for
+	SWITCH // switch
 )
 
 var tokenStringMap = [...]string{
@@ -51,6 +56,7 @@ var tokenStringMap = [...]string{
 	RIGHT_BRACE:       "}",
 
 	NUMBER: "NUMBER",
+	STRING: "STRING",
 
 	ADD:      "+",
 	SUBTRACT: "-",
@@ -60,12 +66,19 @@ var tokenStringMap = [...]string{
 	VAR:    "var",
 	FUN:    "fun",
 	RETURN: "return",
+
+	IF:     "if",
+	FOR:    "for",
+	SWITCH: "switch",
 }
 
 var keywordMap = map[string]Token{
 	"var":    VAR,
 	"fun":    FUN,
 	"return": RETURN,
+	"if":     IF,
+	"for":    FOR,
+	"switch": SWITCH,
 }
 
 func IsKeyword(k string) (Token, bool) {

@@ -1,5 +1,8 @@
-var a = 1.53
+var a = 1
 fun isOne = (a) {
     return a == 1
 }
-isOne(a)
+if isOne(a) {
+    var say = "Hello" + ' ' + "DL"
+    println(say)
+}
