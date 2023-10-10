@@ -50,7 +50,10 @@ func (lexer *Lexer) scan() (tkn token.Token, literal string) {
 				tkn = token.MULTIPLY
 				break
 			case '/':
-				tkn = token.DIVIDE
+				tkn = lexer.switchToken("/", token.COMMENT, token.DIVIDE)
+				if tkn == token.COMMENT {
+					literal = lexer.scanComment()
+				}
 				break
 			case '(':
 				tkn = token.LEFT_PARENTHESIS
@@ -114,6 +117,10 @@ func (lexer *Lexer) scanString() string {
 	return lexer.scanByFilter(isNotStringSymbol)
 }
 
+func (lexer *Lexer) scanComment() string {
+	return lexer.scanByFilter(isNotLineTerminator)
+}
+
 func (lexer *Lexer) switchToken(keysStr string, tkns ...token.Token) token.Token {
 	keys := strings.Split(keysStr, ",")
 	for i, key := range keys {
@@ -144,4 +151,15 @@ func isStringSymbol(chr rune) bool {
 }
 func isNotStringSymbol(chr rune) bool {
 	return !isStringSymbol(chr)
+}
+
+func isLineTerminator(chr rune) bool {
+	switch chr {
+	case '\u000a', '\u000d', '\u2028', '\u2029':
+		return true
+	}
+	return false
+}
+func isNotLineTerminator(chr rune) bool {
+	return !isLineTerminator(chr)
 }

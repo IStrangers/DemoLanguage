@@ -10,7 +10,7 @@ const (
 	_ Token = iota
 	ILLEGAL
 	EOF
-
+	COMMENT
 	IDENTIFIER
 
 	ASSIGN            // =
@@ -40,10 +40,10 @@ const (
 )
 
 var tokenStringMap = [...]string{
-	0:       "UNKNOWN",
-	ILLEGAL: "ILLEGAL",
-	EOF:     "EOF",
-
+	0:          "UNKNOWN",
+	ILLEGAL:    "ILLEGAL",
+	EOF:        "EOF",
+	COMMENT:    "COMMENT",
 	IDENTIFIER: "IDENTIFIER",
 
 	ASSIGN:            "=",
