@@ -59,10 +59,10 @@ func (lexer *Lexer) scan() (tkn token.Token, literal string) {
 				tkn = token.RIGHT_BRACE
 				break
 			case '!':
-				tkn = lexer.switchs("=", token.NOT_EQUAL, token.NOT)
+				tkn = lexer.switchToken("=", token.NOT_EQUAL, token.NOT)
 				break
 			case '=':
-				tkn = lexer.switchs("=", token.EQUAL, token.ASSIGN)
+				tkn = lexer.switchToken("=", token.EQUAL, token.ASSIGN)
 				break
 			}
 		}
@@ -104,7 +104,7 @@ func (lexer *Lexer) scanNumericLiteral() string {
 	return lexer.scanByFilter(isNumericPart)
 }
 
-func (lexer *Lexer) switchs(keysStr string, tkns ...token.Token) token.Token {
+func (lexer *Lexer) switchToken(keysStr string, tkns ...token.Token) token.Token {
 	keys := strings.Split(keysStr, ",")
 	for i, key := range keys {
 		if lexer.chr == rune(key[0]) {
