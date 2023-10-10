@@ -6,5 +6,6 @@ fun isOne = (a) {
 if isOne(a) {
     var say = "Hello" + ' ' + "DL"
     println(say)
+} else {
+    var a=#
 }
-var a=#

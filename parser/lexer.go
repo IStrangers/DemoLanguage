@@ -11,7 +11,7 @@ func (parser *Parser) scan() (tkn token.Token, literal string) {
 		index := parser.IndexOf(parser.chrOffset)
 		switch chr := parser.chr; {
 		case isIdentifierStart(chr):
-			literal := parser.scanIdentifier()
+			literal = parser.scanIdentifier()
 			keywordToken, exists := token.IsKeyword(literal)
 			if exists {
 				tkn = keywordToken

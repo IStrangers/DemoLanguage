@@ -45,6 +45,7 @@ const (
 	RETURN // return
 
 	IF     // if
+	ELSE   // else
 	FOR    // for
 	SWITCH // switch
 )
@@ -88,6 +89,7 @@ var tokenStringMap = [...]string{
 	RETURN: "return",
 
 	IF:     "if",
+	ELSE:   "else",
 	FOR:    "for",
 	SWITCH: "switch",
 }
@@ -97,6 +99,7 @@ var keywordMap = map[string]Token{
 	"fun":    FUN,
 	"return": RETURN,
 	"if":     IF,
+	"else":   ELSE,
 	"for":    FOR,
 	"switch": SWITCH,
 }
