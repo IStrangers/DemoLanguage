@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"DemoLanguage/file"
 	"DemoLanguage/token"
 	"fmt"
 )
@@ -12,7 +13,7 @@ const (
 
 type Error struct {
 	Message  string
-	Position *Position
+	Position *file.Position
 }
 
 func (error *Error) Error() string {
@@ -32,28 +33,57 @@ func (error *Error) Error() string {
 
 type ErrorList []*Error
 
+func (errorList *ErrorList) Error() string {
+	length := errorList.Length()
+	switch length {
+	case 0:
+		return "no errors"
+	case 1:
+		return errorList.FirstError().Error()
+	}
+	return fmt.Sprintf("%s (and %d more errors)", errorList.FirstError().Error(), length)
+}
+
 func (errorList *ErrorList) AddError(error *Error) {
 	*errorList = append(*errorList, error)
 }
-func (errorList *ErrorList) Add(message string, position *Position) {
+func (errorList *ErrorList) Add(message string, position *file.Position) {
 	errorList.AddError(&Error{Message: message, Position: position})
 }
 
-func (errorList ErrorList) Len() int {
+func (errorList ErrorList) Length() int {
 	return len(errorList)
 }
 
-func (errorList ErrorList) LastError() *Error {
-	return errorList[errorList.Len()-1]
+func (errorList ErrorList) FirstError() *Error {
+	if errorList.Length() > 0 {
+		return errorList[0]
+	}
+	return nil
 }
 
-func (parser *Parser) errorUnexpected(index Index, tkn token.Token) error {
+func (errorList ErrorList) LastError() *Error {
+	return errorList[errorList.Length()-1]
+}
+
+func (parser *Parser) errorUnexpected(index file.Index, tkn token.Token) error {
 	return parser.error(index, ERR_UnexpectedToken, tkn)
 }
 
-func (parser *Parser) error(index Index, message string, tkn token.Token) *Error {
+func (parser *Parser) errorUnexpectedToken(tkn token.Token) error {
+	message := ERR_UnexpectedToken
+	messageValue := tkn
+	switch tkn {
+	case token.EOF:
+		message = ERR_UnexpectedEndOfInput
+		break
+	}
+	return parser.error(parser.index, message, tkn, messageValue)
+}
+
+func (parser *Parser) error(index file.Index, message string, messageValues ...any) *Error {
 	position := parser.Position(index)
-	message = fmt.Sprintf(message, tkn)
+	message = fmt.Sprintf(message, messageValues...)
 	parser.errors.Add(message, position)
 	return parser.errors.LastError()
 }

@@ -1,14 +1,15 @@
 package parser
 
 import (
+	"DemoLanguage/file"
 	"DemoLanguage/token"
 	"strings"
 )
 
-func (parser *Parser) scan() (tkn token.Token, literal string) {
+func (parser *Parser) scan() (tkn token.Token, literal string, index file.Index) {
 	for {
 		parser.skipWhiteSpace()
-		index := parser.IndexOf(parser.chrOffset)
+		index = parser.IndexOf(parser.chrOffset)
 		switch chr := parser.chr; {
 		case isIdentifierStart(chr):
 			literal = parser.scanIdentifier()

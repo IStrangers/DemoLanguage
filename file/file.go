@@ -1,4 +1,4 @@
-package parser
+package file
 
 import (
 	"sort"
@@ -7,18 +7,10 @@ import (
 
 type Index int
 
-func (parser *Parser) IndexOf(offset int) Index {
-	return Index(parser.baseOffset + offset)
-}
-
 type Position struct {
 	FileName string
 	Line     int
 	Column   int
-}
-
-func (parser *Parser) Position(index Index) *Position {
-	return parser.file.Position(int(index) - parser.baseOffset)
 }
 
 type File struct {
