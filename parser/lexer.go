@@ -5,21 +5,13 @@ import (
 	"strings"
 )
 
-type Lexer struct {
-	content   string
-	length    int
-	chr       rune
-	chrOffset int
-	token     token.Token
-	literal   string
-}
-
-func (lexer *Lexer) scan() (tkn token.Token, literal string) {
+func (parser *Parser) scan() (tkn token.Token, literal string) {
 	for {
-		lexer.skipWhiteSpace()
-		switch chr := lexer.chr; {
+		parser.skipWhiteSpace()
+		index := parser.IndexOf(parser.chrOffset)
+		switch chr := parser.chr; {
 		case isIdentifierStart(chr):
-			literal := lexer.scanIdentifier()
+			literal := parser.scanIdentifier()
 			keywordToken, exists := token.IsKeyword(literal)
 			if exists {
 				tkn = keywordToken
@@ -28,17 +20,17 @@ func (lexer *Lexer) scan() (tkn token.Token, literal string) {
 			}
 			break
 		case isStringSymbol(chr):
-			lexer.readChr()
-			literal = lexer.scanString()
+			parser.readChr()
+			literal = parser.scanString()
 			tkn = token.STRING
-			lexer.readChr()
+			parser.readChr()
 			break
 		case isNumeric(chr):
-			literal = lexer.scanNumericLiteral()
+			literal = parser.scanNumericLiteral()
 			tkn = token.NUMBER
 			break
 		default:
-			lexer.readChr()
+			parser.readChr()
 			switch chr {
 			case '+':
 				tkn = token.ADD
@@ -50,9 +42,9 @@ func (lexer *Lexer) scan() (tkn token.Token, literal string) {
 				tkn = token.MULTIPLY
 				break
 			case '/':
-				tkn = lexer.switchToken("/", token.COMMENT, token.DIVIDE)
+				tkn = parser.switchToken("/", token.COMMENT, token.DIVIDE)
 				if tkn == token.COMMENT {
-					literal = lexer.scanComment()
+					literal = parser.scanComment()
 				}
 				break
 			case '%':
@@ -71,10 +63,26 @@ func (lexer *Lexer) scan() (tkn token.Token, literal string) {
 				tkn = token.RIGHT_BRACE
 				break
 			case '!':
-				tkn = lexer.switchToken("=", token.NOT_EQUAL, token.NOT)
+				tkn = parser.switchToken("=", token.NOT_EQUAL, token.NOT)
 				break
 			case '=':
-				tkn = lexer.switchToken("=", token.EQUAL, token.ASSIGN)
+				tkn = parser.switchToken("=", token.EQUAL, token.ASSIGN)
+				break
+			case '<':
+				tkn = parser.switchToken("=", token.LESS_OR_EQUAL, token.LESS)
+				break
+			case '>':
+				tkn = parser.switchToken("=", token.GREATER_OR_EQUEAL, token.GREATER)
+				break
+			case '&':
+				tkn = parser.switchToken("&", token.LOGICAL_AND, token.AND_ARITHMETIC)
+				break
+			case '|':
+				tkn = parser.switchToken("|", token.LOGICAL_OR, token.OR_ARITHMETIC)
+				break
+			default:
+				tkn = token.ILLEGAL
+				parser.errorUnexpected(index, tkn)
 				break
 			}
 		}
@@ -82,53 +90,53 @@ func (lexer *Lexer) scan() (tkn token.Token, literal string) {
 	}
 }
 
-func (lexer *Lexer) skipWhiteSpace() {
-	for lexer.chr == ' ' || lexer.chr == '\t' || lexer.chr == '\r' || lexer.chr == '\n' || lexer.chr == '\f' {
-		lexer.readChr()
+func (parser *Parser) skipWhiteSpace() {
+	for parser.chr == ' ' || parser.chr == '\t' || parser.chr == '\r' || parser.chr == '\n' || parser.chr == '\f' {
+		parser.readChr()
 	}
 }
 
-func (lexer *Lexer) readChr() {
-	pos := lexer.chrOffset + 1
-	if pos < lexer.length {
-		lexer.chr = rune(lexer.content[pos])
-		lexer.chrOffset = pos
+func (parser *Parser) readChr() {
+	if parser.offset < parser.length {
+		parser.chrOffset = parser.offset
+		parser.chr = rune(parser.content[parser.offset])
+		parser.offset += 1
 		return
 	}
-	lexer.token = token.EOF
-	lexer.chrOffset = lexer.length
-	lexer.chr = -1
+	parser.token = token.EOF
+	parser.chrOffset = parser.length
+	parser.chr = -1
 }
 
-func (lexer *Lexer) scanByFilter(filter func(rune) bool) string {
-	chrOffset := lexer.chrOffset
-	for filter(lexer.chr) {
-		lexer.readChr()
+func (parser *Parser) scanByFilter(filter func(rune) bool) string {
+	chrOffset := parser.chrOffset
+	for filter(parser.chr) {
+		parser.readChr()
 	}
-	return lexer.content[chrOffset:lexer.chrOffset]
+	return parser.content[chrOffset:parser.chrOffset]
 }
 
-func (lexer *Lexer) scanIdentifier() string {
-	return lexer.scanByFilter(isIdentifierPart)
+func (parser *Parser) scanIdentifier() string {
+	return parser.scanByFilter(isIdentifierPart)
 }
 
-func (lexer *Lexer) scanNumericLiteral() string {
-	return lexer.scanByFilter(isNumericPart)
+func (parser *Parser) scanNumericLiteral() string {
+	return parser.scanByFilter(isNumericPart)
 }
 
-func (lexer *Lexer) scanString() string {
-	return lexer.scanByFilter(isNotStringSymbol)
+func (parser *Parser) scanString() string {
+	return parser.scanByFilter(isNotStringSymbol)
 }
 
-func (lexer *Lexer) scanComment() string {
-	return lexer.scanByFilter(isNotLineTerminator)
+func (parser *Parser) scanComment() string {
+	return parser.scanByFilter(isNotLineTerminator)
 }
 
-func (lexer *Lexer) switchToken(keysStr string, tkns ...token.Token) token.Token {
+func (parser *Parser) switchToken(keysStr string, tkns ...token.Token) token.Token {
 	keys := strings.Split(keysStr, ",")
 	for i, key := range keys {
-		if lexer.chr == rune(key[0]) {
-			lexer.readChr()
+		if parser.chr == rune(key[0]) {
+			parser.readChr()
 			return tkns[i]
 		}
 	}

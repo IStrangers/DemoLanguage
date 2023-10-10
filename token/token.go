@@ -13,10 +13,6 @@ const (
 	COMMENT
 	IDENTIFIER
 
-	ASSIGN            // =
-	EQUAL             // ==
-	NOT               // ！
-	NOT_EQUAL         // !=
 	LEFT_PARENTHESIS  // (
 	RIGHT_PARENTHESIS // )
 	LEFT_BRACE        // {
@@ -25,11 +21,24 @@ const (
 	NUMBER
 	STRING
 
-	ADD       // +
-	SUBTRACT  // -
-	MULTIPLY  // *
-	DIVIDE    // /
-	REMAINDER // %
+	ADD            // +
+	SUBTRACT       // -
+	MULTIPLY       // *
+	DIVIDE         // /
+	REMAINDER      // %
+	AND_ARITHMETIC // &
+	OR_ARITHMETIC  // |
+
+	ASSIGN            // =
+	EQUAL             // ==
+	NOT               // ！
+	NOT_EQUAL         // !=
+	LESS              // <
+	LESS_OR_EQUAL     // <=
+	GREATER           // >
+	GREATER_OR_EQUEAL // >=
+	LOGICAL_AND       // &&
+	LOGICAL_OR        // ||
 
 	VAR    // var
 	FUN    // fun
@@ -47,10 +56,6 @@ var tokenStringMap = [...]string{
 	COMMENT:    "COMMENT",
 	IDENTIFIER: "IDENTIFIER",
 
-	ASSIGN:            "=",
-	EQUAL:             "==",
-	NOT:               "!",
-	NOT_EQUAL:         "!=",
 	LEFT_PARENTHESIS:  "(",
 	RIGHT_PARENTHESIS: ")",
 	LEFT_BRACE:        "{",
@@ -59,11 +64,24 @@ var tokenStringMap = [...]string{
 	NUMBER: "NUMBER",
 	STRING: "STRING",
 
-	ADD:       "+",
-	SUBTRACT:  "-",
-	MULTIPLY:  "*",
-	DIVIDE:    "/",
-	REMAINDER: "%",
+	ADD:            "+",
+	SUBTRACT:       "-",
+	MULTIPLY:       "*",
+	DIVIDE:         "/",
+	REMAINDER:      "%",
+	AND_ARITHMETIC: "&",
+	OR_ARITHMETIC:  "|",
+
+	ASSIGN:            "=",
+	EQUAL:             "==",
+	NOT:               "!",
+	NOT_EQUAL:         "!=",
+	LESS:              "<",
+	LESS_OR_EQUAL:     "<=",
+	GREATER:           ">",
+	GREATER_OR_EQUEAL: ">=",
+	LOGICAL_AND:       "&&",
+	LOGICAL_OR:        "||",
 
 	VAR:    "var",
 	FUN:    "fun",

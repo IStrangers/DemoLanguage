@@ -7,3 +7,4 @@ if isOne(a) {
     var say = "Hello" + ' ' + "DL"
     println(say)
 }
+var a=#
