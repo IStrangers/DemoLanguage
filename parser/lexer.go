@@ -33,6 +33,9 @@ func (parser *Parser) scan() (tkn token.Token, literal string, index file.Index)
 		default:
 			parser.readChr()
 			switch chr {
+			case -1:
+				tkn = token.EOF
+				break
 			case '+':
 				tkn = token.ADD
 				break
@@ -62,6 +65,9 @@ func (parser *Parser) scan() (tkn token.Token, literal string, index file.Index)
 				break
 			case '}':
 				tkn = token.RIGHT_BRACE
+				break
+			case ',':
+				tkn = token.COMMA
 				break
 			case '!':
 				tkn = parser.switchToken("=", token.NOT_EQUAL, token.NOT)
@@ -104,7 +110,6 @@ func (parser *Parser) readChr() {
 		parser.offset += 1
 		return
 	}
-	parser.token = token.EOF
 	parser.chrOffset = parser.length
 	parser.chr = -1
 }

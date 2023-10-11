@@ -1,11 +1,4 @@
 var a = 1
-fun isOne = (a) {
-    return a == 1
-}
-//判断
-if isOne(a) {
-    var say = "Hello" + ' ' + "DL"
-    println(say)
-} else {
-
+fun isOne(a) {
+    return a
 }

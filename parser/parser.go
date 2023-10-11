@@ -20,6 +20,8 @@ type Parser struct {
 	index     file.Index
 
 	errors ErrorList
+
+	scope *Scope
 }
 
 func CreateParser(baseOffset int, fileName string, content string) *Parser {
@@ -33,6 +35,7 @@ func CreateParser(baseOffset int, fileName string, content string) *Parser {
 }
 
 func (parser *Parser) ParseProgram() *ast.Program {
+	parser.next()
 	return &ast.Program{
 		Body: parser.parseStatementList(),
 		File: parser.file,
@@ -40,8 +43,10 @@ func (parser *Parser) ParseProgram() *ast.Program {
 }
 
 func (parser *Parser) Parse() (*ast.Program, error) {
+	parser.openScope()
+	defer parser.closeScope()
 	program := parser.ParseProgram()
-	return program, &parser.errors
+	return program, parser.errors.Errors()
 }
 
 func (parser *Parser) next() {
@@ -49,11 +54,12 @@ func (parser *Parser) next() {
 }
 
 func (parser *Parser) expect(tkn token.Token) file.Index {
+	index := parser.index
 	if parser.token != tkn {
 		parser.errorUnexpectedToken(tkn)
 	}
 	parser.next()
-	return parser.index
+	return index
 }
 
 func (parser *Parser) IndexOf(offset int) file.Index {
@@ -62,4 +68,13 @@ func (parser *Parser) IndexOf(offset int) file.Index {
 
 func (parser *Parser) Position(index file.Index) *file.Position {
 	return parser.file.Position(int(index) - parser.baseOffset)
+}
+
+func (parser *Parser) slice(start, end file.Index) string {
+	from := int(start) - parser.baseOffset
+	to := int(end) - parser.baseOffset
+	if from >= 0 && to <= len(parser.content) {
+		return parser.content[from:to]
+	}
+	return ""
 }

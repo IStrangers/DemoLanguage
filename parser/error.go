@@ -33,6 +33,13 @@ func (error *Error) Error() string {
 
 type ErrorList []*Error
 
+func (errorList *ErrorList) Errors() error {
+	if errorList.Length() > 0 {
+		return errorList
+	}
+	return nil
+}
+
 func (errorList *ErrorList) Error() string {
 	length := errorList.Length()
 	switch length {

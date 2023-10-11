@@ -17,6 +17,7 @@ const (
 	RIGHT_PARENTHESIS // )
 	LEFT_BRACE        // {
 	RIGHT_BRACE       // }
+	COMMA             // ,
 
 	NUMBER
 	STRING
@@ -61,6 +62,7 @@ var tokenStringMap = [...]string{
 	RIGHT_PARENTHESIS: ")",
 	LEFT_BRACE:        "{",
 	RIGHT_BRACE:       "}",
+	COMMA:             ",",
 
 	NUMBER: "NUMBER",
 	STRING: "STRING",
