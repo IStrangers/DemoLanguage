@@ -69,6 +69,9 @@ func (parser *Parser) scan() (tkn token.Token, literal string, index file.Index)
 			case ',':
 				tkn = token.COMMA
 				break
+			case ':':
+				tkn = token.COLON
+				break
 			case '!':
 				tkn = parser.switchToken("=", token.NOT_EQUAL, token.NOT)
 				break

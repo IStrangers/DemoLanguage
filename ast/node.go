@@ -50,6 +50,13 @@ type (
 		Return    file.Index
 		Arguments []Expression
 	}
+
+	IfStatement struct {
+		If         file.Index
+		Condition  Expression
+		Consequent Statement
+		Alternate  Statement
+	}
 )
 
 func (self *BadStatement) StartIndex() file.Index {
@@ -98,6 +105,16 @@ func (self *ReturnStatement) EndIndex() file.Index {
 	return self.Return + 6
 }
 
+func (self *IfStatement) StartIndex() file.Index {
+	return self.If
+}
+func (self *IfStatement) EndIndex() file.Index {
+	if self.Alternate != nil {
+		return self.Alternate.EndIndex()
+	}
+	return self.Consequent.EndIndex()
+}
+
 type (
 	Expression interface {
 		Node
@@ -113,26 +130,22 @@ type (
 	}
 
 	Identifier struct {
-		BindingTarget
 		Index file.Index
 		Name  string
 	}
 
 	BadExpression struct {
-		Expression
 		Start file.Index
 		End   file.Index
 	}
 
 	NumberLiteral struct {
-		Expression
 		Index   file.Index
 		Literal string
 		Value   any
 	}
 
 	StringLiteral struct {
-		Expression
 		Index   file.Index
 		Literal string
 		Value   string

@@ -18,6 +18,7 @@ const (
 	LEFT_BRACE        // {
 	RIGHT_BRACE       // }
 	COMMA             // ,
+	COLON             // :
 
 	NUMBER
 	STRING
@@ -47,8 +48,11 @@ const (
 
 	IF     // if
 	ELSE   // else
+	BREAK  // break
 	FOR    // for
 	SWITCH // switch
+	CASE   // case
+
 )
 
 var tokenStringMap = [...]string{
@@ -63,6 +67,7 @@ var tokenStringMap = [...]string{
 	LEFT_BRACE:        "{",
 	RIGHT_BRACE:       "}",
 	COMMA:             ",",
+	COLON:             ":",
 
 	NUMBER: "NUMBER",
 	STRING: "STRING",
@@ -92,8 +97,10 @@ var tokenStringMap = [...]string{
 
 	IF:     "if",
 	ELSE:   "else",
+	BREAK:  "break",
 	FOR:    "for",
 	SWITCH: "switch",
+	CASE:   "case",
 }
 
 var keywordMap = map[string]Token{
@@ -102,8 +109,10 @@ var keywordMap = map[string]Token{
 	"return": RETURN,
 	"if":     IF,
 	"else":   ELSE,
+	"break":  BREAK,
 	"for":    FOR,
 	"switch": SWITCH,
+	"case":   CASE,
 }
 
 func IsKeyword(k string) (Token, bool) {

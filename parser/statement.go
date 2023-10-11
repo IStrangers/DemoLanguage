@@ -35,8 +35,8 @@ func (parser *Parser) parseStatement() ast.Statement {
 		return parser.parseFunStatement()
 	case token.RETURN:
 		return parser.parseReturnStatement()
-	//case token.IF:
-	//	return parser.parseIfStatement()
+	case token.IF:
+		return parser.parseIfStatement()
 	//case token.FOR:
 	//	return parser.parseForStatement()
 	//case token.SWITCH:
@@ -91,6 +91,13 @@ func (parser *Parser) parseReturnStatement() ast.Statement {
 		Return:    parser.expect(token.RETURN),
 		Arguments: parser.parseReturnArguments(),
 	}
+}
+
+func (parser *Parser) parseIfStatement() ast.Statement {
+	ifStatement := &ast.IfStatement{
+		If: parser.expect(token.IF),
+	}
+	return ifStatement
 }
 
 func (parser *Parser) parseExpressionStatement() ast.Statement {
