@@ -155,6 +155,7 @@ func (parser *Parser) parsePrimaryExpression() ast.Expression {
 	}
 
 	parser.errorUnexpectedToken(parser.token)
+	parser.nextStatement()
 	return &ast.BadExpression{
 		Start: index,
 		End:   parser.index,
