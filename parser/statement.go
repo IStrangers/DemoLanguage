@@ -37,10 +37,10 @@ func (parser *Parser) parseStatement() ast.Statement {
 		return parser.parseReturnStatement()
 	case token.IF:
 		return parser.parseIfStatement()
-	//case token.FOR:
-	//	return parser.parseForStatement()
-	//case token.SWITCH:
-	//	return parser.parseSwitchStatement()
+	case token.FOR:
+		return parser.parseForStatement()
+	case token.SWITCH:
+		return parser.parseSwitchStatement()
 	default:
 		return parser.parseExpressionStatement()
 	}
@@ -104,6 +104,24 @@ func (parser *Parser) parseIfStatement() ast.Statement {
 		ifStatement.Alternate = parser.parseStatement()
 	}
 	return ifStatement
+}
+
+func (parser *Parser) parseForStatement() ast.Statement {
+	return nil
+}
+
+func (parser *Parser) parseSwitchStatement() ast.Statement {
+	switchStatement := &ast.SwitchStatement{
+		Switch:       parser.expect(token.SWITCH),
+		Discriminant: parser.parseExpression(),
+		Default:      -1,
+	}
+	switchStatement.Body, switchStatement.Default = parser.parseCaseStatementList()
+	return switchStatement
+}
+
+func (parser *Parser) parseCaseStatementList() ([]*ast.CaseStatement, int) {
+	return nil, 0
 }
 
 func (parser *Parser) parseExpressionStatement() ast.Statement {

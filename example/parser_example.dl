@@ -2,3 +2,15 @@ var a = 1
 fun isOne(a) {
     return a
 }
+var r
+switch a {
+    case 1 {
+        r = 1
+    }
+    case 2 {
+        r = 2
+    }
+    default {
+        r = 0
+    }
+}

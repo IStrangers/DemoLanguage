@@ -57,6 +57,23 @@ type (
 		Consequent Statement
 		Alternate  Statement
 	}
+
+	ForStatement struct {
+	}
+
+	SwitchStatement struct {
+		Switch       file.Index
+		Discriminant Expression
+		Body         []*CaseStatement
+		Default      int
+		RightBrace   file.Index
+	}
+
+	CaseStatement struct {
+		Case       file.Index
+		Condition  Expression
+		Consequent Statement
+	}
 )
 
 func (self *BadStatement) StartIndex() file.Index {
@@ -112,6 +129,20 @@ func (self *IfStatement) EndIndex() file.Index {
 	if self.Alternate != nil {
 		return self.Alternate.EndIndex()
 	}
+	return self.Consequent.EndIndex()
+}
+
+func (self *SwitchStatement) StartIndex() file.Index {
+	return self.Switch
+}
+func (self *SwitchStatement) EndIndex() file.Index {
+	return self.RightBrace
+}
+
+func (self *CaseStatement) StartIndex() file.Index {
+	return self.Case
+}
+func (self *CaseStatement) EndIndex() file.Index {
 	return self.Consequent.EndIndex()
 }
 
