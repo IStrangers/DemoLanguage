@@ -128,6 +128,7 @@ func (parser *Parser) parseAssignExpression() ast.Expression {
 			parser.nextStatement()
 			return &ast.BadExpression{Start: index, End: parser.index}
 		}
+		parser.expect(operator)
 		return &ast.AssignExpression{
 			Left:     left,
 			Operator: operator,
@@ -139,7 +140,93 @@ func (parser *Parser) parseAssignExpression() ast.Expression {
 }
 
 func (parser *Parser) parseConditionalExpression() ast.Expression {
-	return nil
+	left := parser.parseLogicalOrExpression()
+
+	return left
+}
+
+func (parser *Parser) parseLogicalOrExpression() ast.Expression {
+	left := parser.parseLogicalAndExpression()
+
+	return left
+}
+
+func (parser *Parser) parseLogicalAndExpression() ast.Expression {
+	left := parser.parseBitwiseOrExpression()
+
+	return left
+}
+
+func (parser *Parser) parseBitwiseOrExpression() ast.Expression {
+	left := parser.parseBitwiseExclusiveOrExpression()
+
+	return left
+}
+
+func (parser *Parser) parseBitwiseExclusiveOrExpression() ast.Expression {
+	left := parser.parseBitwiseAndExpression()
+
+	return left
+}
+
+func (parser *Parser) parseBitwiseAndExpression() ast.Expression {
+	left := parser.parseEqualityExpression()
+
+	return left
+}
+
+func (parser *Parser) parseEqualityExpression() ast.Expression {
+	left := parser.parseRelationalExpression()
+
+	return left
+}
+
+func (parser *Parser) parseRelationalExpression() ast.Expression {
+	left := parser.parseShiftExpression()
+
+	return left
+}
+
+func (parser *Parser) parseShiftExpression() ast.Expression {
+	left := parser.parseAdditiveExpression()
+
+	return left
+}
+
+func (parser *Parser) parseAdditiveExpression() ast.Expression {
+	left := parser.parseMultiplicativeExpression()
+
+	return left
+}
+
+func (parser *Parser) parseMultiplicativeExpression() ast.Expression {
+	left := parser.parseExponentiationExpression()
+
+	return left
+}
+
+func (parser *Parser) parseExponentiationExpression() ast.Expression {
+	left := parser.parseUnaryExpression()
+
+	return left
+}
+
+func (parser *Parser) parseUnaryExpression() ast.Expression {
+	left := parser.parseUpdateExpression()
+
+	return left
+}
+
+func (parser *Parser) parseUpdateExpression() ast.Expression {
+	left := parser.parseLeftHandSideExpressionAllowCall()
+
+	return left
+}
+
+func (parser *Parser) parseLeftHandSideExpressionAllowCall() ast.Expression {
+	left := parser.parsePrimaryExpression()
+
+	return left
 }
 
 func (parser *Parser) parsePrimaryExpression() ast.Expression {

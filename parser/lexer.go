@@ -66,6 +66,12 @@ func (parser *Parser) scan() (tkn token.Token, literal string, index file.Index)
 			case '}':
 				tkn = token.RIGHT_BRACE
 				break
+			case '[':
+				tkn = token.LEFT_BRACKET
+				break
+			case ']':
+				tkn = token.RIGHT_BRACKET
+				break
 			case ',':
 				tkn = token.COMMA
 				break

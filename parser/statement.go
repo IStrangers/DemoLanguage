@@ -142,11 +142,15 @@ func (parser *Parser) parseCaseStatementList() ([]*ast.CaseStatement, int) {
 }
 
 func (parser *Parser) parseCaseStatement() *ast.CaseStatement {
+	tkn := parser.token
 	caseStatement := &ast.CaseStatement{
-		Case:       parser.expect(parser.token),
-		Condition:  parser.parseExpression(),
-		Consequent: parser.parseStatement(),
+		Case:      parser.expect(parser.token),
+		Condition: nil,
 	}
+	if tkn == token.CASE {
+		caseStatement.Condition = parser.parseExpression()
+	}
+	caseStatement.Consequent = parser.parseStatement()
 	return caseStatement
 }
 
