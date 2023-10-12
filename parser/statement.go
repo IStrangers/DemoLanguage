@@ -117,6 +117,7 @@ func (parser *Parser) parseSwitchStatement() ast.Statement {
 		Default:      -1,
 	}
 	switchStatement.Body, switchStatement.Default = parser.parseCaseStatementList()
+	switchStatement.RightBrace = parser.expect(token.RIGHT_BRACE)
 	return switchStatement
 }
 
