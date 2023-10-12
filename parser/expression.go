@@ -81,19 +81,84 @@ func (parser *Parser) parseReturnArguments() (arguments []ast.Expression) {
 }
 
 func (parser *Parser) parseExpression() ast.Expression {
-	return parser.parseAssignExpression()
+	left := parser.parseAssignExpression()
+
+	return left
 }
 
 func (parser *Parser) parseAssignExpression() ast.Expression {
+	parenthesis := false
+
 	switch parser.token {
+	case token.LEFT_PARENTHESIS:
+		parenthesis = true
+	}
+
+	left := parser.parseConditionalExpression()
+
+	var operator token.Token
+	switch parser.token {
+	case token.ASSIGN:
+		operator = token.ASSIGN
+	}
+
+	if operator != 0 {
+		index := parser.index
+		err := true
+
+		switch left.(type) {
+		case *ast.Identifier:
+			err = false
+			break
+		case *ast.ArrayLiteral:
+			if parenthesis || operator != token.ASSIGN {
+				break
+			}
+			err = false
+			break
+		case *ast.ObjectLiteral:
+			if parenthesis || operator != token.ASSIGN {
+				break
+			}
+			err = false
+			break
+		}
+		if err {
+			parser.error(left.StartIndex(), "Invalid left-hand side in assignment")
+			parser.nextStatement()
+			return &ast.BadExpression{Start: index, End: parser.index}
+		}
+		return &ast.AssignExpression{
+			Left:     left,
+			Operator: operator,
+			Right:    parser.parseAssignExpression(),
+		}
+	}
+
+	return left
+}
+
+func (parser *Parser) parseConditionalExpression() ast.Expression {
+	return nil
+}
+
+func (parser *Parser) parsePrimaryExpression() ast.Expression {
+	index := parser.index
+
+	switch parser.token {
+	case token.IDENTIFIER:
+		return parser.parseIdentifier()
 	case token.NUMBER:
 		return parser.parseNumberLiteral()
 	case token.STRING:
 		return parser.parseStringLiteral()
-	case token.IDENTIFIER:
-		return parser.parseIdentifier()
 	}
-	return nil
+
+	parser.errorUnexpectedToken(parser.token)
+	return &ast.BadExpression{
+		Start: index,
+		End:   parser.index,
+	}
 }
 
 func (parser *Parser) parseNumberLiteral() ast.Expression {

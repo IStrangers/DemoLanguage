@@ -2,6 +2,7 @@ package ast
 
 import (
 	"DemoLanguage/file"
+	"DemoLanguage/token"
 )
 
 type Program struct {
@@ -151,6 +152,10 @@ type (
 		Node
 	}
 
+	Property interface {
+		Expression
+	}
+
 	BindingTarget interface {
 		Expression
 	}
@@ -165,9 +170,10 @@ type (
 		Name  string
 	}
 
-	BadExpression struct {
-		Start file.Index
-		End   file.Index
+	AssignExpression struct {
+		Left     Expression
+		Operator token.Token
+		Right    Expression
 	}
 
 	NumberLiteral struct {
@@ -182,6 +188,18 @@ type (
 		Value   string
 	}
 
+	ArrayLiteral struct {
+		LeftBracket  file.Index
+		Values       []Expression
+		RightBracket file.Index
+	}
+
+	ObjectLiteral struct {
+		LeftBrace  file.Index
+		Properties []Property
+		RightBrace file.Index
+	}
+
 	ParameterList struct {
 		LeftParenthesis  file.Index
 		List             []*Binding
@@ -193,6 +211,11 @@ type (
 		ParameterList   *ParameterList
 		Body            Statement
 		DeclarationList []*VariableDeclaration
+	}
+
+	BadExpression struct {
+		Start file.Index
+		End   file.Index
 	}
 )
 
@@ -213,11 +236,11 @@ func (self *Identifier) EndIndex() file.Index {
 	return file.Index(int(self.Index) + len(self.Name))
 }
 
-func (self *BadExpression) StartIndex() file.Index {
-	return self.Start
+func (self *AssignExpression) StartIndex() file.Index {
+	return self.Left.StartIndex()
 }
-func (self *BadExpression) EndIndex() file.Index {
-	return self.End
+func (self *AssignExpression) EndIndex() file.Index {
+	return self.Right.EndIndex()
 }
 
 func (self *NumberLiteral) StartIndex() file.Index {
@@ -234,6 +257,20 @@ func (self *StringLiteral) EndIndex() file.Index {
 	return file.Index(int(self.Index) + len(self.Literal))
 }
 
+func (self *ArrayLiteral) StartIndex() file.Index {
+	return self.LeftBracket
+}
+func (self *ArrayLiteral) EndIndex() file.Index {
+	return self.RightBracket
+}
+
+func (self *ObjectLiteral) StartIndex() file.Index {
+	return self.LeftBrace
+}
+func (self *ObjectLiteral) EndIndex() file.Index {
+	return self.RightBrace
+}
+
 func (self *ParameterList) StartIndex() file.Index {
 	return self.LeftParenthesis
 }
@@ -246,6 +283,13 @@ func (self *FunLiteral) StartIndex() file.Index {
 }
 func (self *FunLiteral) EndIndex() file.Index {
 	return self.Body.EndIndex() + 1
+}
+
+func (self *BadExpression) StartIndex() file.Index {
+	return self.Start
+}
+func (self *BadExpression) EndIndex() file.Index {
+	return self.End
 }
 
 type (
