@@ -29,6 +29,8 @@ func (parser *Parser) parseStatement() ast.Statement {
 	case token.EOF:
 		parser.errorUnexpectedToken(parser.token)
 		return &ast.BadStatement{Start: parser.index, End: parser.index + 1}
+	case token.LEFT_BRACE:
+		return parser.parseBlockStatement()
 	case token.VAR:
 		return parser.parseVarStatement()
 	case token.FUN:
@@ -122,11 +124,34 @@ func (parser *Parser) parseSwitchStatement() ast.Statement {
 }
 
 func (parser *Parser) parseCaseStatementList() ([]*ast.CaseStatement, int) {
-	return nil, 0
+	var caseStatementList []*ast.CaseStatement
+	var defaultIndex = -1
+	parser.expect(token.LEFT_BRACE)
+	for index := 0; parser.token != token.RIGHT_BRACE && parser.token != token.EOF; index++ {
+		caseStatement := parser.parseCaseStatement()
+		caseStatementList = append(caseStatementList, caseStatement)
+		if caseStatement.Condition == nil {
+			if defaultIndex == -1 {
+				defaultIndex = index
+			} else {
+				parser.error(caseStatement.Case, "Already saw a default in switch")
+			}
+		}
+	}
+	return caseStatementList, defaultIndex
+}
+
+func (parser *Parser) parseCaseStatement() *ast.CaseStatement {
+	caseStatement := &ast.CaseStatement{
+		Case:       parser.expect(parser.token),
+		Condition:  parser.parseExpression(),
+		Consequent: parser.parseStatement(),
+	}
+	return caseStatement
 }
 
 func (parser *Parser) parseExpressionStatement() ast.Statement {
 	return &ast.ExpressionStatement{
-		Expression: nil,
+		Expression: parser.parseExpression(),
 	}
 }
