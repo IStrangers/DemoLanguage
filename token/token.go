@@ -21,6 +21,7 @@ const (
 	RIGHT_BRACKET     // ]
 	COMMA             // ,
 	COLON             // :
+	SEMICOLON         // ;
 
 	NUMBER
 	STRING
@@ -72,6 +73,7 @@ var tokenStringMap = [...]string{
 	RIGHT_BRACKET:     "]",
 	COMMA:             ",",
 	COLON:             ":",
+	SEMICOLON:         ";",
 
 	NUMBER: "NUMBER",
 	STRING: "STRING",

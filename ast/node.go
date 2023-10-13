@@ -60,6 +60,11 @@ type (
 	}
 
 	ForStatement struct {
+		For         file.Index
+		Initializer Statement
+		Condition   Expression
+		Update      Expression
+		Body        Statement
 	}
 
 	SwitchStatement struct {
@@ -131,6 +136,13 @@ func (self *IfStatement) EndIndex() file.Index {
 		return self.Alternate.EndIndex()
 	}
 	return self.Consequent.EndIndex()
+}
+
+func (self *ForStatement) StartIndex() file.Index {
+	return self.For
+}
+func (self *ForStatement) EndIndex() file.Index {
+	return self.Body.EndIndex()
 }
 
 func (self *SwitchStatement) StartIndex() file.Index {

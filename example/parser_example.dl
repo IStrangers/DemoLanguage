@@ -14,3 +14,9 @@ switch a {
         r = 0
     }
 }
+for {
+
+}
+for var index = 0;index < 100;index {
+
+}

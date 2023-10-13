@@ -109,7 +109,18 @@ func (parser *Parser) parseIfStatement() ast.Statement {
 }
 
 func (parser *Parser) parseForStatement() ast.Statement {
-	return nil
+	forStatement := &ast.ForStatement{
+		For: parser.expect(token.FOR),
+	}
+	if parser.token != token.LEFT_BRACE {
+		forStatement.Initializer = parser.parseVarStatement()
+		parser.expect(token.SEMICOLON)
+		forStatement.Condition = parser.parseExpression()
+		parser.expect(token.SEMICOLON)
+		forStatement.Update = parser.parseExpression()
+	}
+	forStatement.Body = parser.parseBlockStatement()
+	return forStatement
 }
 
 func (parser *Parser) parseSwitchStatement() ast.Statement {
