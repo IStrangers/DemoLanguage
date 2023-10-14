@@ -148,12 +148,30 @@ func (parser *Parser) parseConditionalExpression() ast.Expression {
 func (parser *Parser) parseLogicalOrExpression() ast.Expression {
 	left := parser.parseLogicalAndExpression()
 
+	switch parser.token {
+	case token.LOGICAL_OR:
+		binaryExpression := &ast.BinaryExpression{
+			Operator: parser.expectToken(parser.token),
+			Left:     left,
+			Right:    parser.parseLogicalAndExpression(),
+		}
+		return binaryExpression
+	}
 	return left
 }
 
 func (parser *Parser) parseLogicalAndExpression() ast.Expression {
 	left := parser.parseBitwiseOrExpression()
 
+	switch parser.token {
+	case token.LOGICAL_AND:
+		binaryExpression := &ast.BinaryExpression{
+			Operator: parser.expectToken(parser.token),
+			Left:     left,
+			Right:    parser.parseBitwiseOrExpression(),
+		}
+		return binaryExpression
+	}
 	return left
 }
 
@@ -325,6 +343,8 @@ func (parser *Parser) parsePrimaryExpression() ast.Expression {
 		return parser.parseNumberLiteral()
 	case token.STRING:
 		return parser.parseStringLiteral()
+	case token.LEFT_PARENTHESIS:
+		return parser.parseParenthesisedExpression()
 	}
 
 	parser.errorUnexpectedToken(parser.token)
@@ -351,4 +371,11 @@ func (parser *Parser) parseStringLiteral() ast.Expression {
 		Literal: parser.literal,
 		Value:   parser.literal,
 	}
+}
+
+func (parser *Parser) parseParenthesisedExpression() ast.Expression {
+	parser.expect(token.LEFT_PARENTHESIS)
+	left := parser.parseAssignExpression()
+	parser.expect(token.RIGHT_PARENTHESIS)
+	return left
 }

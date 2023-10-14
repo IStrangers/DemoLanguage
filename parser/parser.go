@@ -56,7 +56,7 @@ func (parser *Parser) next() {
 func (parser *Parser) expect(tkn token.Token) file.Index {
 	index := parser.index
 	if parser.token != tkn {
-		parser.errorUnexpectedToken(tkn)
+		parser.errorUnexpectedToken(parser.token)
 	}
 	parser.next()
 	return index
@@ -64,7 +64,7 @@ func (parser *Parser) expect(tkn token.Token) file.Index {
 
 func (parser *Parser) expectToken(tkn token.Token) token.Token {
 	if parser.token != tkn {
-		parser.errorUnexpectedToken(tkn)
+		parser.errorUnexpectedToken(parser.token)
 	}
 	parser.next()
 	return tkn

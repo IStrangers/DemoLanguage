@@ -10,7 +10,7 @@ func TestParser(t *testing.T) {
 	parser := CreateParser(1, "", string(content))
 	program, err := parser.Parse()
 	if err != nil {
-		println(err)
+		println(err.Error())
 		return
 	}
 	println(program)

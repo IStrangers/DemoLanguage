@@ -18,5 +18,7 @@ for {
 
 }
 for var index = 0;index < 100;index++ {
-    break
+    if index % 5 == 0 || (index >= 90 && index != 95) {
+        break
+    }
 }
