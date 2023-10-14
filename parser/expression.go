@@ -2,6 +2,7 @@ package parser
 
 import (
 	"DemoLanguage/ast"
+	"DemoLanguage/file"
 	"DemoLanguage/token"
 )
 
@@ -330,6 +331,10 @@ func (parser *Parser) parseUpdateExpression() ast.Expression {
 func (parser *Parser) parseLeftHandSideExpressionAllowCall() ast.Expression {
 	left := parser.parsePrimaryExpression()
 
+	switch parser.token {
+	case token.LEFT_PARENTHESIS:
+		left = parser.parseCallExpression(left)
+	}
 	return left
 }
 
@@ -378,4 +383,27 @@ func (parser *Parser) parseParenthesisedExpression() ast.Expression {
 	left := parser.parseAssignExpression()
 	parser.expect(token.RIGHT_PARENTHESIS)
 	return left
+}
+
+func (parser *Parser) parseCallExpression(left ast.Expression) ast.Expression {
+	leftParenthesis, arguments, rightParenthesis := parser.parseArguments()
+	return &ast.CallExpression{
+		Callee:           left,
+		LeftParenthesis:  leftParenthesis,
+		Arguments:        arguments,
+		RightParenthesis: rightParenthesis,
+	}
+}
+
+func (parser *Parser) parseArguments() (leftParenthesis file.Index, arguments []ast.Expression, rightParenthesis file.Index) {
+	leftParenthesis = parser.expect(token.LEFT_PARENTHESIS)
+	for parser.token != token.RIGHT_PARENTHESIS {
+		arguments = append(arguments, parser.parseAssignExpression())
+		if parser.token != token.COMMA {
+			break
+		}
+		parser.expect(token.COMMA)
+	}
+	rightParenthesis = parser.expect(token.RIGHT_PARENTHESIS)
+	return
 }

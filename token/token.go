@@ -57,13 +57,14 @@ const (
 	FUN    // fun
 	RETURN // return
 
-	IF      // if
-	ELSE    // else
-	BREAK   // break
-	FOR     // for
-	SWITCH  // switch
-	CASE    // case
-	DEFAULT // default
+	IF       // if
+	ELSE     // else
+	BREAK    // break
+	FOR      // for
+	SWITCH   // switch
+	CASE     // case
+	DEFAULT  // default
+	CONTINUE // continue
 )
 
 var tokenStringMap = [...]string{
@@ -117,26 +118,28 @@ var tokenStringMap = [...]string{
 	FUN:    "fun",
 	RETURN: "return",
 
-	IF:      "if",
-	ELSE:    "else",
-	BREAK:   "break",
-	FOR:     "for",
-	SWITCH:  "switch",
-	CASE:    "case",
-	DEFAULT: "default",
+	IF:       "if",
+	ELSE:     "else",
+	BREAK:    "break",
+	FOR:      "for",
+	SWITCH:   "switch",
+	CASE:     "case",
+	DEFAULT:  "default",
+	CONTINUE: "continue",
 }
 
 var keywordMap = map[string]Token{
-	"var":     VAR,
-	"fun":     FUN,
-	"return":  RETURN,
-	"if":      IF,
-	"else":    ELSE,
-	"break":   BREAK,
-	"for":     FOR,
-	"switch":  SWITCH,
-	"case":    CASE,
-	"default": DEFAULT,
+	"var":      VAR,
+	"fun":      FUN,
+	"return":   RETURN,
+	"if":       IF,
+	"else":     ELSE,
+	"break":    BREAK,
+	"for":      FOR,
+	"switch":   SWITCH,
+	"case":     CASE,
+	"default":  DEFAULT,
+	"continue": CONTINUE,
 }
 
 func IsKeyword(k string) (Token, bool) {

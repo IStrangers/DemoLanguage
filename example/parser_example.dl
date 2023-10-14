@@ -14,8 +14,11 @@ switch a {
         r = 0
     }
 }
-for {
-
+for var i = 0;;i++ {
+    if isOne(i) {
+        break
+    }
+    continue
 }
 for var index = 0;index < 100;index++ {
     if index % 5 == 0 || (index >= 90 && index != 95) {

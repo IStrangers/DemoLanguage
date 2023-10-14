@@ -84,6 +84,10 @@ type (
 	BreakStatement struct {
 		Break file.Index
 	}
+
+	ContinueStatement struct {
+		Continue file.Index
+	}
 )
 
 func (self *BadStatement) StartIndex() file.Index {
@@ -105,7 +109,7 @@ func (self *BlockStatement) StartIndex() file.Index {
 	return self.LeftBrace
 }
 func (self *BlockStatement) EndIndex() file.Index {
-	return self.RightBrace
+	return self.RightBrace + 1
 }
 
 func (self *VarStatement) StartIndex() file.Index {
@@ -154,7 +158,7 @@ func (self *SwitchStatement) StartIndex() file.Index {
 	return self.Switch
 }
 func (self *SwitchStatement) EndIndex() file.Index {
-	return self.RightBrace
+	return self.RightBrace + 1
 }
 
 func (self *CaseStatement) StartIndex() file.Index {
@@ -169,6 +173,13 @@ func (self *BreakStatement) StartIndex() file.Index {
 }
 func (self *BreakStatement) EndIndex() file.Index {
 	return self.Break + 5
+}
+
+func (self *ContinueStatement) StartIndex() file.Index {
+	return self.Continue
+}
+func (self *ContinueStatement) EndIndex() file.Index {
+	return self.Continue + 8
 }
 
 type (
@@ -251,6 +262,13 @@ type (
 		Postfix  bool
 	}
 
+	CallExpression struct {
+		Callee           Expression
+		LeftParenthesis  file.Index
+		Arguments        []Expression
+		RightParenthesis file.Index
+	}
+
 	BadExpression struct {
 		Start file.Index
 		End   file.Index
@@ -299,21 +317,21 @@ func (self *ArrayLiteral) StartIndex() file.Index {
 	return self.LeftBracket
 }
 func (self *ArrayLiteral) EndIndex() file.Index {
-	return self.RightBracket
+	return self.RightBracket + 1
 }
 
 func (self *ObjectLiteral) StartIndex() file.Index {
 	return self.LeftBrace
 }
 func (self *ObjectLiteral) EndIndex() file.Index {
-	return self.RightBrace
+	return self.RightBrace + 1
 }
 
 func (self *ParameterList) StartIndex() file.Index {
 	return self.LeftParenthesis
 }
 func (self *ParameterList) EndIndex() file.Index {
-	return self.RightParenthesis
+	return self.RightParenthesis + 1
 }
 
 func (self *FunLiteral) StartIndex() file.Index {
@@ -341,6 +359,13 @@ func (self *UnaryExpression) EndIndex() file.Index {
 		return self.Operand.EndIndex() + 2
 	}
 	return self.Operand.EndIndex()
+}
+
+func (self *CallExpression) StartIndex() file.Index {
+	return self.Callee.StartIndex()
+}
+func (self *CallExpression) EndIndex() file.Index {
+	return self.RightParenthesis + 1
 }
 
 func (self *BadExpression) StartIndex() file.Index {

@@ -24,7 +24,7 @@ func (parser *Parser) nextStatement() {
 	for {
 		switch parser.token {
 		case token.LEFT_BRACE, token.VAR, token.FUN, token.RETURN, token.IF,
-			token.FOR, token.SWITCH, token.BREAK:
+			token.FOR, token.SWITCH, token.BREAK, token.CONTINUE:
 			return
 		case token.EOF:
 			return
@@ -54,6 +54,8 @@ func (parser *Parser) parseStatement() ast.Statement {
 		return parser.parseSwitchStatement()
 	case token.BREAK:
 		return parser.parseBreakStatement()
+	case token.CONTINUE:
+		return parser.parseContinueStatement()
 	default:
 		return parser.parseExpressionStatement()
 	}
@@ -124,11 +126,17 @@ func (parser *Parser) parseForStatement() ast.Statement {
 		For: parser.expect(token.FOR),
 	}
 	if parser.token != token.LEFT_BRACE {
-		forStatement.Initializer = parser.parseVarStatement()
+		if parser.token != token.SEMICOLON {
+			forStatement.Initializer = parser.parseVarStatement()
+		}
 		parser.expect(token.SEMICOLON)
-		forStatement.Condition = parser.parseExpression()
+		if parser.token != token.SEMICOLON {
+			forStatement.Condition = parser.parseExpression()
+		}
 		parser.expect(token.SEMICOLON)
-		forStatement.Update = parser.parseExpression()
+		if parser.token != token.SEMICOLON {
+			forStatement.Update = parser.parseExpression()
+		}
 	}
 	forStatement.Body = parser.parseBlockStatement()
 	return forStatement
@@ -176,9 +184,15 @@ func (parser *Parser) parseCaseStatement() *ast.CaseStatement {
 	return caseStatement
 }
 
-func (parser *Parser) parseBreakStatement() *ast.BreakStatement {
+func (parser *Parser) parseBreakStatement() ast.Expression {
 	return &ast.BreakStatement{
 		Break: parser.expect(token.BREAK),
+	}
+}
+
+func (parser *Parser) parseContinueStatement() ast.Expression {
+	return &ast.ContinueStatement{
+		Continue: parser.expect(token.CONTINUE),
 	}
 }
 
