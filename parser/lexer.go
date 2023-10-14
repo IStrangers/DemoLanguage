@@ -37,22 +37,22 @@ func (parser *Parser) scan() (tkn token.Token, literal string, index file.Index)
 				tkn = token.EOF
 				break
 			case '+':
-				tkn = token.ADD
+				tkn = parser.switchToken("+,=", token.INCREMENT, token.ADDITION_ASSIGN, token.ADDITION)
 				break
 			case '-':
-				tkn = token.SUBTRACT
+				tkn = parser.switchToken("-,=", token.DECREMENT, token.SUBTRACT_ASSIGN, token.SUBTRACT)
 				break
 			case '*':
-				tkn = token.MULTIPLY
+				tkn = parser.switchToken("=", token.MULTIPLY_ASSIGN, token.MULTIPLY)
 				break
 			case '/':
-				tkn = parser.switchToken("/", token.COMMENT, token.DIVIDE)
+				tkn = parser.switchToken("/,=", token.COMMENT, token.DIVIDE_ASSIGN, token.DIVIDE)
 				if tkn == token.COMMENT {
 					literal = parser.scanComment()
 				}
 				break
 			case '%':
-				tkn = token.REMAINDER
+				tkn = parser.switchToken("=", token.REMAINDER_ASSIGN, token.REMAINDER)
 				break
 			case '(':
 				tkn = token.LEFT_PARENTHESIS
@@ -71,6 +71,9 @@ func (parser *Parser) scan() (tkn token.Token, literal string, index file.Index)
 				break
 			case ']':
 				tkn = token.RIGHT_BRACKET
+				break
+			case '.':
+				tkn = token.PERIOD
 				break
 			case ',':
 				tkn = token.COMMA

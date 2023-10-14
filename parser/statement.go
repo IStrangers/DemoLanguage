@@ -43,6 +43,8 @@ func (parser *Parser) parseStatement() ast.Statement {
 		return parser.parseForStatement()
 	case token.SWITCH:
 		return parser.parseSwitchStatement()
+	case token.BREAK:
+		return parser.parseBreakStatement()
 	default:
 		return parser.parseExpressionStatement()
 	}
@@ -163,6 +165,12 @@ func (parser *Parser) parseCaseStatement() *ast.CaseStatement {
 	}
 	caseStatement.Consequent = parser.parseStatement()
 	return caseStatement
+}
+
+func (parser *Parser) parseBreakStatement() *ast.BreakStatement {
+	return &ast.BreakStatement{
+		Break: parser.expect(token.BREAK),
+	}
 }
 
 func (parser *Parser) parseExpressionStatement() ast.Statement {

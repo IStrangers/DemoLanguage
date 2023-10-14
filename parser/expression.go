@@ -178,12 +178,32 @@ func (parser *Parser) parseBitwiseAndExpression() ast.Expression {
 func (parser *Parser) parseEqualityExpression() ast.Expression {
 	left := parser.parseRelationalExpression()
 
+	switch parser.token {
+	case token.EQUAL, token.NOT_EQUAL:
+		binaryExpression := &ast.BinaryExpression{
+			Operator:   parser.expectToken(parser.token),
+			Left:       left,
+			Right:      parser.parseRelationalExpression(),
+			Comparison: true,
+		}
+		return binaryExpression
+	}
 	return left
 }
 
 func (parser *Parser) parseRelationalExpression() ast.Expression {
 	left := parser.parseShiftExpression()
 
+	switch parser.token {
+	case token.LESS, token.LESS_OR_EQUAL, token.GREATER, token.GREATER_OR_EQUEAL:
+		binaryExpression := &ast.BinaryExpression{
+			Operator:   parser.expectToken(parser.token),
+			Left:       left,
+			Right:      parser.parseShiftExpression(),
+			Comparison: true,
+		}
+		return binaryExpression
+	}
 	return left
 }
 
@@ -196,12 +216,30 @@ func (parser *Parser) parseShiftExpression() ast.Expression {
 func (parser *Parser) parseAdditiveExpression() ast.Expression {
 	left := parser.parseMultiplicativeExpression()
 
+	switch parser.token {
+	case token.ADDITION, token.SUBTRACT:
+		binaryExpression := &ast.BinaryExpression{
+			Operator: parser.expectToken(parser.token),
+			Left:     left,
+			Right:    parser.parseMultiplicativeExpression(),
+		}
+		return binaryExpression
+	}
 	return left
 }
 
 func (parser *Parser) parseMultiplicativeExpression() ast.Expression {
 	left := parser.parseExponentiationExpression()
 
+	switch parser.token {
+	case token.MULTIPLY, token.DIVIDE, token.REMAINDER:
+		binaryExpression := &ast.BinaryExpression{
+			Operator: parser.expectToken(parser.token),
+			Left:     left,
+			Right:    parser.parseExponentiationExpression(),
+		}
+		return binaryExpression
+	}
 	return left
 }
 
@@ -212,15 +250,63 @@ func (parser *Parser) parseExponentiationExpression() ast.Expression {
 }
 
 func (parser *Parser) parseUnaryExpression() ast.Expression {
+
+	switch parser.token {
+	case token.NOT:
+		unaryExpression := &ast.UnaryExpression{
+			Index:    parser.expect(parser.token),
+			Operator: parser.token,
+			Operand:  parser.parseUnaryExpression(),
+		}
+		return unaryExpression
+	}
+
 	left := parser.parseUpdateExpression()
 
 	return left
 }
 
 func (parser *Parser) parseUpdateExpression() ast.Expression {
-	left := parser.parseLeftHandSideExpressionAllowCall()
+	isUpdate := true
+	isUpdateToken := func(tkn token.Token) bool {
+		return tkn == token.INCREMENT || tkn == token.DECREMENT
+	}
 
-	return left
+	index := parser.index
+	operator := parser.token
+	var operand ast.Expression
+	var isPostfix bool
+
+	if isUpdateToken(operator) {
+		isPostfix = false
+	} else {
+		operand = parser.parseLeftHandSideExpressionAllowCall()
+		if isUpdateToken(parser.token) {
+			isPostfix = true
+			index = parser.index
+			operator = parser.token
+		} else {
+			isUpdate = false
+		}
+	}
+
+	if isUpdate {
+		parser.next()
+		switch operand.(type) {
+		case *ast.Identifier:
+		default:
+			parser.error(index, "Invalid left-hand side in assignment")
+			parser.nextStatement()
+			return &ast.BadExpression{Start: index, End: parser.index}
+		}
+		return &ast.UnaryExpression{
+			Index:    index,
+			Operator: operator,
+			Operand:  operand,
+			Postfix:  isPostfix,
+		}
+	}
+	return operand
 }
 
 func (parser *Parser) parseLeftHandSideExpressionAllowCall() ast.Expression {

@@ -62,6 +62,14 @@ func (parser *Parser) expect(tkn token.Token) file.Index {
 	return index
 }
 
+func (parser *Parser) expectToken(tkn token.Token) token.Token {
+	if parser.token != tkn {
+		parser.errorUnexpectedToken(tkn)
+	}
+	parser.next()
+	return tkn
+}
+
 func (parser *Parser) IndexOf(offset int) file.Index {
 	return file.Index(parser.baseOffset + offset)
 }

@@ -79,13 +79,13 @@ func (parser *Parser) errorUnexpected(index file.Index, tkn token.Token) error {
 
 func (parser *Parser) errorUnexpectedToken(tkn token.Token) error {
 	message := ERR_UnexpectedToken
-	messageValue := tkn
+	messageValue := tkn.String()
 	switch tkn {
 	case token.EOF:
 		message = ERR_UnexpectedEndOfInput
 		break
 	}
-	return parser.error(parser.index, message, tkn, messageValue)
+	return parser.error(parser.index, message, messageValue)
 }
 
 func (parser *Parser) error(index file.Index, message string, messageValues ...any) *Error {

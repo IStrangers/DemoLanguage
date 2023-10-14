@@ -17,6 +17,6 @@ switch a {
 for {
 
 }
-for var index = 0;index < 100;index {
-
+for var index = 0;index < 100;index++ {
+    break
 }

@@ -19,6 +19,7 @@ const (
 	RIGHT_BRACE       // }
 	LEFT_BRACKET      // [
 	RIGHT_BRACKET     // ]
+	PERIOD            // .
 	COMMA             // ,
 	COLON             // :
 	SEMICOLON         // ;
@@ -26,13 +27,20 @@ const (
 	NUMBER
 	STRING
 
-	ADD            // +
-	SUBTRACT       // -
-	MULTIPLY       // *
-	DIVIDE         // /
-	REMAINDER      // %
-	AND_ARITHMETIC // &
-	OR_ARITHMETIC  // |
+	ADDITION         // +
+	SUBTRACT         // -
+	MULTIPLY         // *
+	DIVIDE           // /
+	REMAINDER        // %
+	AND_ARITHMETIC   // &
+	OR_ARITHMETIC    // |
+	INCREMENT        // ++
+	DECREMENT        // --
+	ADDITION_ASSIGN  // +=
+	SUBTRACT_ASSIGN  // -=
+	MULTIPLY_ASSIGN  // *=
+	DIVIDE_ASSIGN    // /=
+	REMAINDER_ASSIGN // %=
 
 	ASSIGN            // =
 	EQUAL             // ==
@@ -71,6 +79,7 @@ var tokenStringMap = [...]string{
 	RIGHT_BRACE:       "}",
 	LEFT_BRACKET:      "[",
 	RIGHT_BRACKET:     "]",
+	PERIOD:            ".",
 	COMMA:             ",",
 	COLON:             ":",
 	SEMICOLON:         ";",
@@ -78,13 +87,20 @@ var tokenStringMap = [...]string{
 	NUMBER: "NUMBER",
 	STRING: "STRING",
 
-	ADD:            "+",
-	SUBTRACT:       "-",
-	MULTIPLY:       "*",
-	DIVIDE:         "/",
-	REMAINDER:      "%",
-	AND_ARITHMETIC: "&",
-	OR_ARITHMETIC:  "|",
+	ADDITION:         "+",
+	SUBTRACT:         "-",
+	MULTIPLY:         "*",
+	DIVIDE:           "/",
+	REMAINDER:        "%",
+	AND_ARITHMETIC:   "&",
+	OR_ARITHMETIC:    "|",
+	INCREMENT:        "++",
+	DECREMENT:        "--",
+	ADDITION_ASSIGN:  "+=",
+	SUBTRACT_ASSIGN:  "-=",
+	MULTIPLY_ASSIGN:  "*=",
+	DIVIDE_ASSIGN:    "/=",
+	REMAINDER_ASSIGN: "%=",
 
 	ASSIGN:            "=",
 	EQUAL:             "==",

@@ -80,11 +80,16 @@ type (
 		Condition  Expression
 		Consequent Statement
 	}
+
+	BreakStatement struct {
+		Break file.Index
+	}
 )
 
 func (self *BadStatement) StartIndex() file.Index {
 	return self.Start
 }
+
 func (self *BadStatement) EndIndex() file.Index {
 	return self.End
 }
@@ -159,6 +164,13 @@ func (self *CaseStatement) EndIndex() file.Index {
 	return self.Consequent.EndIndex()
 }
 
+func (self *BreakStatement) StartIndex() file.Index {
+	return self.Break
+}
+func (self *BreakStatement) EndIndex() file.Index {
+	return self.Break + 5
+}
+
 type (
 	Expression interface {
 		Node
@@ -223,6 +235,20 @@ type (
 		ParameterList   *ParameterList
 		Body            Statement
 		DeclarationList []*VariableDeclaration
+	}
+
+	BinaryExpression struct {
+		Operator   token.Token
+		Left       Expression
+		Right      Expression
+		Comparison bool
+	}
+
+	UnaryExpression struct {
+		Index    file.Index
+		Operator token.Token
+		Operand  Expression
+		Postfix  bool
 	}
 
 	BadExpression struct {
@@ -295,6 +321,26 @@ func (self *FunLiteral) StartIndex() file.Index {
 }
 func (self *FunLiteral) EndIndex() file.Index {
 	return self.Body.EndIndex() + 1
+}
+
+func (self *BinaryExpression) StartIndex() file.Index {
+	return self.Left.StartIndex()
+}
+func (self *BinaryExpression) EndIndex() file.Index {
+	return self.Right.EndIndex()
+}
+
+func (self *UnaryExpression) StartIndex() file.Index {
+	if self.Postfix {
+		return self.Operand.StartIndex()
+	}
+	return self.Index
+}
+func (self *UnaryExpression) EndIndex() file.Index {
+	if self.Postfix {
+		return self.Operand.EndIndex() + 2
+	}
+	return self.Operand.EndIndex()
 }
 
 func (self *BadExpression) StartIndex() file.Index {
