@@ -6,7 +6,7 @@ import (
 )
 
 func TestParser(t *testing.T) {
-	content, _ := os.ReadFile("../example/parser_example.dl")
+	content, _ := os.ReadFile("../example/example.dl")
 	parser := CreateParser(1, "", string(content))
 	program, err := parser.Parse()
 	if err != nil {

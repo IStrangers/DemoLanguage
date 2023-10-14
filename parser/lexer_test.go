@@ -7,7 +7,7 @@ import (
 )
 
 func TestLexer(t *testing.T) {
-	content, _ := os.ReadFile("../example/lexer_example.dl")
+	content, _ := os.ReadFile("../example/example.dl")
 	parser := CreateParser(1, "", string(content))
 	for parser.token != token.EOF {
 		parser.next()
