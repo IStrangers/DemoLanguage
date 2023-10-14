@@ -7,5 +7,5 @@ if isOne(a) {
     var say = "Hello" + ' ' + "DL"
     println(say)
 } else {
-    var a=#
+    var a = "abc"
 }

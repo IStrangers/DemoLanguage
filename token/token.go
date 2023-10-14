@@ -26,6 +26,8 @@ const (
 
 	NUMBER
 	STRING
+	BOOLEAN
+	NULL
 
 	ADDITION         // +
 	SUBTRACT         // -
@@ -85,8 +87,10 @@ var tokenStringMap = [...]string{
 	COLON:             ":",
 	SEMICOLON:         ";",
 
-	NUMBER: "NUMBER",
-	STRING: "STRING",
+	NUMBER:  "NUMBER",
+	STRING:  "STRING",
+	BOOLEAN: "BOOLEAN",
+	NULL:    "NULL",
 
 	ADDITION:         "+",
 	SUBTRACT:         "-",
@@ -129,6 +133,9 @@ var tokenStringMap = [...]string{
 }
 
 var keywordMap = map[string]Token{
+	"true":     BOOLEAN,
+	"false":    BOOLEAN,
+	"null":     NULL,
 	"var":      VAR,
 	"fun":      FUN,
 	"return":   RETURN,

@@ -4,6 +4,7 @@ import (
 	"DemoLanguage/ast"
 	"DemoLanguage/file"
 	"DemoLanguage/token"
+	"strconv"
 )
 
 func (parser *Parser) parseBindingList() (bindingList []*ast.Binding) {
@@ -348,6 +349,10 @@ func (parser *Parser) parsePrimaryExpression() ast.Expression {
 		return parser.parseNumberLiteral()
 	case token.STRING:
 		return parser.parseStringLiteral()
+	case token.BOOLEAN:
+		return parser.parseBooleanLiteral()
+	case token.NULL:
+		return parser.parseNullLiteral()
 	case token.LEFT_PARENTHESIS:
 		return parser.parseParenthesisedExpression()
 	}
@@ -365,8 +370,28 @@ func (parser *Parser) parseNumberLiteral() ast.Expression {
 	return &ast.NumberLiteral{
 		Index:   parser.index,
 		Literal: parser.literal,
-		Value:   parser.literal,
+		Value:   parser.parseNumberLiteralValue(parser.literal),
 	}
+}
+
+func (parser *Parser) parseNumberLiteralValue(literal string) any {
+	var value any = 0
+	updateValue := func(v any, err error) bool {
+		if err != nil {
+			return false
+		}
+		value = v
+		return true
+	}
+	intValue, err := strconv.ParseInt(parser.literal, 0, 64)
+	if updateValue(intValue, err) {
+		return value
+	}
+	floatValue, err := strconv.ParseFloat(parser.literal, 64)
+	if updateValue(floatValue, err) {
+		return value
+	}
+	return value
 }
 
 func (parser *Parser) parseStringLiteral() ast.Expression {
@@ -378,9 +403,23 @@ func (parser *Parser) parseStringLiteral() ast.Expression {
 	}
 }
 
+func (parser *Parser) parseBooleanLiteral() ast.Expression {
+	defer parser.expect(token.BOOLEAN)
+	return &ast.BooleanLiteral{
+		Index: parser.index,
+		Value: parser.literal == "true",
+	}
+}
+func (parser *Parser) parseNullLiteral() ast.Expression {
+	defer parser.expect(token.NULL)
+	return &ast.NullLiteral{
+		Index: parser.index,
+	}
+}
+
 func (parser *Parser) parseParenthesisedExpression() ast.Expression {
 	parser.expect(token.LEFT_PARENTHESIS)
-	left := parser.parseAssignExpression()
+	left := parser.parseExpression()
 	parser.expect(token.RIGHT_PARENTHESIS)
 	return left
 }
@@ -398,7 +437,7 @@ func (parser *Parser) parseCallExpression(left ast.Expression) ast.Expression {
 func (parser *Parser) parseArguments() (leftParenthesis file.Index, arguments []ast.Expression, rightParenthesis file.Index) {
 	leftParenthesis = parser.expect(token.LEFT_PARENTHESIS)
 	for parser.token != token.RIGHT_PARENTHESIS {
-		arguments = append(arguments, parser.parseAssignExpression())
+		arguments = append(arguments, parser.parseExpression())
 		if parser.token != token.COMMA {
 			break
 		}

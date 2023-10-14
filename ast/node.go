@@ -223,6 +223,15 @@ type (
 		Value   string
 	}
 
+	BooleanLiteral struct {
+		Index file.Index
+		Value bool
+	}
+
+	NullLiteral struct {
+		Index file.Index
+	}
+
 	ArrayLiteral struct {
 		LeftBracket  file.Index
 		Values       []Expression
@@ -311,6 +320,23 @@ func (self *StringLiteral) StartIndex() file.Index {
 }
 func (self *StringLiteral) EndIndex() file.Index {
 	return file.Index(int(self.Index) + len(self.Literal))
+}
+
+func (self *BooleanLiteral) StartIndex() file.Index {
+	return self.Index
+}
+func (self *BooleanLiteral) EndIndex() file.Index {
+	if self.Value {
+		return self.Index + 4
+	}
+	return self.Index + 5
+}
+
+func (self *NullLiteral) StartIndex() file.Index {
+	return self.Index
+}
+func (self *NullLiteral) EndIndex() file.Index {
+	return self.Index + 4
 }
 
 func (self *ArrayLiteral) StartIndex() file.Index {

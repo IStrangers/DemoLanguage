@@ -1,6 +1,9 @@
-var a = 1
+var a = 99.99
+var b = true
+var c = false
+var d = null
 fun isOne(a) {
-    return a
+    return a == 1
 }
 var r
 switch a {
@@ -17,11 +20,19 @@ switch a {
 for var i = 0;;i++ {
     if isOne(i) {
         break
+    } else {
+        continue
     }
-    continue
 }
 for var index = 0;index < 100;index++ {
     if index % 5 == 0 || (index >= 90 && index != 95) {
         break
     }
+}
+if r == 1 {
+    println("one")
+} else if r == 2 {
+    println("tow")
+} else {
+    println("zero")
 }
