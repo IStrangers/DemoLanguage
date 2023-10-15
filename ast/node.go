@@ -244,6 +244,12 @@ type (
 		RightBrace file.Index
 	}
 
+	PropertyKeyValue struct {
+		Name  *Identifier
+		Colon file.Index
+		Value Expression
+	}
+
 	ParameterList struct {
 		LeftParenthesis  file.Index
 		List             []*Binding
@@ -351,6 +357,13 @@ func (self *ObjectLiteral) StartIndex() file.Index {
 }
 func (self *ObjectLiteral) EndIndex() file.Index {
 	return self.RightBrace + 1
+}
+
+func (self *PropertyKeyValue) StartIndex() file.Index {
+	return self.Name.StartIndex()
+}
+func (self *PropertyKeyValue) EndIndex() file.Index {
+	return self.Value.EndIndex()
 }
 
 func (self *ParameterList) StartIndex() file.Index {

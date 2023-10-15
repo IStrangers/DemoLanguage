@@ -353,6 +353,10 @@ func (parser *Parser) parsePrimaryExpression() ast.Expression {
 		return parser.parseBooleanLiteral()
 	case token.NULL:
 		return parser.parseNullLiteral()
+	case token.LEFT_BRACKET:
+		return parser.parseArrayLiteral()
+	case token.LEFT_BRACE:
+		return parser.parseObjectLiteral()
 	case token.LEFT_PARENTHESIS:
 		return parser.parseParenthesisedExpression()
 	}
@@ -410,11 +414,60 @@ func (parser *Parser) parseBooleanLiteral() ast.Expression {
 		Value: parser.literal == "true",
 	}
 }
+
 func (parser *Parser) parseNullLiteral() ast.Expression {
 	defer parser.expect(token.NULL)
 	return &ast.NullLiteral{
 		Index: parser.index,
 	}
+}
+
+func (parser *Parser) parseArrayLiteral() ast.Expression {
+	arrayLiteral := &ast.ArrayLiteral{
+		LeftBracket: parser.expect(token.LEFT_BRACKET),
+	}
+	var values []ast.Expression
+	for parser.token != token.RIGHT_BRACKET && parser.token != token.EOF {
+		if parser.token == token.COMMA {
+			values = append(values, nil)
+		} else {
+			values = append(values, parser.parseExpression())
+		}
+		if parser.token != token.RIGHT_BRACKET {
+			parser.expect(token.COMMA)
+		}
+	}
+	arrayLiteral.Values = values
+	arrayLiteral.RightBracket = parser.expect(token.RIGHT_BRACKET)
+	return arrayLiteral
+}
+
+func (parser *Parser) parseObjectLiteral() ast.Expression {
+	objectLiteral := &ast.ObjectLiteral{
+		LeftBrace: parser.expect(token.LEFT_BRACE),
+	}
+	var properties []ast.Property
+	for parser.token != token.RIGHT_BRACE && parser.token != token.EOF {
+		property := parser.parseObjectProperty()
+		if property != nil {
+			properties = append(properties, property)
+		}
+		if parser.token != token.RIGHT_BRACE {
+			parser.expect(token.COMMA)
+		}
+	}
+	objectLiteral.Properties = properties
+	objectLiteral.RightBrace = parser.expect(token.RIGHT_BRACE)
+	return objectLiteral
+}
+
+func (parser *Parser) parseObjectProperty() ast.Property {
+	propertyKeyValue := &ast.PropertyKeyValue{
+		Name:  parser.parseIdentifier(),
+		Colon: parser.expect(token.COLON),
+		Value: parser.parseExpression(),
+	}
+	return propertyKeyValue
 }
 
 func (parser *Parser) parseParenthesisedExpression() ast.Expression {

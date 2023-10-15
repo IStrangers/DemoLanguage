@@ -36,3 +36,18 @@ if r == 1 {
 } else {
     println("zero")
 }
+var arr = [1,"2",'3',true,false,{key: "key",value: "value"}]
+var obj = {
+    arr: [
+        {
+          name: "name1",
+          count: 1,
+        }
+        ,
+        ,
+        {
+          name: "name2",
+          count: 2
+        }
+    ]
+}
