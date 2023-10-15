@@ -7,8 +7,9 @@ import (
 )
 
 type Parser struct {
-	baseOffset int
-	file       *file.File
+	baseOffset  int
+	file        *file.File
+	skipComment bool
 
 	content   string
 	length    int
@@ -26,11 +27,12 @@ type Parser struct {
 
 func CreateParser(baseOffset int, fileName string, content string) *Parser {
 	return &Parser{
-		baseOffset: baseOffset,
-		file:       file.CreateFile(baseOffset, fileName, content),
-		content:    content,
-		length:     len(content),
-		chr:        ' ',
+		baseOffset:  baseOffset,
+		file:        file.CreateFile(baseOffset, fileName, content),
+		skipComment: true,
+		content:     content,
+		length:      len(content),
+		chr:         ' ',
 	}
 }
 

@@ -11,6 +11,7 @@ const (
 	ILLEGAL
 	EOF
 	COMMENT
+	MULTI_COMMENT
 	IDENTIFIER
 
 	LEFT_PARENTHESIS  // (
@@ -19,10 +20,11 @@ const (
 	RIGHT_BRACE       // }
 	LEFT_BRACKET      // [
 	RIGHT_BRACKET     // ]
-	PERIOD            // .
+	DOT               // .
 	COMMA             // ,
 	COLON             // :
 	SEMICOLON         // ;
+	ARROW             // ->
 
 	NUMBER
 	STRING
@@ -67,14 +69,16 @@ const (
 	CASE     // case
 	DEFAULT  // default
 	CONTINUE // continue
+	THIS     // this
 )
 
 var tokenStringMap = [...]string{
-	0:          "UNKNOWN",
-	ILLEGAL:    "ILLEGAL",
-	EOF:        "EOF",
-	COMMENT:    "COMMENT",
-	IDENTIFIER: "IDENTIFIER",
+	0:             "UNKNOWN",
+	ILLEGAL:       "ILLEGAL",
+	EOF:           "EOF",
+	COMMENT:       "COMMENT",
+	MULTI_COMMENT: "MULTI_COMMENT",
+	IDENTIFIER:    "IDENTIFIER",
 
 	LEFT_PARENTHESIS:  "(",
 	RIGHT_PARENTHESIS: ")",
@@ -82,10 +86,11 @@ var tokenStringMap = [...]string{
 	RIGHT_BRACE:       "}",
 	LEFT_BRACKET:      "[",
 	RIGHT_BRACKET:     "]",
-	PERIOD:            ".",
+	DOT:               ".",
 	COMMA:             ",",
 	COLON:             ":",
 	SEMICOLON:         ";",
+	ARROW:             "->",
 
 	NUMBER:  "NUMBER",
 	STRING:  "STRING",
@@ -130,6 +135,7 @@ var tokenStringMap = [...]string{
 	CASE:     "case",
 	DEFAULT:  "default",
 	CONTINUE: "continue",
+	THIS:     "this",
 }
 
 var keywordMap = map[string]Token{
@@ -147,6 +153,7 @@ var keywordMap = map[string]Token{
 	"case":     CASE,
 	"default":  DEFAULT,
 	"continue": CONTINUE,
+	"this":     THIS,
 }
 
 func IsKeyword(k string) (Token, bool) {

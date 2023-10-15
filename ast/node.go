@@ -41,10 +41,7 @@ type (
 	}
 
 	FunStatement struct {
-		FunDefinition string
-		Fun           file.Index
-		Name          *Identifier
-		FunLiteral    *FunLiteral
+		FunLiteral *FunLiteral
 	}
 
 	ReturnStatement struct {
@@ -120,7 +117,7 @@ func (self *VarStatement) EndIndex() file.Index {
 }
 
 func (self *FunStatement) StartIndex() file.Index {
-	return self.Fun
+	return self.FunLiteral.StartIndex()
 }
 func (self *FunStatement) EndIndex() file.Index {
 	return self.FunLiteral.EndIndex()
@@ -257,10 +254,12 @@ type (
 	}
 
 	FunLiteral struct {
-		FunDefinition   string
+		Fun             file.Index
+		Name            *Identifier
 		ParameterList   *ParameterList
 		Body            Statement
 		DeclarationList []*VariableDeclaration
+		FunDefinition   string
 	}
 
 	BinaryExpression struct {
@@ -275,6 +274,23 @@ type (
 		Operator token.Token
 		Operand  Expression
 		Postfix  bool
+	}
+
+	ThisExpression struct {
+		Index file.Index
+	}
+
+	DotExpression struct {
+		Left       Expression
+		Dot        file.Index
+		Identifier *Identifier
+	}
+
+	BracketExpression struct {
+		Left         Expression
+		LeftBracket  file.Index
+		Expression   Expression
+		RightBracket file.Index
 	}
 
 	CallExpression struct {
@@ -374,7 +390,7 @@ func (self *ParameterList) EndIndex() file.Index {
 }
 
 func (self *FunLiteral) StartIndex() file.Index {
-	return self.ParameterList.StartIndex()
+	return self.Fun
 }
 func (self *FunLiteral) EndIndex() file.Index {
 	return self.Body.EndIndex() + 1
@@ -398,6 +414,27 @@ func (self *UnaryExpression) EndIndex() file.Index {
 		return self.Operand.EndIndex() + 2
 	}
 	return self.Operand.EndIndex()
+}
+
+func (self *ThisExpression) StartIndex() file.Index {
+	return self.Index
+}
+func (self *ThisExpression) EndIndex() file.Index {
+	return self.Index + 4
+}
+
+func (self *DotExpression) StartIndex() file.Index {
+	return self.Left.StartIndex()
+}
+func (self *DotExpression) EndIndex() file.Index {
+	return self.Identifier.EndIndex()
+}
+
+func (self *BracketExpression) StartIndex() file.Index {
+	return self.Left.StartIndex()
+}
+func (self *BracketExpression) EndIndex() file.Index {
+	return self.RightBracket + 1
 }
 
 func (self *CallExpression) StartIndex() file.Index {

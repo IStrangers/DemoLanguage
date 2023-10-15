@@ -93,11 +93,8 @@ func (parser *Parser) parseVarDeclarationList(varIndex file.Index) []*ast.Bindin
 
 func (parser *Parser) parseFunStatement() ast.Statement {
 	funStatement := &ast.FunStatement{
-		Fun:        parser.expect(token.FUN),
-		Name:       parser.parseIdentifier(),
 		FunLiteral: parser.parseFunLiteral(),
 	}
-	funStatement.FunDefinition = parser.slice(funStatement.StartIndex(), funStatement.FunLiteral.EndIndex())
 	return funStatement
 }
 

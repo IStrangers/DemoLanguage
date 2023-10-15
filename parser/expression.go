@@ -55,6 +55,10 @@ func (parser *Parser) parseIdentifier() *ast.Identifier {
 
 func (parser *Parser) parseFunLiteral() *ast.FunLiteral {
 	funLiteral := &ast.FunLiteral{}
+	funLiteral.Fun = parser.expect(token.FUN)
+	if parser.token != token.LEFT_PARENTHESIS {
+		funLiteral.Name = parser.parseIdentifier()
+	}
 	funLiteral.ParameterList = parser.parseFunParameterList()
 	funLiteral.Body, funLiteral.DeclarationList = parser.parseFunBlock()
 	funLiteral.FunDefinition = parser.slice(funLiteral.StartIndex(), funLiteral.EndIndex())
@@ -62,11 +66,14 @@ func (parser *Parser) parseFunLiteral() *ast.FunLiteral {
 }
 
 func (parser *Parser) parseFunParameterList() *ast.ParameterList {
-	return &ast.ParameterList{
-		LeftParenthesis:  parser.expect(token.LEFT_PARENTHESIS),
-		List:             parser.parseBindingList(),
-		RightParenthesis: parser.expect(token.RIGHT_PARENTHESIS),
+	parameterList := &ast.ParameterList{
+		LeftParenthesis: parser.expect(token.LEFT_PARENTHESIS),
 	}
+	if parser.token != token.RIGHT_PARENTHESIS {
+		parameterList.List = parser.parseBindingList()
+	}
+	parameterList.RightParenthesis = parser.expect(token.RIGHT_PARENTHESIS)
+	return parameterList
 }
 
 func (parser *Parser) parseFunBlock() (ast.Statement, []*ast.VariableDeclaration) {
@@ -332,10 +339,21 @@ func (parser *Parser) parseUpdateExpression() ast.Expression {
 func (parser *Parser) parseLeftHandSideExpressionAllowCall() ast.Expression {
 	left := parser.parsePrimaryExpression()
 
-	switch parser.token {
-	case token.LEFT_PARENTHESIS:
-		left = parser.parseCallExpression(left)
+	for {
+		switch parser.token {
+		case token.DOT:
+			left = parser.parseDotExpression(left)
+			continue
+		case token.LEFT_BRACKET:
+			left = parser.parseBracketExpression(left)
+			continue
+		case token.LEFT_PARENTHESIS:
+			left = parser.parseCallExpression(left)
+			continue
+		}
+		break
 	}
+
 	return left
 }
 
@@ -359,6 +377,10 @@ func (parser *Parser) parsePrimaryExpression() ast.Expression {
 		return parser.parseObjectLiteral()
 	case token.LEFT_PARENTHESIS:
 		return parser.parseParenthesisedExpression()
+	case token.THIS:
+		return parser.parseThisExpression()
+	case token.FUN:
+		return parser.parseFunLiteral()
 	}
 
 	parser.errorUnexpectedToken(parser.token)
@@ -475,6 +497,32 @@ func (parser *Parser) parseParenthesisedExpression() ast.Expression {
 	left := parser.parseExpression()
 	parser.expect(token.RIGHT_PARENTHESIS)
 	return left
+}
+
+func (parser *Parser) parseThisExpression() ast.Expression {
+	defer parser.expect(token.THIS)
+	return &ast.ThisExpression{
+		Index: parser.index,
+	}
+}
+
+func (parser *Parser) parseDotExpression(left ast.Expression) ast.Expression {
+	dotExpression := &ast.DotExpression{
+		Left:       left,
+		Dot:        parser.expect(token.DOT),
+		Identifier: parser.parseIdentifier(),
+	}
+	return dotExpression
+}
+
+func (parser *Parser) parseBracketExpression(left ast.Expression) ast.Expression {
+	dotExpression := &ast.BracketExpression{
+		Left:         left,
+		LeftBracket:  parser.expect(token.LEFT_BRACKET),
+		Expression:   parser.parseExpression(),
+		RightBracket: parser.expect(token.RIGHT_BRACKET),
+	}
+	return dotExpression
 }
 
 func (parser *Parser) parseCallExpression(left ast.Expression) ast.Expression {

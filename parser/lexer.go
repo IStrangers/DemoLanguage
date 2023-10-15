@@ -40,15 +40,20 @@ func (parser *Parser) scan() (tkn token.Token, literal string, index file.Index)
 				tkn = parser.switchToken("+,=", token.INCREMENT, token.ADDITION_ASSIGN, token.ADDITION)
 				break
 			case '-':
-				tkn = parser.switchToken("-,=", token.DECREMENT, token.SUBTRACT_ASSIGN, token.SUBTRACT)
+				tkn = parser.switchToken(">,-,=", token.ARROW, token.DECREMENT, token.SUBTRACT_ASSIGN, token.SUBTRACT)
 				break
 			case '*':
 				tkn = parser.switchToken("=", token.MULTIPLY_ASSIGN, token.MULTIPLY)
 				break
 			case '/':
-				tkn = parser.switchToken("/,=", token.COMMENT, token.DIVIDE_ASSIGN, token.DIVIDE)
-				if tkn == token.COMMENT {
-					literal = parser.scanComment()
+				tkn = parser.switchToken("/,*,=", token.COMMENT, token.MULTI_COMMENT, token.DIVIDE_ASSIGN, token.DIVIDE)
+				if tkn == token.COMMENT || tkn == token.MULTI_COMMENT {
+					comment := parser.scanComment(tkn)
+					if parser.skipComment {
+						parser.readChr()
+						continue
+					}
+					literal = comment
 				}
 				break
 			case '%':
@@ -73,7 +78,7 @@ func (parser *Parser) scan() (tkn token.Token, literal string, index file.Index)
 				tkn = token.RIGHT_BRACKET
 				break
 			case '.':
-				tkn = token.PERIOD
+				tkn = token.DOT
 				break
 			case ',':
 				tkn = token.COMMA
@@ -118,15 +123,16 @@ func (parser *Parser) skipWhiteSpace() {
 	}
 }
 
-func (parser *Parser) readChr() {
+func (parser *Parser) readChr() rune {
 	if parser.offset < parser.length {
 		parser.chrOffset = parser.offset
 		parser.chr = rune(parser.content[parser.offset])
 		parser.offset += 1
-		return
+		return parser.chr
 	}
 	parser.chrOffset = parser.length
 	parser.chr = -1
+	return parser.chr
 }
 
 func (parser *Parser) scanByFilter(filter func(rune) bool) string {
@@ -149,8 +155,15 @@ func (parser *Parser) scanString() string {
 	return parser.scanByFilter(isNotStringSymbol)
 }
 
-func (parser *Parser) scanComment() string {
-	return parser.scanByFilter(isNotLineTerminator)
+func (parser *Parser) scanComment(tkn token.Token) string {
+	if tkn == token.MULTI_COMMENT {
+		multiComment := parser.scanByFilter(func(chr rune) bool {
+			return !(chr == '*' && parser.readChr() == '/')
+		})
+		return multiComment[:len(multiComment)-1]
+	} else {
+		return parser.scanByFilter(isNotLineTerminator)
+	}
 }
 
 func (parser *Parser) switchToken(keysStr string, tkns ...token.Token) token.Token {
