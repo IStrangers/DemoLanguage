@@ -88,3 +88,35 @@ func (parser *Parser) slice(start, end file.Index) string {
 	}
 	return ""
 }
+
+type ParseState struct {
+	chr        rune
+	chrOffset  int
+	offset     int
+	token      token.Token
+	literal    string
+	index      file.Index
+	errorIndex int
+}
+
+func (parser *Parser) markParseState() *ParseState {
+	return &ParseState{
+		chr:        parser.chr,
+		chrOffset:  parser.chrOffset,
+		offset:     parser.offset,
+		token:      parser.token,
+		literal:    parser.literal,
+		index:      parser.index,
+		errorIndex: parser.errors.Length(),
+	}
+}
+
+func (parser *Parser) restoreParseState(parseState *ParseState) {
+	parser.chr = parseState.chr
+	parser.chrOffset = parseState.chrOffset
+	parser.offset = parseState.offset
+	parser.token = parseState.token
+	parser.literal = parseState.literal
+	parser.index = parseState.index
+	parser.errors = parser.errors[:parseState.errorIndex]
+}

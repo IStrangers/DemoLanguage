@@ -56,14 +56,13 @@ var obj = {
         }
     }
 }
-/*
+
 var arrowFun1 = (p1) -> {
     return p1 * 2
 }
 println(arrowFun2(5))
-var arrowFun2 = (p1) -> p1 / 2
+var arrowFun2 = p1 -> p1 / 2
 println(arrowFun2(10))
-*/
 println(this)
 println(arr[0],arr[r])
 println(obj.arr,obj["arr"])

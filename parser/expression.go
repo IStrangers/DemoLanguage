@@ -60,7 +60,7 @@ func (parser *Parser) parseFunLiteral() *ast.FunLiteral {
 		funLiteral.Name = parser.parseIdentifier()
 	}
 	funLiteral.ParameterList = parser.parseFunParameterList()
-	funLiteral.Body, funLiteral.DeclarationList = parser.parseFunBlock()
+	funLiteral.Body, funLiteral.DeclarationList = parser.parseFunBlock(true)
 	funLiteral.FunDefinition = parser.slice(funLiteral.StartIndex(), funLiteral.EndIndex())
 	return funLiteral
 }
@@ -76,9 +76,11 @@ func (parser *Parser) parseFunParameterList() *ast.ParameterList {
 	return parameterList
 }
 
-func (parser *Parser) parseFunBlock() (ast.Statement, []*ast.VariableDeclaration) {
-	parser.openScope()
-	defer parser.closeScope()
+func (parser *Parser) parseFunBlock(openScope bool) (ast.Statement, []*ast.VariableDeclaration) {
+	if openScope {
+		parser.openScope()
+		defer parser.closeScope()
+	}
 	return parser.parseBlockStatement(), parser.scope.declarationList
 }
 
@@ -96,6 +98,7 @@ func (parser *Parser) parseExpression() ast.Expression {
 }
 
 func (parser *Parser) parseAssignExpression() ast.Expression {
+	parseState := parser.markParseState()
 	parenthesis := false
 
 	switch parser.token {
@@ -109,6 +112,9 @@ func (parser *Parser) parseAssignExpression() ast.Expression {
 	switch parser.token {
 	case token.ASSIGN:
 		operator = token.ASSIGN
+	case token.ARROW:
+		parser.restoreParseState(parseState)
+		left = parser.parseArrowFunctionLiteral()
 	}
 
 	if operator != 0 {
@@ -490,6 +496,37 @@ func (parser *Parser) parseObjectProperty() ast.Property {
 		Value: parser.parseExpression(),
 	}
 	return propertyKeyValue
+}
+
+func (parser *Parser) parseArrowFunctionLiteral() ast.Expression {
+	arrowFunctionLiteral := &ast.ArrowFunctionLiteral{
+		Index: parser.index,
+	}
+	if parser.token == token.LEFT_PARENTHESIS {
+		arrowFunctionLiteral.ParameterList = parser.parseFunParameterList()
+	} else {
+		identifier := parser.parseIdentifier()
+		arrowFunctionLiteral.ParameterList = &ast.ParameterList{
+			LeftParenthesis: identifier.StartIndex(),
+			List: []*ast.Binding{{
+				Target: identifier,
+			}},
+			RightParenthesis: identifier.EndIndex() - 1,
+		}
+	}
+	arrowFunctionLiteral.Arrow = parser.expect(token.ARROW)
+	if parser.token == token.LEFT_BRACE {
+		arrowFunctionLiteral.Body, arrowFunctionLiteral.DeclarationList = parser.parseFunBlock(false)
+	} else {
+		expression := parser.parseExpression()
+		arrowFunctionLiteral.Body = &ast.BlockStatement{
+			LeftBrace:  expression.StartIndex(),
+			Body:       []ast.Statement{expression},
+			RightBrace: expression.EndIndex() - 1,
+		}
+	}
+	arrowFunctionLiteral.FunDefinition = parser.slice(arrowFunctionLiteral.StartIndex(), arrowFunctionLiteral.EndIndex())
+	return arrowFunctionLiteral
 }
 
 func (parser *Parser) parseParenthesisedExpression() ast.Expression {

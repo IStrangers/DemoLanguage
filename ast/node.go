@@ -262,6 +262,15 @@ type (
 		FunDefinition   string
 	}
 
+	ArrowFunctionLiteral struct {
+		Index           file.Index
+		ParameterList   *ParameterList
+		Arrow           file.Index
+		Body            Statement
+		DeclarationList []*VariableDeclaration
+		FunDefinition   string
+	}
+
 	BinaryExpression struct {
 		Operator   token.Token
 		Left       Expression
@@ -393,7 +402,14 @@ func (self *FunLiteral) StartIndex() file.Index {
 	return self.Fun
 }
 func (self *FunLiteral) EndIndex() file.Index {
-	return self.Body.EndIndex() + 1
+	return self.Body.EndIndex()
+}
+
+func (self *ArrowFunctionLiteral) StartIndex() file.Index {
+	return self.Index
+}
+func (self *ArrowFunctionLiteral) EndIndex() file.Index {
+	return self.Body.EndIndex()
 }
 
 func (self *BinaryExpression) StartIndex() file.Index {
