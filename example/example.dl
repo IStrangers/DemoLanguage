@@ -54,9 +54,12 @@ var obj = {
         for var i = 0;i < this.arr.length;i++ {
             println(this.arr[i])
         }
-    }
+    },
+    arrowFun1: (p1) -> {
+        return p1 * 2
+    },
+    arrowFun2: p1 -> p1 / 2
 }
-
 var arrowFun1 = (p1) -> {
     return p1 * 2
 }
