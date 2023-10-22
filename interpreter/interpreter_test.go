@@ -15,6 +15,7 @@ func TestInterpreter(t *testing.T) {
 		} else {
 			return 3
 		}
+		return 4
 	`)
 	println(value.getValue())
 }
