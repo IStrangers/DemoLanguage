@@ -415,11 +415,11 @@ func (parser *Parser) parseNumberLiteralValue(literal string) any {
 		value = v
 		return true
 	}
-	intValue, err := strconv.ParseInt(parser.literal, 0, 64)
+	intValue, err := strconv.ParseInt(literal, 0, 64)
 	if updateValue(intValue, err) {
 		return value
 	}
-	floatValue, err := strconv.ParseFloat(parser.literal, 64)
+	floatValue, err := strconv.ParseFloat(literal, 64)
 	if updateValue(floatValue, err) {
 		return value
 	}
