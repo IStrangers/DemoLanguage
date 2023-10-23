@@ -31,6 +31,9 @@ func (self ValueType) String() string {
 const (
 	_ ValueType = iota
 	Skip
+	Break
+	Continue
+
 	Null
 	Boolean
 	Number
@@ -53,6 +56,14 @@ func (self *Value) isSkip() bool {
 	return self.valueType == Skip
 }
 
+func (self *Value) isBreak() bool {
+	return self.value == Break
+}
+
+func (self *Value) isContinue() bool {
+	return self.value == Continue
+}
+
 func (self *Value) isBoolean() bool {
 	return self.valueType == Boolean
 }
@@ -73,16 +84,25 @@ func (self *Value) isReference() bool {
 	return self.valueType == Reference
 }
 
-func (self *Value) getValue() any {
+func (self *Value) isReferenceNumber() bool {
 	if self.isReference() {
 		reference := self.value.(ReferenceValue)
-		return reference.getValue()
+		value := reference.getValue()
+		return value.isNumber()
+	}
+	return self.isNumber()
+}
+
+func (self *Value) getVal() any {
+	if self.isReference() {
+		reference := self.value.(ReferenceValue)
+		return reference.getVal()
 	}
 	return self.value
 }
 
 func (self *Value) int64() int64 {
-	switch v := self.getValue().(type) {
+	switch v := self.getVal().(type) {
 	case float64:
 		return int64(v)
 	case int64:
@@ -92,7 +112,7 @@ func (self *Value) int64() int64 {
 }
 
 func (self *Value) float64() float64 {
-	switch v := self.getValue().(type) {
+	switch v := self.getVal().(type) {
 	case int64:
 		return float64(v)
 	case float64:
@@ -102,7 +122,7 @@ func (self *Value) float64() float64 {
 }
 
 func (self *Value) bool() bool {
-	switch v := self.getValue().(type) {
+	switch v := self.getVal().(type) {
 	case bool:
 		return v
 	}
@@ -110,7 +130,7 @@ func (self *Value) bool() bool {
 }
 
 func (self *Value) string() string {
-	switch v := self.getValue().(type) {
+	switch v := self.getVal().(type) {
 	case int64:
 		return strconv.FormatInt(v, 10)
 	case float64:
@@ -143,7 +163,8 @@ func (self *Value) reference() ReferenceValue {
 
 type ReferenceValue interface {
 	getName() string
-	getValue() any
+	getVal() any
+	getValue() Value
 	setValue(value Value)
 }
 
@@ -156,9 +177,14 @@ func (self *StashReference) getName() string {
 	return self.name
 }
 
-func (self *StashReference) getValue() any {
+func (self *StashReference) getVal() any {
+	value := self.getValue()
+	return value.getVal()
+}
+
+func (self *StashReference) getValue() Value {
 	value := self.stash.getValue(self.name)
-	return value.getValue()
+	return value
 }
 
 func (self *StashReference) setValue(value Value) {

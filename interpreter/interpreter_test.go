@@ -28,9 +28,14 @@ func TestInterpreter(t *testing.T) {
 		}
 		for var index = 1;index < 100;index++ {
 			if index % 5 == 0 || (index >= 90 && index != 95) {
-				return index
+				if index == 5 {
+					continue
+				}
+				a = index
+				break
 			}
 		}
+		return a
 	`)
-	println(fmt.Sprintf("%v", value.getValue()))
+	println(fmt.Sprintf("%v", value.getVal()))
 }

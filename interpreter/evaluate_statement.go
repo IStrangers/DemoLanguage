@@ -6,9 +6,15 @@ import (
 )
 
 func (self *Interpreter) evaluateListStatement(listStatement []ast.Statement) Value {
+	return self.evaluateListStatementByFilter(listStatement, func(value Value) bool {
+		return !value.isSkip() || (value.isBreak() || value.isContinue())
+	})
+}
+
+func (self *Interpreter) evaluateListStatementByFilter(listStatement []ast.Statement, filter func(value Value) bool) Value {
 	for _, st := range listStatement {
 		value := self.evaluateStatement(st)
-		if !value.isSkip() {
+		if filter(value) {
 			return value
 		}
 	}
@@ -21,6 +27,10 @@ func (self *Interpreter) evaluateStatement(statement ast.Statement) Value {
 		return self.evaluateBlockStatement(st)
 	case *ast.VarStatement:
 		return self.evaluateVarStatement(st)
+	case *ast.BreakStatement:
+		return self.evaluateBreakStatement(st)
+	case *ast.ContinueStatement:
+		return self.evaluateContinueStatement(st)
 	case *ast.ReturnStatement:
 		return self.evaluateReturnStatement(st)
 	case *ast.IfStatement:
@@ -44,6 +54,14 @@ func (self *Interpreter) evaluateVarStatement(varStatement *ast.VarStatement) Va
 		self.evaluateBinding(binding)
 	}
 	return self.evaluateSkip()
+}
+
+func (self *Interpreter) evaluateBreakStatement(breakStatement *ast.BreakStatement) Value {
+	return self.evaluateSkipValue(Break)
+}
+
+func (self *Interpreter) evaluateContinueStatement(continueStatement *ast.ContinueStatement) Value {
+	return self.evaluateSkipValue(Continue)
 }
 
 func (self *Interpreter) evaluateReturnStatement(returnStatement *ast.ReturnStatement) Value {
@@ -101,6 +119,8 @@ func (self *Interpreter) evaluateForStatement(forStatement *ast.ForStatement) Va
 		value := self.evaluateStatement(forStatement.Body)
 		if !value.isSkip() {
 			return value
+		} else if value.isBreak() {
+			return self.evaluateSkip()
 		}
 		if forStatement.Update != nil {
 			self.evaluateExpression(forStatement.Update)

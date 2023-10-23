@@ -32,7 +32,10 @@ func (self *Interpreter) evaluateExpression(expression ast.Expression) Value {
 }
 
 func (self *Interpreter) evaluateSkip() Value {
-	return Value{Skip, nil}
+	return self.evaluateSkipValue(nil)
+}
+func (self *Interpreter) evaluateSkipValue(value any) Value {
+	return Value{Skip, value}
 }
 
 func (self *Interpreter) evaluateNullLiteral() Value {
@@ -65,7 +68,7 @@ func (self *Interpreter) evaluateReference(value any) Value {
 func (self *Interpreter) evaluateBinding(binding *ast.Binding) Value {
 	targetValue := self.evaluateExpression(binding.Target)
 	targetRef := targetValue.reference()
-	if targetRef.getValue() != nil {
+	if targetRef.getVal() != nil {
 		panic("already defined: " + targetRef.getName())
 	}
 	initValue := self.evaluateExpression(binding.Initializer)
@@ -119,9 +122,15 @@ func (self *Interpreter) evaluateBinaryExpression(binaryExpression *ast.BinaryEx
 func (self *Interpreter) evaluateComparison(leftValue Value, operator token.Token, rightValue Value) Value {
 	switch operator {
 	case token.EQUAL:
-		return self.evaluateBooleanLiteral(leftValue.getValue() == rightValue.getValue())
+		if leftValue.isReferenceNumber() && rightValue.isReferenceNumber() {
+			return self.evaluateBooleanLiteral(leftValue.float64() == rightValue.float64())
+		}
+		return self.evaluateBooleanLiteral(leftValue.getVal() == rightValue.getVal())
 	case token.NOT_EQUAL:
-		return self.evaluateBooleanLiteral(leftValue.getValue() != rightValue.getValue())
+		if leftValue.isReferenceNumber() && rightValue.isReferenceNumber() {
+			return self.evaluateBooleanLiteral(leftValue.float64() != rightValue.float64())
+		}
+		return self.evaluateBooleanLiteral(leftValue.getVal() != rightValue.getVal())
 	case token.LESS:
 		return self.evaluateBooleanLiteral(leftValue.float64() < rightValue.float64())
 	case token.LESS_OR_EQUAL:
