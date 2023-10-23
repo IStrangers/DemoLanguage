@@ -53,7 +53,7 @@ func (self *Interpreter) evaluateBinding(binding *ast.Binding) Value {
 	stash := self.runtime.scope.stash
 	name := binding.Target.(*ast.Identifier).Name
 	if stash.contains(name) {
-		panic(name + " already defined")
+		panic("already defined: " + name)
 	}
 	initValue := self.evaluateExpression(binding.Initializer)
 	stash.setValue(name, initValue)
@@ -64,7 +64,7 @@ func (self *Interpreter) evaluateIdentifier(identifier *ast.Identifier) Value {
 	stash := self.runtime.scope.stash
 	name := identifier.Name
 	if !stash.contains(name) {
-		panic(name + " not defined")
+		panic("not defined" + name)
 	}
 	return stash.getValue(name)
 }
