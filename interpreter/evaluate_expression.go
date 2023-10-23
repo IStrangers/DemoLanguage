@@ -15,14 +15,18 @@ func (self *Interpreter) evaluateExpression(expression ast.Expression) Value {
 		return self.evaluateNumberLiteral(expr.Value)
 	case *ast.StringLiteral:
 		return self.evaluateStringLiteral(expr.Value)
+	case *ast.Binding:
+		return self.evaluateBinding(expr)
+	case *ast.Identifier:
+		return self.evaluateIdentifier(expr)
 	case *ast.BinaryExpression:
 		return self.evaluateBinaryExpression(expr)
 	}
-	return self.evaluateNIL()
+	return self.evaluateSkip()
 }
 
-func (self *Interpreter) evaluateNIL() Value {
-	return Value{NIL, nil}
+func (self *Interpreter) evaluateSkip() Value {
+	return Value{Skip, nil}
 }
 
 func (self *Interpreter) evaluateNullLiteral() Value {
@@ -43,6 +47,26 @@ func (self *Interpreter) evaluateStringLiteral(value any) Value {
 
 func (self *Interpreter) evaluateObject(value any) Value {
 	return Value{Object, value}
+}
+
+func (self *Interpreter) evaluateBinding(binding *ast.Binding) Value {
+	stash := self.runtime.scope.stash
+	name := binding.Target.(*ast.Identifier).Name
+	if stash.contains(name) {
+		panic(name + " already defined")
+	}
+	initValue := self.evaluateExpression(binding.Initializer)
+	stash.setValue(name, initValue)
+	return self.evaluateSkip()
+}
+
+func (self *Interpreter) evaluateIdentifier(identifier *ast.Identifier) Value {
+	stash := self.runtime.scope.stash
+	name := identifier.Name
+	if !stash.contains(name) {
+		panic(name + " not defined")
+	}
+	return stash.getValue(name)
 }
 
 func (self *Interpreter) evaluateBinaryExpression(binaryExpression *ast.BinaryExpression) Value {

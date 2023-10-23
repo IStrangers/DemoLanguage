@@ -9,7 +9,7 @@ type ValueType int
 
 const (
 	_ ValueType = iota
-	NIL
+	Skip
 	NULL
 	Boolean
 	Number
@@ -23,8 +23,8 @@ type Value struct {
 	value     any
 }
 
-func (self *Value) isNIL() bool {
-	return self.valueType == NIL
+func (self *Value) isSkip() bool {
+	return self.valueType == Skip
 }
 
 func (self *Value) isBoolean() bool {

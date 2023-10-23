@@ -1,33 +1,47 @@
 package interpreter
 
-import "DemoLanguage/ast"
+import (
+	"DemoLanguage/ast"
+	"DemoLanguage/token"
+)
 
 func (self *Interpreter) evaluateListStatement(listStatement []ast.Statement) Value {
 	for _, st := range listStatement {
 		value := self.evaluateStatement(st)
-		if !value.isNIL() {
+		if !value.isSkip() {
 			return value
 		}
 	}
-	return self.evaluateNIL()
+	return self.evaluateNullLiteral()
 }
 
 func (self *Interpreter) evaluateStatement(statement ast.Statement) Value {
 	switch st := statement.(type) {
 	case *ast.BlockStatement:
 		return self.evaluateBlockStatement(st)
+	case *ast.VarStatement:
+		return self.evaluateVarStatement(st)
 	case *ast.ReturnStatement:
 		return self.evaluateReturnStatement(st)
 	case *ast.IfStatement:
 		return self.evaluateIfStatement(st)
+	case *ast.SwitchStatement:
+		return self.evaluateSwitchStatement(st)
 	case *ast.ExpressionStatement:
 		return self.evaluateExpressionStatement(st)
 	}
-	return self.evaluateNIL()
+	return self.evaluateSkip()
 }
 
 func (self *Interpreter) evaluateBlockStatement(blockStatement *ast.BlockStatement) Value {
 	return self.evaluateListStatement(blockStatement.Body)
+}
+
+func (self *Interpreter) evaluateVarStatement(varStatement *ast.VarStatement) Value {
+	for _, binding := range varStatement.List {
+		self.evaluateBinding(binding)
+	}
+	return self.evaluateSkip()
 }
 
 func (self *Interpreter) evaluateReturnStatement(returnStatement *ast.ReturnStatement) Value {
@@ -45,7 +59,27 @@ func (self *Interpreter) evaluateIfStatement(ifStatement *ast.IfStatement) Value
 	} else if ifStatement.Alternate != nil {
 		return self.evaluateStatement(ifStatement.Alternate)
 	}
-	return self.evaluateNIL()
+	return self.evaluateSkip()
+}
+
+func (self *Interpreter) evaluateSwitchStatement(switchStatement *ast.SwitchStatement) Value {
+	discriminantValue := self.evaluateExpression(switchStatement.Discriminant)
+	var consequent ast.Statement
+	for _, caseStatement := range switchStatement.Body {
+		if caseStatement.Condition == nil {
+			consequent = caseStatement.Consequent
+			continue
+		}
+		comparisonValue := self.evaluateComparison(discriminantValue, token.EQUAL, self.evaluateExpression(caseStatement.Condition))
+		if comparisonValue.bool() {
+			consequent = caseStatement.Consequent
+			break
+		}
+	}
+	if consequent == nil {
+		return self.evaluateSkip()
+	}
+	return self.evaluateStatement(consequent)
 }
 
 func (self *Interpreter) evaluateExpressionStatement(expressionStatement *ast.ExpressionStatement) Value {
