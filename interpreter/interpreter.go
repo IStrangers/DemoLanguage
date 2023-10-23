@@ -27,5 +27,9 @@ func (self *Interpreter) run(fileName string, content string) Value {
 func (self *Interpreter) runProgram(program *ast.Program) Value {
 	self.runtime.openScope()
 	defer self.runtime.closeScope()
-	return self.evaluateListStatement(program.Body)
+	value := self.evaluateListStatement(program.Body)
+	if value.isSkip() {
+		return self.evaluateNullLiteral()
+	}
+	return value
 }

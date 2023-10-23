@@ -7,10 +7,31 @@ import (
 
 type ValueType int
 
+func (self ValueType) String() string {
+	switch self {
+	case Skip:
+		return "Skip"
+	case Null:
+		return "Null"
+	case Boolean:
+		return "Boolean"
+	case Number:
+		return "Number"
+	case String:
+		return "String"
+	case Object:
+		return "Object"
+	case Reference:
+		return "Reference"
+	default:
+		return ""
+	}
+}
+
 const (
 	_ ValueType = iota
 	Skip
-	NULL
+	Null
 	Boolean
 	Number
 	String
@@ -49,7 +70,7 @@ func (self *Value) isReference() bool {
 
 func (self *Value) getValue() any {
 	if self.isReference() {
-		reference := self.value.(Value)
+		reference := self.value.(ReferenceValue)
 		return reference.getValue()
 	}
 	return self.value
@@ -109,4 +130,34 @@ func floatToString(value float64, bitSize int) string {
 		return "Infinity"
 	}
 	return strconv.FormatFloat(value, 'f', -1, bitSize)
+}
+
+func (self *Value) reference() ReferenceValue {
+	if self.isReference() {
+		return self.value.(ReferenceValue)
+	}
+	panic("Unable to convert to reference")
+}
+
+type ReferenceValue interface {
+	getName() string
+	getValue() Value
+	setValue(value Value)
+}
+
+type StashReference struct {
+	name  string
+	stash *Stash
+}
+
+func (self *StashReference) getName() string {
+	return self.name
+}
+
+func (self *StashReference) getValue() Value {
+	return self.stash.getValue(self.name)
+}
+
+func (self *StashReference) setValue(value Value) {
+	self.stash.setValue(self.name, value)
 }

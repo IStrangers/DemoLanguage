@@ -25,3 +25,8 @@ func (self *Runtime) openScope() {
 func (self *Runtime) closeScope() {
 	self.scope = self.scope.outer
 }
+
+func (self *Runtime) getStash() *Stash {
+	stash := self.scope.stash
+	return stash
+}

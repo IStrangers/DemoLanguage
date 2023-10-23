@@ -12,7 +12,7 @@ func (self *Interpreter) evaluateListStatement(listStatement []ast.Statement) Va
 			return value
 		}
 	}
-	return self.evaluateNullLiteral()
+	return self.evaluateSkip()
 }
 
 func (self *Interpreter) evaluateStatement(statement ast.Statement) Value {
@@ -27,6 +27,8 @@ func (self *Interpreter) evaluateStatement(statement ast.Statement) Value {
 		return self.evaluateIfStatement(st)
 	case *ast.SwitchStatement:
 		return self.evaluateSwitchStatement(st)
+	case *ast.ForStatement:
+		return self.evaluateForStatement(st)
 	case *ast.ExpressionStatement:
 		return self.evaluateExpressionStatement(st)
 	}
@@ -80,6 +82,28 @@ func (self *Interpreter) evaluateSwitchStatement(switchStatement *ast.SwitchStat
 		return self.evaluateSkip()
 	}
 	return self.evaluateStatement(consequent)
+}
+
+func (self *Interpreter) evaluateForStatement(forStatement *ast.ForStatement) Value {
+	if forStatement.Initializer != nil {
+		self.evaluateStatement(forStatement.Initializer)
+	}
+	for {
+		if forStatement.Condition != nil {
+			conditionValue := self.evaluateExpression(forStatement.Condition)
+			if !conditionValue.bool() {
+				break
+			}
+		}
+		value := self.evaluateStatement(forStatement.Body)
+		if !value.isSkip() {
+			return value
+		}
+		if forStatement.Update != nil {
+			self.evaluateExpression(forStatement.Update)
+		}
+	}
+	return self.evaluateSkip()
 }
 
 func (self *Interpreter) evaluateExpressionStatement(expressionStatement *ast.ExpressionStatement) Value {

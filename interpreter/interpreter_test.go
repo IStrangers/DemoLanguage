@@ -1,6 +1,7 @@
 package interpreter
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -25,7 +26,11 @@ func TestInterpreter(t *testing.T) {
 				return 5
 			}*/
 		}
-		return 6
+		for var index = 1;index < 100;index++ {
+			if index % 5 == 0 || (index >= 90 && index != 95) {
+				return index
+			}
+		}
 	`)
-	println(value.getValue())
+	println(fmt.Sprintf("%v", value.getValue()))
 }

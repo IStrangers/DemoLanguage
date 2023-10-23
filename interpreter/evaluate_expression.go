@@ -19,8 +19,14 @@ func (self *Interpreter) evaluateExpression(expression ast.Expression) Value {
 		return self.evaluateBinding(expr)
 	case *ast.Identifier:
 		return self.evaluateIdentifier(expr)
+	case *ast.AssignExpression:
+		return self.evaluateAssignExpression(expr)
 	case *ast.BinaryExpression:
 		return self.evaluateBinaryExpression(expr)
+	case *ast.UnaryExpression:
+		return self.evaluateUnaryExpression(expr)
+	case *ast.CallExpression:
+		return self.evaluateCallExpression(expr)
 	}
 	return self.evaluateSkip()
 }
@@ -30,7 +36,7 @@ func (self *Interpreter) evaluateSkip() Value {
 }
 
 func (self *Interpreter) evaluateNullLiteral() Value {
-	return Value{NULL, nil}
+	return Value{Null, nil}
 }
 
 func (self *Interpreter) evaluateBooleanLiteral(value any) Value {
@@ -49,24 +55,35 @@ func (self *Interpreter) evaluateObject(value any) Value {
 	return Value{Object, value}
 }
 
+func (self *Interpreter) evaluateReference(value any) Value {
+	return Value{Reference, value}
+}
+
 func (self *Interpreter) evaluateBinding(binding *ast.Binding) Value {
-	stash := self.runtime.scope.stash
-	name := binding.Target.(*ast.Identifier).Name
-	if stash.contains(name) {
-		panic("already defined: " + name)
+	targetValue := self.evaluateExpression(binding.Target)
+	targetRef := targetValue.reference()
+	value := targetRef.getValue()
+	if value.getValue() != nil {
+		panic("already defined: " + targetRef.getName())
 	}
 	initValue := self.evaluateExpression(binding.Initializer)
-	stash.setValue(name, initValue)
+	targetRef.setValue(initValue)
 	return self.evaluateSkip()
 }
 
 func (self *Interpreter) evaluateIdentifier(identifier *ast.Identifier) Value {
-	stash := self.runtime.scope.stash
 	name := identifier.Name
-	if !stash.contains(name) {
-		panic("not defined" + name)
-	}
-	return stash.getValue(name)
+	return self.evaluateReference(&StashReference{
+		name,
+		self.runtime.getStash(),
+	})
+}
+
+func (self *Interpreter) evaluateAssignExpression(assignExpression *ast.AssignExpression) Value {
+	leftValue := self.evaluateExpression(assignExpression.Left)
+	leftRef := leftValue.reference()
+	leftRef.setValue(self.evaluateExpression(assignExpression.Right))
+	return self.evaluateSkip()
 }
 
 func (self *Interpreter) evaluateBinaryExpression(binaryExpression *ast.BinaryExpression) Value {
@@ -137,4 +154,28 @@ func (self *Interpreter) evaluateBinary(leftValue Value, operator token.Token, r
 		return self.evaluateNumberLiteral(leftValue.int64() | rightValue.int64())
 	}
 	panic("Unsupported operator: " + operator.String())
+}
+
+func (self *Interpreter) evaluateUnaryExpression(unaryExpression *ast.UnaryExpression) Value {
+	operandValue := self.evaluateExpression(unaryExpression.Operand)
+	operandRef := operandValue.reference()
+	switch unaryExpression.Operator {
+	case token.NOT:
+		operandValue.value = !operandValue.bool()
+		operandRef.setValue(operandValue)
+		return operandValue
+	case token.INCREMENT:
+		operandValue.value = operandValue.float64() + 1
+		operandRef.setValue(operandValue)
+		return operandValue
+	case token.DECREMENT:
+		operandValue.value = operandValue.float64() - 1
+		operandRef.setValue(operandValue)
+		return operandValue
+	}
+	return self.evaluateSkip()
+}
+
+func (self *Interpreter) evaluateCallExpression(callExpression *ast.CallExpression) Value {
+	return self.evaluateSkip()
 }
