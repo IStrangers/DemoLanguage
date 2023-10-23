@@ -62,8 +62,7 @@ func (self *Interpreter) evaluateReference(value any) Value {
 func (self *Interpreter) evaluateBinding(binding *ast.Binding) Value {
 	targetValue := self.evaluateExpression(binding.Target)
 	targetRef := targetValue.reference()
-	value := targetRef.getValue()
-	if value.getValue() != nil {
+	if targetRef.getValue() != nil {
 		panic("already defined: " + targetRef.getName())
 	}
 	initValue := self.evaluateExpression(binding.Initializer)
@@ -161,16 +160,13 @@ func (self *Interpreter) evaluateUnaryExpression(unaryExpression *ast.UnaryExpre
 	operandRef := operandValue.reference()
 	switch unaryExpression.Operator {
 	case token.NOT:
-		operandValue.value = !operandValue.bool()
-		operandRef.setValue(operandValue)
+		operandRef.setValue(self.evaluateBooleanLiteral(!operandValue.bool()))
 		return operandValue
 	case token.INCREMENT:
-		operandValue.value = operandValue.float64() + 1
-		operandRef.setValue(operandValue)
+		operandRef.setValue(self.evaluateNumberLiteral(operandValue.float64() + 1))
 		return operandValue
 	case token.DECREMENT:
-		operandValue.value = operandValue.float64() - 1
-		operandRef.setValue(operandValue)
+		operandRef.setValue(self.evaluateNumberLiteral(operandValue.float64() - 1))
 		return operandValue
 	}
 	return self.evaluateSkip()

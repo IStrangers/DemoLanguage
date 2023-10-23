@@ -77,38 +77,35 @@ func (self *Value) getValue() any {
 }
 
 func (self *Value) int64() int64 {
-	switch v := self.value.(type) {
+	switch v := self.getValue().(type) {
 	case float64:
 		return int64(v)
 	case int64:
 		return v
-	default:
-		return 0
 	}
+	panic("Unable to convert to int64")
 }
 
 func (self *Value) float64() float64 {
-	switch v := self.value.(type) {
+	switch v := self.getValue().(type) {
 	case int64:
 		return float64(v)
 	case float64:
 		return v
-	default:
-		return 0
 	}
+	panic("Unable to convert to float64")
 }
 
 func (self *Value) bool() bool {
-	switch v := self.value.(type) {
+	switch v := self.getValue().(type) {
 	case bool:
 		return v
-	default:
-		return false
 	}
+	panic("Unable to convert to bool")
 }
 
 func (self *Value) string() string {
-	switch v := self.value.(type) {
+	switch v := self.getValue().(type) {
 	case int64:
 		return strconv.FormatInt(v, 10)
 	case float64:
@@ -141,7 +138,7 @@ func (self *Value) reference() ReferenceValue {
 
 type ReferenceValue interface {
 	getName() string
-	getValue() Value
+	getValue() any
 	setValue(value Value)
 }
 
@@ -154,8 +151,9 @@ func (self *StashReference) getName() string {
 	return self.name
 }
 
-func (self *StashReference) getValue() Value {
-	return self.stash.getValue(self.name)
+func (self *StashReference) getValue() any {
+	value := self.stash.getValue(self.name)
+	return value.getValue()
 }
 
 func (self *StashReference) setValue(value Value) {

@@ -51,6 +51,9 @@ func (self *Interpreter) evaluateReturnStatement(returnStatement *ast.ReturnStat
 	for _, argument := range returnStatement.Arguments {
 		values = append(values, self.evaluateExpression(argument))
 	}
+	if len(values) == 1 {
+		return values[0]
+	}
 	return self.evaluateObject(values)
 }
 
