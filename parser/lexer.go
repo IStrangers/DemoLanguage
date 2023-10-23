@@ -157,8 +157,15 @@ func (parser *Parser) scanString() string {
 
 func (parser *Parser) scanComment(tkn token.Token) string {
 	if tkn == token.MULTI_COMMENT {
+		multiCommentCount := 1
 		multiComment := parser.scanByFilter(func(chr rune) bool {
-			return !(chr == '*' && parser.readChr() == '/')
+			if chr == '/' && parser.readChr() == '*' {
+				multiCommentCount++
+			}
+			if chr == '*' && parser.readChr() == '/' {
+				multiCommentCount--
+			}
+			return multiCommentCount > 0
 		})
 		return multiComment[:len(multiComment)-1]
 	} else {

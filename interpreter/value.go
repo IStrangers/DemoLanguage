@@ -21,6 +21,8 @@ func (self ValueType) String() string {
 		return "String"
 	case Object:
 		return "Object"
+	case Function:
+		return "Function"
 	case Reference:
 		return "Reference"
 	default:
@@ -39,6 +41,7 @@ const (
 	Number
 	String
 	Object
+	Function
 	Reference
 )
 
@@ -80,13 +83,17 @@ func (self *Value) isObject() bool {
 	return self.valueType == Object
 }
 
-func (self *Value) isReference() bool {
+func (self *Value) isFunction() bool {
+	return self.valueType == Function
+}
+
+func (self *Value) isReferenced() bool {
 	return self.valueType == Reference
 }
 
 func (self *Value) isReferenceNumber() bool {
-	if self.isReference() {
-		reference := self.value.(ReferenceValue)
+	if self.isReferenced() {
+		reference := self.value.(Referenced)
 		value := reference.getValue()
 		return value.isNumber()
 	}
@@ -94,8 +101,8 @@ func (self *Value) isReferenceNumber() bool {
 }
 
 func (self *Value) getVal() any {
-	if self.isReference() {
-		reference := self.value.(ReferenceValue)
+	if self.isReferenced() {
+		reference := self.value.(Referenced)
 		return reference.getVal()
 	}
 	return self.value
@@ -154,39 +161,60 @@ func floatToString(value float64, bitSize int) string {
 	return strconv.FormatFloat(value, 'f', -1, bitSize)
 }
 
-func (self *Value) reference() ReferenceValue {
-	if self.isReference() {
-		return self.value.(ReferenceValue)
+func (self *Value) referenced() Referenced {
+	if self.isReferenced() {
+		return self.value.(Referenced)
 	}
 	panic("Unable to convert to reference")
 }
 
-type ReferenceValue interface {
+type Objectd struct {
+}
+
+type Functiond interface {
+	getName() string
+	call(arguments ...Value) Value
+}
+
+type GlobalFunctiond struct {
+	name   string
+	callee func(arguments ...Value) Value
+}
+
+func (self *GlobalFunctiond) getName() string {
+	return self.name
+}
+
+func (self *GlobalFunctiond) call(arguments ...Value) Value {
+	return self.callee(arguments...)
+}
+
+type Referenced interface {
 	getName() string
 	getVal() any
 	getValue() Value
 	setValue(value Value)
 }
 
-type StashReference struct {
+type StashReferenced struct {
 	name  string
 	stash *Stash
 }
 
-func (self *StashReference) getName() string {
+func (self *StashReferenced) getName() string {
 	return self.name
 }
 
-func (self *StashReference) getVal() any {
+func (self *StashReferenced) getVal() any {
 	value := self.getValue()
 	return value.getVal()
 }
 
-func (self *StashReference) getValue() Value {
+func (self *StashReferenced) getValue() Value {
 	value := self.stash.getValue(self.name)
 	return value
 }
 
-func (self *StashReference) setValue(value Value) {
+func (self *StashReferenced) setValue(value Value) {
 	self.stash.setValue(self.name, value)
 }

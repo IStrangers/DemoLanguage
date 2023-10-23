@@ -39,6 +39,8 @@ func (self *Interpreter) evaluateStatement(statement ast.Statement) Value {
 		return self.evaluateSwitchStatement(st)
 	case *ast.ForStatement:
 		return self.evaluateForStatement(st)
+	case *ast.FunStatement:
+		return self.evaluateFunStatement(st)
 	case *ast.ExpressionStatement:
 		return self.evaluateExpressionStatement(st)
 	}
@@ -127,6 +129,10 @@ func (self *Interpreter) evaluateForStatement(forStatement *ast.ForStatement) Va
 		}
 	}
 	return self.evaluateSkip()
+}
+
+func (self *Interpreter) evaluateFunStatement(funStatement *ast.FunStatement) Value {
+	return self.evaluateExpression(funStatement.FunLiteral)
 }
 
 func (self *Interpreter) evaluateExpressionStatement(expressionStatement *ast.ExpressionStatement) Value {

@@ -163,31 +163,35 @@ func (parser *Parser) parseConditionalExpression() ast.Expression {
 func (parser *Parser) parseLogicalOrExpression() ast.Expression {
 	left := parser.parseLogicalAndExpression()
 
-	switch parser.token {
-	case token.LOGICAL_OR:
-		binaryExpression := &ast.BinaryExpression{
-			Operator: parser.expectToken(parser.token),
-			Left:     left,
-			Right:    parser.parseLogicalAndExpression(),
+	for {
+		switch parser.token {
+		case token.LOGICAL_OR:
+			left = &ast.BinaryExpression{
+				Operator: parser.expectToken(parser.token),
+				Left:     left,
+				Right:    parser.parseLogicalAndExpression(),
+			}
+		default:
+			return left
 		}
-		return binaryExpression
 	}
-	return left
 }
 
 func (parser *Parser) parseLogicalAndExpression() ast.Expression {
 	left := parser.parseBitwiseOrExpression()
 
-	switch parser.token {
-	case token.LOGICAL_AND:
-		binaryExpression := &ast.BinaryExpression{
-			Operator: parser.expectToken(parser.token),
-			Left:     left,
-			Right:    parser.parseBitwiseOrExpression(),
+	for {
+		switch parser.token {
+		case token.LOGICAL_AND:
+			left = &ast.BinaryExpression{
+				Operator: parser.expectToken(parser.token),
+				Left:     left,
+				Right:    parser.parseBitwiseOrExpression(),
+			}
+		default:
+			return left
 		}
-		return binaryExpression
 	}
-	return left
 }
 
 func (parser *Parser) parseBitwiseOrExpression() ast.Expression {
@@ -211,17 +215,19 @@ func (parser *Parser) parseBitwiseAndExpression() ast.Expression {
 func (parser *Parser) parseEqualityExpression() ast.Expression {
 	left := parser.parseRelationalExpression()
 
-	switch parser.token {
-	case token.EQUAL, token.NOT_EQUAL:
-		binaryExpression := &ast.BinaryExpression{
-			Operator:   parser.expectToken(parser.token),
-			Left:       left,
-			Right:      parser.parseRelationalExpression(),
-			Comparison: true,
+	for {
+		switch parser.token {
+		case token.EQUAL, token.NOT_EQUAL:
+			left = &ast.BinaryExpression{
+				Operator:   parser.expectToken(parser.token),
+				Left:       left,
+				Right:      parser.parseRelationalExpression(),
+				Comparison: true,
+			}
+		default:
+			return left
 		}
-		return binaryExpression
 	}
-	return left
 }
 
 func (parser *Parser) parseRelationalExpression() ast.Expression {
@@ -249,31 +255,35 @@ func (parser *Parser) parseShiftExpression() ast.Expression {
 func (parser *Parser) parseAdditiveExpression() ast.Expression {
 	left := parser.parseMultiplicativeExpression()
 
-	switch parser.token {
-	case token.ADDITION, token.SUBTRACT:
-		binaryExpression := &ast.BinaryExpression{
-			Operator: parser.expectToken(parser.token),
-			Left:     left,
-			Right:    parser.parseMultiplicativeExpression(),
+	for {
+		switch parser.token {
+		case token.ADDITION, token.SUBTRACT:
+			left = &ast.BinaryExpression{
+				Operator: parser.expectToken(parser.token),
+				Left:     left,
+				Right:    parser.parseMultiplicativeExpression(),
+			}
+		default:
+			return left
 		}
-		return binaryExpression
 	}
-	return left
 }
 
 func (parser *Parser) parseMultiplicativeExpression() ast.Expression {
 	left := parser.parseExponentiationExpression()
 
-	switch parser.token {
-	case token.MULTIPLY, token.DIVIDE, token.REMAINDER:
-		binaryExpression := &ast.BinaryExpression{
-			Operator: parser.expectToken(parser.token),
-			Left:     left,
-			Right:    parser.parseExponentiationExpression(),
+	for {
+		switch parser.token {
+		case token.MULTIPLY, token.DIVIDE, token.REMAINDER:
+			left = &ast.BinaryExpression{
+				Operator: parser.expectToken(parser.token),
+				Left:     left,
+				Right:    parser.parseExponentiationExpression(),
+			}
+		default:
+			return left
 		}
-		return binaryExpression
 	}
-	return left
 }
 
 func (parser *Parser) parseExponentiationExpression() ast.Expression {

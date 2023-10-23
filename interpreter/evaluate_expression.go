@@ -19,6 +19,8 @@ func (self *Interpreter) evaluateExpression(expression ast.Expression) Value {
 		return self.evaluateBinding(expr)
 	case *ast.Identifier:
 		return self.evaluateIdentifier(expr)
+	case *ast.FunLiteral:
+		return self.evaluateFunLiteral(expr)
 	case *ast.AssignExpression:
 		return self.evaluateAssignExpression(expr)
 	case *ast.BinaryExpression:
@@ -61,13 +63,17 @@ func (self *Interpreter) evaluateObject(value any) Value {
 	return Value{Object, value}
 }
 
+func (self *Interpreter) evaluateFunction(value any) Value {
+	return Value{Function, value}
+}
+
 func (self *Interpreter) evaluateReference(value any) Value {
 	return Value{Reference, value}
 }
 
 func (self *Interpreter) evaluateBinding(binding *ast.Binding) Value {
 	targetValue := self.evaluateExpression(binding.Target)
-	targetRef := targetValue.reference()
+	targetRef := targetValue.referenced()
 	if targetRef.getVal() != nil {
 		panic("already defined: " + targetRef.getName())
 	}
@@ -78,15 +84,29 @@ func (self *Interpreter) evaluateBinding(binding *ast.Binding) Value {
 
 func (self *Interpreter) evaluateIdentifier(identifier *ast.Identifier) Value {
 	name := identifier.Name
-	return self.evaluateReference(&StashReference{
+	return self.evaluateReference(&StashReferenced{
 		name,
 		self.runtime.getStash(),
 	})
 }
 
+func (self *Interpreter) evaluateFunLiteral(funLiteral *ast.FunLiteral) Value {
+	identifier := funLiteral.Name
+	identifierValue := self.evaluateExpression(identifier)
+	identifierRef := identifierValue.referenced()
+	globalFunctiond := &GlobalFunctiond{
+		name: identifier.Name,
+		callee: func(arguments ...Value) Value {
+			return self.evaluateCallFunction(funLiteral, arguments...)
+		},
+	}
+	identifierRef.setValue(self.evaluateFunction(globalFunctiond))
+	return self.evaluateSkip()
+}
+
 func (self *Interpreter) evaluateAssignExpression(assignExpression *ast.AssignExpression) Value {
 	leftValue := self.evaluateExpression(assignExpression.Left)
-	leftRef := leftValue.reference()
+	leftRef := leftValue.referenced()
 	leftRef.setValue(self.evaluateExpression(assignExpression.Right))
 	return self.evaluateSkip()
 }
@@ -169,7 +189,7 @@ func (self *Interpreter) evaluateBinary(leftValue Value, operator token.Token, r
 
 func (self *Interpreter) evaluateUnaryExpression(unaryExpression *ast.UnaryExpression) Value {
 	operandValue := self.evaluateExpression(unaryExpression.Operand)
-	operandRef := operandValue.reference()
+	operandRef := operandValue.referenced()
 	switch unaryExpression.Operator {
 	case token.NOT:
 		operandRef.setValue(self.evaluateBooleanLiteral(!operandValue.bool()))
@@ -185,5 +205,28 @@ func (self *Interpreter) evaluateUnaryExpression(unaryExpression *ast.UnaryExpre
 }
 
 func (self *Interpreter) evaluateCallExpression(callExpression *ast.CallExpression) Value {
-	return self.evaluateSkip()
+	calleeValue := self.evaluateExpression(callExpression.Callee)
+	calleeRef := calleeValue.referenced()
+	functiond := calleeRef.getVal().(Functiond)
+	var arguments []Value
+	for _, argument := range callExpression.Arguments {
+		arguments = append(arguments, self.evaluateExpression(argument))
+	}
+	return functiond.call(arguments...)
+}
+
+func (self *Interpreter) evaluateCallFunction(funLiteral *ast.FunLiteral, arguments ...Value) Value {
+	self.runtime.openScope()
+	defer self.runtime.closeScope()
+	argsLength := len(arguments)
+	for index, binding := range funLiteral.ParameterList.List {
+		targetValue := self.evaluateExpression(binding.Target)
+		targetRef := targetValue.referenced()
+		if argsLength > index {
+			targetRef.setValue(arguments[index])
+		} else if binding.Initializer != nil {
+			targetRef.setValue(self.evaluateExpression(binding.Initializer))
+		}
+	}
+	return self.evaluateStatement(funLiteral.Body)
 }
