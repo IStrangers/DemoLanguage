@@ -44,6 +44,11 @@ type Value struct {
 	value     any
 }
 
+var (
+	Const_True_Value  = Value{Boolean, true}
+	Const_False_Value = Value{Boolean, false}
+)
+
 func (self *Value) isSkip() bool {
 	return self.valueType == Skip
 }

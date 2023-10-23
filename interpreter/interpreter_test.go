@@ -23,7 +23,7 @@ func TestInterpreter(t *testing.T) {
 				return 4
 			}
 			/*default {
-				return 5
+				return 6
 			}*/
 		}
 		for var index = 1;index < 100;index++ {

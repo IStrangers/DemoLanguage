@@ -39,8 +39,11 @@ func (self *Interpreter) evaluateNullLiteral() Value {
 	return Value{Null, nil}
 }
 
-func (self *Interpreter) evaluateBooleanLiteral(value any) Value {
-	return Value{Boolean, value}
+func (self *Interpreter) evaluateBooleanLiteral(value bool) Value {
+	if value {
+		return Const_True_Value
+	}
+	return Const_False_Value
 }
 
 func (self *Interpreter) evaluateNumberLiteral(value any) Value {
