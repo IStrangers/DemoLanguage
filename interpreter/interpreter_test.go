@@ -9,7 +9,7 @@ func TestInterpreter(t *testing.T) {
 	//content, _ := os.ReadFile("../example/example.dl")
 	interpreter := CreateInterpreter()
 	value := interpreter.run("", `
-		/*var a = 500
+		var a = 500
 		if a == 100 {
 			return 1
 		} else if a == 200 {
@@ -35,12 +35,11 @@ func TestInterpreter(t *testing.T) {
 				break
 			}
 		}
-		return a
 		var c = 99.99
 		fun add(a = 1,b = 1) {
 			return a + b + c
 		}
-		add(100)*/
+		add(100)
 		fun getFebNum(n) {
 			if n == 1 || n == 2 {
 				return 1

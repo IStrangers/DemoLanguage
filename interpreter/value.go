@@ -161,6 +161,13 @@ func floatToString(value float64, bitSize int) string {
 	return strconv.FormatFloat(value, 'f', -1, bitSize)
 }
 
+func (self *Value) functiond() Functiond {
+	if self.isFunction() {
+		return self.value.(Functiond)
+	}
+	panic("Unable to convert to functiond")
+}
+
 func (self *Value) referenced() Referenced {
 	if self.isReferenced() {
 		return self.value.(Referenced)

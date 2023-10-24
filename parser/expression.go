@@ -87,6 +87,11 @@ func (parser *Parser) parseFunBlock(openScope bool) (ast.Statement, []*ast.Varia
 func (parser *Parser) parseReturnArguments() (arguments []ast.Expression) {
 	for parser.token != token.RIGHT_BRACE && parser.token != token.EOF {
 		arguments = append(arguments, parser.parseExpression())
+		if parser.token == token.COMMA {
+			parser.expect(token.COMMA)
+		} else {
+			break
+		}
 	}
 	return
 }

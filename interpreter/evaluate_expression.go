@@ -207,7 +207,8 @@ func (self *Interpreter) evaluateUnaryExpression(unaryExpression *ast.UnaryExpre
 func (self *Interpreter) evaluateCallExpression(callExpression *ast.CallExpression) Value {
 	calleeValue := self.evaluateExpression(callExpression.Callee)
 	calleeRef := calleeValue.referenced()
-	functiond := calleeRef.getVal().(Functiond)
+	functiondValue := calleeRef.getValue()
+	functiond := functiondValue.functiond()
 	var arguments []Value
 	for _, argument := range callExpression.Arguments {
 		arguments = append(arguments, self.evaluateExpression(argument))
