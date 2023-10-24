@@ -16,7 +16,7 @@ func (self *Stash) getValue(name string) Value {
 		if exists {
 			return value
 		}
-		stash = self.outer
+		stash = stash.outer
 	}
 	return Value{Null, nil}
 }

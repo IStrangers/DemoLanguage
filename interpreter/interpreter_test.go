@@ -35,12 +35,20 @@ func TestInterpreter(t *testing.T) {
 				break
 			}
 		}
-		return a*/
+		return a
 		var c = 99.99
 		fun add(a = 1,b = 1) {
 			return a + b + c
 		}
-		add(50,100)
+		add(100)*/
+		fun getFebNum(n) {
+			if n == 1 || n == 2 {
+				return 1
+			} else {
+				return getFebNum(n - 1) + getFebNum(n - 2)
+			}
+		}
+		getFebNum(30)
 	`)
 	println(fmt.Sprintf("%v", value.getVal()))
 }
