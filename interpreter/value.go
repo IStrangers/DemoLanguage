@@ -7,34 +7,12 @@ import (
 
 type ValueType int
 
-func (self ValueType) String() string {
-	switch self {
-	case Skip:
-		return "Skip"
-	case Null:
-		return "Null"
-	case Boolean:
-		return "Boolean"
-	case Number:
-		return "Number"
-	case String:
-		return "String"
-	case Object:
-		return "Object"
-	case Function:
-		return "Function"
-	case Reference:
-		return "Reference"
-	default:
-		return ""
-	}
-}
-
 const (
 	_ ValueType = iota
 	Skip
 	Break
 	Continue
+	Return
 
 	Null
 	Boolean
@@ -42,6 +20,7 @@ const (
 	String
 	Object
 	Function
+	MultipleValue
 	Reference
 )
 
@@ -51,61 +30,92 @@ type Value struct {
 }
 
 var (
-	Const_True_Value  = Value{Boolean, true}
-	Const_False_Value = Value{Boolean, false}
+	Const_Skip_Value     = Value{Skip, nil}
+	Const_Break_Value    = Value{Break, nil}
+	Const_Continue_Value = Value{Continue, nil}
+	Const_Return_Value   = Value{Return, nil}
+	Const_Null_Value     = Value{Null, nil}
+	Const_True_Value     = Value{Boolean, true}
+	Const_False_Value    = Value{Boolean, false}
 )
+
+func (self *Value) isResult() bool {
+	return !self.isSkip() && !self.isBreak() && !self.isContinue()
+}
 
 func (self *Value) isSkip() bool {
 	return self.valueType == Skip
 }
 
 func (self *Value) isBreak() bool {
-	return self.value == Break
+	return self.valueType == Break
 }
 
 func (self *Value) isContinue() bool {
-	return self.value == Continue
+	return self.valueType == Continue
+}
+
+func (self *Value) isReturn() bool {
+	return self.valueType == Return
 }
 
 func (self *Value) isBoolean() bool {
-	return self.valueType == Boolean
+	flatValue := self.flatResolve()
+	return flatValue.valueType == Boolean
 }
 
 func (self *Value) isNumber() bool {
-	return self.valueType == Number
+	flatValue := self.flatResolve()
+	return flatValue.valueType == Number
 }
 
 func (self *Value) isString() bool {
-	return self.valueType == String
+	flatValue := self.flatResolve()
+	return flatValue.valueType == String
 }
 
 func (self *Value) isObject() bool {
-	return self.valueType == Object
+	flatValue := self.flatResolve()
+	return flatValue.valueType == Object
 }
 
 func (self *Value) isFunction() bool {
-	return self.valueType == Function
+	flatValue := self.flatResolve()
+	return flatValue.valueType == Function
+}
+
+func (self *Value) isMultipleValue() bool {
+	flatValue := self.flatResolve()
+	return flatValue.valueType == MultipleValue
 }
 
 func (self *Value) isReferenced() bool {
 	return self.valueType == Reference
 }
 
-func (self *Value) isReferenceNumber() bool {
+func (self Value) flatResolve() Value {
 	if self.isReferenced() {
-		reference := self.value.(Referenced)
-		value := reference.getValue()
-		return value.isNumber()
+		reference := self.referenced()
+		return reference.getValue()
 	}
-	return self.isNumber()
+	return self
 }
 
 func (self *Value) getVal() any {
-	if self.isReferenced() {
-		reference := self.value.(Referenced)
-		return reference.getVal()
+	flatValue := self.flatResolve()
+	if flatValue.isReturn() {
+		ofValue := flatValue.ofValue()
+		return ofValue.getVal()
 	}
-	return self.value
+	return flatValue.value
+}
+
+func (self *Value) ofValue() Value {
+	switch v := self.value.(type) {
+	case Value:
+		return v
+	}
+	panic("Unable to convert to value")
 }
 
 func (self *Value) int64() int64 {

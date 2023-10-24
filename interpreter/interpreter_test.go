@@ -47,7 +47,7 @@ func TestInterpreter(t *testing.T) {
 				return getFebNum(n - 1) + getFebNum(n - 2)
 			}
 		}
-		getFebNum(30)
+		return getFebNum(20)
 	`)
 	println(fmt.Sprintf("%v", value.getVal()))
 }

@@ -5,20 +5,20 @@ import (
 	"DemoLanguage/token"
 )
 
-func (self *Interpreter) evaluateListStatement(listStatement []ast.Statement) Value {
-	return self.evaluateListStatementByFilter(listStatement, func(value Value) bool {
-		return !value.isSkip() || (value.isBreak() || value.isContinue())
-	})
-}
-
-func (self *Interpreter) evaluateListStatementByFilter(listStatement []ast.Statement, filter func(value Value) bool) Value {
+func (self *Interpreter) evaluateProgramBody(listStatement []ast.Statement) Value {
+	var value Value
+	var isResult bool
 	for _, st := range listStatement {
-		value := self.evaluateStatement(st)
-		if filter(value) {
-			return value
+		value = self.evaluateStatement(st)
+		isResult = value.isResult()
+		if isResult && value.isReturn() {
+			return value.ofValue()
 		}
 	}
-	return self.evaluateSkip()
+	if isResult {
+		return value
+	}
+	return self.evaluateNull()
 }
 
 func (self *Interpreter) evaluateStatement(statement ast.Statement) Value {
@@ -48,7 +48,13 @@ func (self *Interpreter) evaluateStatement(statement ast.Statement) Value {
 }
 
 func (self *Interpreter) evaluateBlockStatement(blockStatement *ast.BlockStatement) Value {
-	return self.evaluateListStatement(blockStatement.Body)
+	for _, st := range blockStatement.Body {
+		value := self.evaluateStatement(st)
+		if value.isBreak() || value.isContinue() || value.isReturn() {
+			return value
+		}
+	}
+	return self.evaluateSkip()
 }
 
 func (self *Interpreter) evaluateVarStatement(varStatement *ast.VarStatement) Value {
@@ -59,11 +65,11 @@ func (self *Interpreter) evaluateVarStatement(varStatement *ast.VarStatement) Va
 }
 
 func (self *Interpreter) evaluateBreakStatement(breakStatement *ast.BreakStatement) Value {
-	return self.evaluateSkipValue(Break)
+	return self.evaluateBreak()
 }
 
 func (self *Interpreter) evaluateContinueStatement(continueStatement *ast.ContinueStatement) Value {
-	return self.evaluateSkipValue(Continue)
+	return self.evaluateContinue()
 }
 
 func (self *Interpreter) evaluateReturnStatement(returnStatement *ast.ReturnStatement) Value {
@@ -71,10 +77,7 @@ func (self *Interpreter) evaluateReturnStatement(returnStatement *ast.ReturnStat
 	for _, argument := range returnStatement.Arguments {
 		values = append(values, self.evaluateExpression(argument))
 	}
-	if len(values) == 1 {
-		return values[0]
-	}
-	return self.evaluateObject(values)
+	return self.evaluateReturn(values)
 }
 
 func (self *Interpreter) evaluateIfStatement(ifStatement *ast.IfStatement) Value {
@@ -119,10 +122,12 @@ func (self *Interpreter) evaluateForStatement(forStatement *ast.ForStatement) Va
 			}
 		}
 		value := self.evaluateStatement(forStatement.Body)
-		if !value.isSkip() {
+		if value.isBreak() {
+			break
+		} else if value.isContinue() {
+			// none
+		} else if !value.isSkip() {
 			return value
-		} else if value.isBreak() {
-			return self.evaluateSkip()
 		}
 		if forStatement.Update != nil {
 			self.evaluateExpression(forStatement.Update)

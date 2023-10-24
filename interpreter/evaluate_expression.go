@@ -8,7 +8,7 @@ import (
 func (self *Interpreter) evaluateExpression(expression ast.Expression) Value {
 	switch expr := expression.(type) {
 	case *ast.NullLiteral:
-		return self.evaluateNullLiteral()
+		return self.evaluateNull()
 	case *ast.BooleanLiteral:
 		return self.evaluateBooleanLiteral(expr.Value)
 	case *ast.NumberLiteral:
@@ -34,14 +34,29 @@ func (self *Interpreter) evaluateExpression(expression ast.Expression) Value {
 }
 
 func (self *Interpreter) evaluateSkip() Value {
-	return self.evaluateSkipValue(nil)
-}
-func (self *Interpreter) evaluateSkipValue(value any) Value {
-	return Value{Skip, value}
+	return Const_Skip_Value
 }
 
-func (self *Interpreter) evaluateNullLiteral() Value {
-	return Value{Null, nil}
+func (self *Interpreter) evaluateBreak() Value {
+	return Const_Break_Value
+}
+
+func (self *Interpreter) evaluateContinue() Value {
+	return Const_Continue_Value
+}
+
+func (self *Interpreter) evaluateReturn(values []Value) Value {
+	valueLength := len(values)
+	if valueLength == 0 {
+		return Const_Return_Value
+	} else if valueLength == 1 {
+		return Value{Return, values[0]}
+	}
+	return Value{Return, Value{MultipleValue, values}}
+}
+
+func (self *Interpreter) evaluateNull() Value {
+	return Const_Null_Value
 }
 
 func (self *Interpreter) evaluateBooleanLiteral(value bool) Value {
@@ -142,12 +157,12 @@ func (self *Interpreter) evaluateBinaryExpression(binaryExpression *ast.BinaryEx
 func (self *Interpreter) evaluateComparison(leftValue Value, operator token.Token, rightValue Value) Value {
 	switch operator {
 	case token.EQUAL:
-		if leftValue.isReferenceNumber() && rightValue.isReferenceNumber() {
+		if leftValue.isNumber() && rightValue.isNumber() {
 			return self.evaluateBooleanLiteral(leftValue.float64() == rightValue.float64())
 		}
 		return self.evaluateBooleanLiteral(leftValue.getVal() == rightValue.getVal())
 	case token.NOT_EQUAL:
-		if leftValue.isReferenceNumber() && rightValue.isReferenceNumber() {
+		if leftValue.isNumber() && rightValue.isNumber() {
 			return self.evaluateBooleanLiteral(leftValue.float64() != rightValue.float64())
 		}
 		return self.evaluateBooleanLiteral(leftValue.getVal() != rightValue.getVal())
@@ -213,7 +228,11 @@ func (self *Interpreter) evaluateCallExpression(callExpression *ast.CallExpressi
 	for _, argument := range callExpression.Arguments {
 		arguments = append(arguments, self.evaluateExpression(argument))
 	}
-	return functiond.call(arguments...)
+	resultValue := functiond.call(arguments...)
+	if resultValue.isReturn() {
+		return resultValue.ofValue()
+	}
+	return resultValue
 }
 
 func (self *Interpreter) evaluateCallFunction(funLiteral *ast.FunLiteral, arguments ...Value) Value {
