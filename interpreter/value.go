@@ -186,6 +186,20 @@ func (self *Value) referenced() Referenced {
 }
 
 type Objectd struct {
+	propertys map[string]Value
+}
+
+func (self *Objectd) getProperty(name string) Value {
+	return self.propertys[name]
+}
+
+func (self *Objectd) setProperty(name string, value Value) {
+	self.propertys[name] = value
+}
+
+func (self *Objectd) contains(name string) bool {
+	_, exists := self.propertys[name]
+	return exists
 }
 
 type Functiond interface {

@@ -47,7 +47,12 @@ func TestInterpreter(t *testing.T) {
 				return getFebNum(n - 1) + getFebNum(n - 2)
 			}
 		}
-		return getFebNum(20)
+		getFebNum(20)
+		var obj = {
+			name: "Afghanistan",
+			count: add()
+		}
+		return obj
 	`)
 	println(fmt.Sprintf("%v", value.getVal()))
 }

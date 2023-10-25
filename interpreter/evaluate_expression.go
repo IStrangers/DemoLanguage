@@ -19,6 +19,8 @@ func (self *Interpreter) evaluateExpression(expression ast.Expression) Value {
 		return self.evaluateBinding(expr)
 	case *ast.Identifier:
 		return self.evaluateIdentifier(expr)
+	case *ast.ObjectLiteral:
+		return self.evaluateObjectLiteral(expr)
 	case *ast.FunLiteral:
 		return self.evaluateFunLiteral(expr)
 	case *ast.AssignExpression:
@@ -74,7 +76,7 @@ func (self *Interpreter) evaluateStringLiteral(value any) Value {
 	return Value{String, value}
 }
 
-func (self *Interpreter) evaluateObject(value any) Value {
+func (self *Interpreter) evaluateObject(value Objectd) Value {
 	return Value{Object, value}
 }
 
@@ -102,6 +104,17 @@ func (self *Interpreter) evaluateIdentifier(identifier *ast.Identifier) Value {
 	return self.evaluateReference(&StashReferenced{
 		name,
 		self.runtime.getStash(),
+	})
+}
+
+func (self *Interpreter) evaluateObjectLiteral(objectLiteral *ast.ObjectLiteral) Value {
+	propertys := make(map[string]Value)
+	for _, property := range objectLiteral.Properties {
+		kv := property.(*ast.PropertyKeyValue)
+		propertys[kv.Name.Name] = self.evaluateExpression(kv.Value)
+	}
+	return self.evaluateObject(Objectd{
+		propertys,
 	})
 }
 
