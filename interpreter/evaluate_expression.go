@@ -21,6 +21,8 @@ func (self *Interpreter) evaluateExpression(expression ast.Expression) Value {
 		return self.evaluateIdentifier(expr)
 	case *ast.ObjectLiteral:
 		return self.evaluateObjectLiteral(expr)
+	case *ast.ArrayLiteral:
+		return self.evaluateArrayLiteral(expr)
 	case *ast.FunLiteral:
 		return self.evaluateFunLiteral(expr)
 	case *ast.AssignExpression:
@@ -118,6 +120,10 @@ func (self *Interpreter) evaluateObjectLiteral(objectLiteral *ast.ObjectLiteral)
 	return self.evaluateObject(Objectd{
 		propertys,
 	})
+}
+
+func (self *Interpreter) evaluateArrayLiteral(arrayLiteral *ast.ArrayLiteral) Value {
+	return self.evaluateSkip()
 }
 
 func (self *Interpreter) evaluateFunLiteral(funLiteral *ast.FunLiteral) Value {

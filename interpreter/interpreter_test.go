@@ -56,7 +56,7 @@ func TestInterpreter(t *testing.T) {
 				ref: a
 			}
 		}
-		return obj.inline.a
+		return obj.inline.ref
 	`)
 	println(fmt.Sprintf("%v", value.getVal()))
 }
