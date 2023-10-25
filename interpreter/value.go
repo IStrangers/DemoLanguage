@@ -96,7 +96,11 @@ func (self *Value) isReferenced() bool {
 func (self Value) flatResolve() Value {
 	if self.isReferenced() {
 		reference := self.referenced()
-		return reference.getValue()
+		value := reference.getValue()
+		if value.isReferenced() {
+			value = value.flatResolve()
+		}
+		return value
 	}
 	return self
 }
@@ -154,9 +158,8 @@ func (self *Value) string() string {
 		return floatToString(v, 32)
 	case string:
 		return v
-	default:
-		return ""
 	}
+	panic("Unable to convert to string")
 }
 
 func floatToString(value float64, bitSize int) string {
@@ -171,11 +174,18 @@ func floatToString(value float64, bitSize int) string {
 	return strconv.FormatFloat(value, 'f', -1, bitSize)
 }
 
+func (self *Value) objectd() Objectd {
+	if self.isObject() {
+		return self.value.(Objectd)
+	}
+	panic("Unable to convert to object")
+}
+
 func (self *Value) functiond() Functiond {
 	if self.isFunction() {
 		return self.value.(Functiond)
 	}
-	panic("Unable to convert to functiond")
+	panic("Unable to convert to function")
 }
 
 func (self *Value) referenced() Referenced {
@@ -190,7 +200,11 @@ type Objectd struct {
 }
 
 func (self *Objectd) getProperty(name string) Value {
-	return self.propertys[name]
+	value, exists := self.propertys[name]
+	if !exists {
+		return Const_Null_Value
+	}
+	return value
 }
 
 func (self *Objectd) setProperty(name string, value Value) {

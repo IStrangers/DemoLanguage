@@ -31,6 +31,8 @@ func (self *Interpreter) evaluateExpression(expression ast.Expression) Value {
 		return self.evaluateUnaryExpression(expr)
 	case *ast.CallExpression:
 		return self.evaluateCallExpression(expr)
+	case *ast.DotExpression:
+		return self.evaluateDotExpression(expr)
 	}
 	return self.evaluateSkip()
 }
@@ -122,13 +124,13 @@ func (self *Interpreter) evaluateFunLiteral(funLiteral *ast.FunLiteral) Value {
 	identifier := funLiteral.Name
 	identifierValue := self.evaluateExpression(identifier)
 	identifierRef := identifierValue.referenced()
-	globalFunctiond := &GlobalFunctiond{
+	globalFunction := &GlobalFunctiond{
 		name: identifier.Name,
 		callee: func(arguments ...Value) Value {
 			return self.evaluateCallFunction(funLiteral, arguments...)
 		},
 	}
-	identifierRef.setValue(self.evaluateFunction(globalFunctiond))
+	identifierRef.setValue(self.evaluateFunction(globalFunction))
 	return self.evaluateSkip()
 }
 
@@ -234,14 +236,13 @@ func (self *Interpreter) evaluateUnaryExpression(unaryExpression *ast.UnaryExpre
 
 func (self *Interpreter) evaluateCallExpression(callExpression *ast.CallExpression) Value {
 	calleeValue := self.evaluateExpression(callExpression.Callee)
-	calleeRef := calleeValue.referenced()
-	functiondValue := calleeRef.getValue()
-	functiond := functiondValue.functiond()
+	calleeValue = calleeValue.flatResolve()
+	function := calleeValue.functiond()
 	var arguments []Value
 	for _, argument := range callExpression.Arguments {
 		arguments = append(arguments, self.evaluateExpression(argument))
 	}
-	resultValue := functiond.call(arguments...)
+	resultValue := function.call(arguments...)
 	if resultValue.isReturn() {
 		return resultValue.ofValue()
 	}
@@ -262,4 +263,12 @@ func (self *Interpreter) evaluateCallFunction(funLiteral *ast.FunLiteral, argume
 		}
 	}
 	return self.evaluateStatement(funLiteral.Body)
+}
+
+func (self *Interpreter) evaluateDotExpression(dotExpression *ast.DotExpression) Value {
+	leftValue := self.evaluateExpression(dotExpression.Left)
+	leftValue = leftValue.flatResolve()
+	leftObject := leftValue.objectd()
+	identifier := dotExpression.Identifier
+	return leftObject.getProperty(identifier.Name)
 }

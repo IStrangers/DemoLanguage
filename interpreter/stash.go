@@ -18,7 +18,7 @@ func (self *Stash) getValue(name string) Value {
 		}
 		stash = stash.outer
 	}
-	return Value{Null, nil}
+	return Const_Null_Value
 }
 
 func (self *Stash) contains(name string) bool {

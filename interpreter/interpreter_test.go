@@ -50,9 +50,13 @@ func TestInterpreter(t *testing.T) {
 		getFebNum(20)
 		var obj = {
 			name: "Afghanistan",
-			count: add()
+			count: add(),
+			ref: c,
+			inline: {
+				ref: a
+			}
 		}
-		return obj
+		return obj.inline.a
 	`)
 	println(fmt.Sprintf("%v", value.getVal()))
 }
