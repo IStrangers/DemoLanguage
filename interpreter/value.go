@@ -39,6 +39,30 @@ var (
 	Const_False_Value    = Value{Boolean, false}
 )
 
+func NumberValue(value any) Value {
+	return Value{Number, value}
+}
+
+func StringValue(value any) Value {
+	return Value{String, value}
+}
+
+func ObjectValue(value any) Value {
+	return Value{Object, value}
+}
+
+func FunctionValue(value any) Value {
+	return Value{Function, value}
+}
+
+func MultipleValueValue(values []Value) Value {
+	return Value{MultipleValue, values}
+}
+
+func ReferenceValue(value any) Value {
+	return Value{Reference, value}
+}
+
 func (self *Value) isResult() bool {
 	return !self.isSkip() && !self.isBreak() && !self.isContinue()
 }
@@ -124,6 +148,20 @@ func (self *Value) ofValue() Value {
 
 func (self *Value) int64() int64 {
 	switch v := self.getVal().(type) {
+	case int8:
+		return int64(v)
+	case int16:
+		return int64(v)
+	case int32:
+		return int64(v)
+	case uint8:
+		return int64(v)
+	case uint16:
+		return int64(v)
+	case uint32:
+		return int64(v)
+	case int:
+		return int64(v)
 	case float64:
 		return int64(v)
 	case int64:
@@ -134,7 +172,25 @@ func (self *Value) int64() int64 {
 
 func (self *Value) float64() float64 {
 	switch v := self.getVal().(type) {
+	case int:
+		return float64(v)
+	case int8:
+		return float64(v)
+	case int16:
+		return float64(v)
+	case int32:
+		return float64(v)
 	case int64:
+		return float64(v)
+	case uint:
+		return float64(v)
+	case uint8:
+		return float64(v)
+	case uint16:
+		return float64(v)
+	case uint32:
+		return float64(v)
+	case uint64:
 		return float64(v)
 	case float64:
 		return v
@@ -196,10 +252,11 @@ func (self *Value) referenced() Referenced {
 }
 
 type Objectd struct {
+	origin    any
 	propertys map[string]Value
 }
 
-func (self *Objectd) getProperty(name string) Value {
+func (self Objectd) getProperty(name string) Value {
 	value, exists := self.propertys[name]
 	if !exists {
 		return Const_Null_Value
@@ -207,30 +264,26 @@ func (self *Objectd) getProperty(name string) Value {
 	return value
 }
 
-func (self *Objectd) setProperty(name string, value Value) {
+func (self Objectd) setProperty(name string, value Value) {
 	self.propertys[name] = value
 }
 
-func (self *Objectd) contains(name string) bool {
+func (self Objectd) contains(name string) bool {
 	_, exists := self.propertys[name]
 	return exists
 }
 
-type Functiond interface {
-	getName() string
-	call(arguments ...Value) Value
-}
-
-type GlobalFunctiond struct {
+type Functiond struct {
+	this   Value
 	name   string
 	callee func(arguments ...Value) Value
 }
 
-func (self *GlobalFunctiond) getName() string {
+func (self Functiond) getName() string {
 	return self.name
 }
 
-func (self *GlobalFunctiond) call(arguments ...Value) Value {
+func (self Functiond) call(arguments ...Value) Value {
 	return self.callee(arguments...)
 }
 
@@ -246,20 +299,20 @@ type StashReferenced struct {
 	stash *Stash
 }
 
-func (self *StashReferenced) getName() string {
+func (self StashReferenced) getName() string {
 	return self.name
 }
 
-func (self *StashReferenced) getVal() any {
+func (self StashReferenced) getVal() any {
 	value := self.getValue()
 	return value.getVal()
 }
 
-func (self *StashReferenced) getValue() Value {
+func (self StashReferenced) getValue() Value {
 	value := self.stash.getValue(self.name)
 	return value
 }
 
-func (self *StashReferenced) setValue(value Value) {
+func (self StashReferenced) setValue(value Value) {
 	self.stash.setValue(self.name, value)
 }

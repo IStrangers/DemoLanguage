@@ -56,7 +56,11 @@ func TestInterpreter(t *testing.T) {
 				ref: a
 			}
 		}
-		return obj.inline.ref
+		var arr = [obj.inline.ref,"sfd",500]
+		arr.add(555)
+		arr.remove(2)
+		var v = arr.get(arr.size() - 1)
+		return v
 	`)
 	println(fmt.Sprintf("%v", value.getVal()))
 }

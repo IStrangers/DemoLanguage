@@ -58,7 +58,7 @@ func (self *Interpreter) evaluateReturn(values []Value) Value {
 	} else if valueLength == 1 {
 		return Value{Return, values[0]}
 	}
-	return Value{Return, Value{MultipleValue, values}}
+	return Value{Return, MultipleValueValue(values)}
 }
 
 func (self *Interpreter) evaluateNull() Value {
@@ -73,23 +73,11 @@ func (self *Interpreter) evaluateBooleanLiteral(value bool) Value {
 }
 
 func (self *Interpreter) evaluateNumberLiteral(value any) Value {
-	return Value{Number, value}
+	return NumberValue(value)
 }
 
 func (self *Interpreter) evaluateStringLiteral(value any) Value {
-	return Value{String, value}
-}
-
-func (self *Interpreter) evaluateObject(value Objectd) Value {
-	return Value{Object, value}
-}
-
-func (self *Interpreter) evaluateFunction(value any) Value {
-	return Value{Function, value}
-}
-
-func (self *Interpreter) evaluateReference(value any) Value {
-	return Value{Reference, value}
+	return StringValue(value)
 }
 
 func (self *Interpreter) evaluateBinding(binding *ast.Binding) Value {
@@ -105,7 +93,7 @@ func (self *Interpreter) evaluateBinding(binding *ast.Binding) Value {
 
 func (self *Interpreter) evaluateIdentifier(identifier *ast.Identifier) Value {
 	name := identifier.Name
-	return self.evaluateReference(&StashReferenced{
+	return ReferenceValue(StashReferenced{
 		name,
 		self.runtime.getStash(),
 	})
@@ -117,26 +105,31 @@ func (self *Interpreter) evaluateObjectLiteral(objectLiteral *ast.ObjectLiteral)
 		kv := property.(*ast.PropertyKeyValue)
 		propertys[kv.Name.Name] = self.evaluateExpression(kv.Value)
 	}
-	return self.evaluateObject(Objectd{
+	return ObjectValue(Objectd{
+		nil,
 		propertys,
 	})
 }
 
 func (self *Interpreter) evaluateArrayLiteral(arrayLiteral *ast.ArrayLiteral) Value {
-	return self.evaluateSkip()
+	var values []Value
+	for _, value := range arrayLiteral.Values {
+		values = append(values, self.evaluateExpression(value))
+	}
+	return ArrayObject(values)
 }
 
 func (self *Interpreter) evaluateFunLiteral(funLiteral *ast.FunLiteral) Value {
 	identifier := funLiteral.Name
 	identifierValue := self.evaluateExpression(identifier)
 	identifierRef := identifierValue.referenced()
-	globalFunction := &GlobalFunctiond{
+	globalFunction := Functiond{
 		name: identifier.Name,
 		callee: func(arguments ...Value) Value {
 			return self.evaluateCallFunction(funLiteral, arguments...)
 		},
 	}
-	identifierRef.setValue(self.evaluateFunction(globalFunction))
+	identifierRef.setValue(FunctionValue(globalFunction))
 	return self.evaluateSkip()
 }
 
