@@ -1,8 +1,10 @@
 package interpreter
 
 import (
+	"go/types"
 	"math"
 	"strconv"
+	"strings"
 )
 
 type ValueType int
@@ -81,6 +83,11 @@ func (self *Value) isContinue() bool {
 
 func (self *Value) isReturn() bool {
 	return self.valueType == Return
+}
+
+func (self *Value) isNull() bool {
+	flatValue := self.flatResolve()
+	return flatValue.valueType == Null
 }
 
 func (self *Value) isBoolean() bool {
@@ -208,6 +215,10 @@ func (self *Value) bool() bool {
 
 func (self *Value) string() string {
 	switch v := self.getVal().(type) {
+	case types.Nil:
+		return "null"
+	case bool:
+		return strconv.FormatBool(v)
 	case int:
 		return strconv.FormatInt(int64(v), 10)
 	case int8:
@@ -250,14 +261,14 @@ func floatToString(value float64, bitSize int) string {
 
 func (self *Value) objectd() Objectd {
 	if self.isObject() {
-		return self.value.(Objectd)
+		return self.getVal().(Objectd)
 	}
 	panic("Unable to convert to object")
 }
 
 func (self *Value) functiond() Functiond {
 	if self.isFunction() {
-		return self.value.(Functiond)
+		return self.getVal().(Functiond)
 	}
 	panic("Unable to convert to function")
 }
@@ -267,6 +278,20 @@ func (self *Value) referenced() Referenced {
 		return self.value.(Referenced)
 	}
 	panic("Unable to convert to reference")
+}
+
+func (self *Value) json() string {
+	if self.isNull() || self.isBoolean() || self.isNumber() || self.isString() {
+		return self.string()
+	} else if self.isReturn() {
+		value := self.ofValue()
+		return value.json()
+	} else if self.isObject() {
+		return self.objectd().json()
+	} else if self.isFunction() {
+		return strings.ReplaceAll(self.functiond().getFunDefinition(), "\n", "")
+	}
+	return ""
 }
 
 type Objectd struct {
@@ -299,10 +324,19 @@ func (self Objectd) setValue(property Value, values ...Value) {
 	self.classObject.setValue(self, property, values...)
 }
 
+func (self Objectd) json() string {
+	return self.classObject.json(self)
+}
+
 type Functiond struct {
-	this   Value
-	name   string
-	callee func(arguments ...Value) Value
+	funDefinition string
+	this          Value
+	name          string
+	callee        func(arguments ...Value) Value
+}
+
+func (self Functiond) getFunDefinition() string {
+	return self.funDefinition
 }
 
 func (self Functiond) getName() string {

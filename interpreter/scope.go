@@ -1,6 +1,7 @@
 package interpreter
 
 type Scope struct {
-	outer *Scope
-	stash *Stash
+	runtime *Runtime
+	outer   *Scope
+	stash   *Stash
 }

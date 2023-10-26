@@ -39,7 +39,7 @@ func TestInterpreter(t *testing.T) {
 		fun add(a = 1,b = 1) {
 			return a + b + c
 		}
-		add(100)
+		println(add(100))
 		fun getFebNum(n) {
 			if n == 1 || n == 2 {
 				return 1
@@ -47,14 +47,19 @@ func TestInterpreter(t *testing.T) {
 				return getFebNum(n - 1) + getFebNum(n - 2)
 			}
 		}
-		getFebNum(20)
+		println(getFebNum(20))
 		var obj = {
 			name: "Afghanistan",
 			count: add(),
 			ref: c,
 			inline: {
 				ref: a
-			}
+			},
+			arrowFun1: (p1) -> {
+				println(p1 + " * 2")
+				return p1 * 2
+			},
+			arrowFun2: p1 -> p1 / 2
 		}
 		var arr = [obj.inline.ref,"sfd",500]
 		arr.add(555)
@@ -63,7 +68,11 @@ func TestInterpreter(t *testing.T) {
 		arr[0] = v
 		obj["name"] = 123
 		obj.name = "564654"
-		return arr[0]
+		println(obj)
+		println(arr)
+		var arrowFun = p1 -> p1 / 2
+		println(arrowFun(5))
+		return obj.arrowFun1(500)
 	`)
 	println(fmt.Sprintf("%v", value.getVal()))
 }

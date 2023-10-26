@@ -1,22 +1,27 @@
 package interpreter
 
 type Runtime struct {
-	scope *Scope
+	global Objectd
+	scope  *Scope
 }
 
 func createRunTime() *Runtime {
-	return &Runtime{}
+	return &Runtime{
+		global: BuiltinGlobalObject(),
+	}
 }
 
 func (self *Runtime) openScope() {
 	self.scope = &Scope{
-		outer: self.scope,
+		runtime: self,
+		outer:   self.scope,
 	}
 	var stashOuter *Stash
 	if self.scope.outer != nil {
 		stashOuter = self.scope.outer.stash
 	}
 	self.scope.stash = &Stash{
+		runtime:      self,
 		outer:        stashOuter,
 		valueMapping: make(map[string]Value),
 	}

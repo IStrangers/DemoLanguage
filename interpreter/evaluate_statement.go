@@ -48,13 +48,14 @@ func (self *Interpreter) evaluateStatement(statement ast.Statement) Value {
 }
 
 func (self *Interpreter) evaluateBlockStatement(blockStatement *ast.BlockStatement) Value {
+	var value Value
 	for _, st := range blockStatement.Body {
-		value := self.evaluateStatement(st)
+		value = self.evaluateStatement(st)
 		if value.isBreak() || value.isContinue() || value.isReturn() {
 			return value
 		}
 	}
-	return self.evaluateSkip()
+	return value
 }
 
 func (self *Interpreter) evaluateVarStatement(varStatement *ast.VarStatement) Value {

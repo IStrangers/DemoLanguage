@@ -1,6 +1,19 @@
 package interpreter
 
+import (
+	"fmt"
+	"strings"
+)
+
 type BuiltinObject struct {
+}
+
+func (self BuiltinObject) json(object Objectd) string {
+	var jsons []string
+	for name, property := range object.propertys {
+		jsons = append(jsons, fmt.Sprintf("%s: %s", name, property.json()))
+	}
+	return fmt.Sprintf("{%s}", strings.Join(jsons, ","))
 }
 
 func (self BuiltinObject) getValue(object Objectd, property Value, args ...Value) Value {

@@ -25,6 +25,8 @@ func (self *Interpreter) evaluateExpression(expression ast.Expression) Value {
 		return self.evaluateArrayLiteral(expr)
 	case *ast.FunLiteral:
 		return self.evaluateFunLiteral(expr)
+	case *ast.ArrowFunctionLiteral:
+		return self.evaluateArrowFunctionLiteral(expr)
 	case *ast.AssignExpression:
 		return self.evaluateAssignExpression(expr)
 	case *ast.BinaryExpression:
@@ -118,18 +120,32 @@ func (self *Interpreter) evaluateArrayLiteral(arrayLiteral *ast.ArrayLiteral) Va
 	return BuiltinArrayObject(values)
 }
 
-func (self *Interpreter) evaluateFunLiteral(funLiteral *ast.FunLiteral) Value {
-	identifier := funLiteral.Name
-	identifierValue := self.evaluateExpression(identifier)
-	identifierRef := identifierValue.referenced()
+func (self *Interpreter) evaluateFunction(identifier *ast.Identifier, parameterList *ast.ParameterList, body ast.Statement, funDefinition string) Value {
 	globalFunction := Functiond{
-		name: identifier.Name,
+		funDefinition: funDefinition,
 		callee: func(arguments ...Value) Value {
-			return self.evaluateCallFunction(funLiteral, arguments...)
+			return self.evaluateCallFunction(parameterList, body, arguments...)
 		},
 	}
-	identifierRef.setValue(FunctionValue(globalFunction))
+	functionValue := FunctionValue(globalFunction)
+
+	if identifier == nil {
+		return functionValue
+	}
+	globalFunction.name = identifier.Name
+	identifierValue := self.evaluateExpression(identifier)
+	identifierRef := identifierValue.referenced()
+	identifierRef.setValue(functionValue)
 	return self.evaluateSkip()
+}
+
+func (self *Interpreter) evaluateFunLiteral(funLiteral *ast.FunLiteral) Value {
+	identifier := funLiteral.Name
+	return self.evaluateFunction(identifier, funLiteral.ParameterList, funLiteral.Body, funLiteral.FunDefinition)
+}
+
+func (self *Interpreter) evaluateArrowFunctionLiteral(arrowFunctionLiteral *ast.ArrowFunctionLiteral) Value {
+	return self.evaluateFunction(nil, arrowFunctionLiteral.ParameterList, arrowFunctionLiteral.Body, arrowFunctionLiteral.FunDefinition)
 }
 
 func (self *Interpreter) evaluateAssignExpression(assignExpression *ast.AssignExpression) Value {
@@ -247,11 +263,11 @@ func (self *Interpreter) evaluateCallExpression(callExpression *ast.CallExpressi
 	return resultValue
 }
 
-func (self *Interpreter) evaluateCallFunction(funLiteral *ast.FunLiteral, arguments ...Value) Value {
+func (self *Interpreter) evaluateCallFunction(parameterList *ast.ParameterList, body ast.Statement, arguments ...Value) Value {
 	self.runtime.openScope()
 	defer self.runtime.closeScope()
 	argsLength := len(arguments)
-	for index, binding := range funLiteral.ParameterList.List {
+	for index, binding := range parameterList.List {
 		targetValue := self.evaluateExpression(binding.Target)
 		targetRef := targetValue.referenced()
 		if argsLength > index {
@@ -260,7 +276,7 @@ func (self *Interpreter) evaluateCallFunction(funLiteral *ast.FunLiteral, argume
 			targetRef.setValue(self.evaluateExpression(binding.Initializer))
 		}
 	}
-	return self.evaluateStatement(funLiteral.Body)
+	return self.evaluateStatement(body)
 }
 
 func (self *Interpreter) evaluateDotExpression(dotExpression *ast.DotExpression) Value {

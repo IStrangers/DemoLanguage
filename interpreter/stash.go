@@ -1,6 +1,7 @@
 package interpreter
 
 type Stash struct {
+	runtime      *Runtime
 	outer        *Stash
 	valueMapping map[string]Value
 }
@@ -18,7 +19,7 @@ func (self *Stash) getValue(name string) Value {
 		}
 		stash = stash.outer
 	}
-	return Const_Null_Value
+	return self.runtime.global.getProperty(name)
 }
 
 func (self *Stash) contains(name string) bool {

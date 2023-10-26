@@ -536,7 +536,7 @@ func (parser *Parser) parseArrowFunctionLiteral() ast.Expression {
 		expression := parser.parseExpression()
 		arrowFunctionLiteral.Body = &ast.BlockStatement{
 			LeftBrace:  expression.StartIndex(),
-			Body:       []ast.Statement{expression},
+			Body:       []ast.Statement{&ast.ExpressionStatement{Expression: expression}},
 			RightBrace: expression.EndIndex() - 1,
 		}
 	}
