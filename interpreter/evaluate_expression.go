@@ -268,7 +268,11 @@ func (self *Interpreter) evaluateDotExpression(dotExpression *ast.DotExpression)
 	leftValue = leftValue.flatResolve()
 	leftObject := leftValue.objectd()
 	identifier := dotExpression.Identifier
-	return leftObject.getProperty(identifier.Name)
+	return ReferenceValue(PropertyReferenced{
+		identifier.Name,
+		self.evaluateStringLiteral(identifier.Name),
+		leftObject,
+	})
 }
 
 func (self *Interpreter) evaluateBracketExpression(bracketExpression *ast.BracketExpression) Value {

@@ -127,7 +127,7 @@ func (parser *Parser) parseAssignExpression() ast.Expression {
 		err := true
 
 		switch left.(type) {
-		case *ast.Identifier:
+		case *ast.Identifier, *ast.DotExpression, *ast.BracketExpression:
 			err = false
 			break
 		case *ast.ArrayLiteral:
@@ -341,7 +341,7 @@ func (parser *Parser) parseUpdateExpression() ast.Expression {
 	if isUpdate {
 		parser.next()
 		switch operand.(type) {
-		case *ast.Identifier:
+		case *ast.Identifier, *ast.DotExpression, *ast.BracketExpression:
 		default:
 			parser.error(index, "Invalid left-hand side in assignment")
 			parser.nextStatement()

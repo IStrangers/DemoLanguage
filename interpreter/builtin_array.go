@@ -12,6 +12,9 @@ type BuiltinArray struct {
 }
 
 func (self BuiltinArray) getValue(object Objectd, property Value, args ...Value) Value {
+	if property.isString() {
+		return object.getProperty(property.string())
+	}
 	getMethod := object.getProperty(Get_Method)
 	return getMethod.functiond().call(property)
 }

@@ -60,7 +60,9 @@ func TestInterpreter(t *testing.T) {
 		arr.add(555)
 		arr.remove(2)
 		var v = arr.get(arr.size() - 1)
-		
+		arr[0] = v
+		obj["name"] = 123
+		obj.name = "564654"
 		return arr[0]
 	`)
 	println(fmt.Sprintf("%v", value.getVal()))
