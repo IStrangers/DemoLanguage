@@ -270,8 +270,8 @@ func (self *Value) referenced() Referenced {
 }
 
 type Objectd struct {
-	origin    any
-	propertys map[string]Value
+	classObject ClassObject
+	propertys   map[string]Value
 }
 
 func (self Objectd) getProperty(name string) Value {
@@ -286,9 +286,17 @@ func (self Objectd) setProperty(name string, value Value) {
 	self.propertys[name] = value
 }
 
-func (self Objectd) contains(name string) bool {
+func (self Objectd) containsProperty(name string) bool {
 	_, exists := self.propertys[name]
 	return exists
+}
+
+func (self Objectd) getValue(property Value, args ...Value) Value {
+	return self.classObject.getValue(self, property, args...)
+}
+
+func (self Objectd) setValue(property Value, values ...Value) {
+	self.classObject.setValue(self, property, values...)
 }
 
 type Functiond struct {
@@ -336,8 +344,9 @@ func (self StashReferenced) setValue(value Value) {
 }
 
 type PropertyReferenced struct {
-	name   string
-	object Objectd
+	name     string
+	property Value
+	object   Objectd
 }
 
 func (self PropertyReferenced) getName() string {
@@ -350,10 +359,10 @@ func (self PropertyReferenced) getVal() any {
 }
 
 func (self PropertyReferenced) getValue() Value {
-	value := self.object.getProperty(self.name)
+	value := self.object.getValue(self.property)
 	return value
 }
 
 func (self PropertyReferenced) setValue(value Value) {
-	self.object.setProperty(self.name, value)
+	self.object.setValue(self.property, value)
 }

@@ -107,10 +107,7 @@ func (self *Interpreter) evaluateObjectLiteral(objectLiteral *ast.ObjectLiteral)
 		kv := property.(*ast.PropertyKeyValue)
 		propertys[kv.Name.Name] = self.evaluateExpression(kv.Value)
 	}
-	return ObjectValue(Objectd{
-		nil,
-		propertys,
-	})
+	return BuiltinObjectObject(propertys)
 }
 
 func (self *Interpreter) evaluateArrayLiteral(arrayLiteral *ast.ArrayLiteral) Value {
@@ -118,7 +115,7 @@ func (self *Interpreter) evaluateArrayLiteral(arrayLiteral *ast.ArrayLiteral) Va
 	for _, value := range arrayLiteral.Values {
 		values = append(values, self.evaluateExpression(value))
 	}
-	return ArrayObject(values)
+	return BuiltinArrayObject(values)
 }
 
 func (self *Interpreter) evaluateFunLiteral(funLiteral *ast.FunLiteral) Value {
@@ -281,6 +278,7 @@ func (self *Interpreter) evaluateBracketExpression(bracketExpression *ast.Bracke
 	exprValue := self.evaluateExpression(bracketExpression.Expression)
 	return ReferenceValue(PropertyReferenced{
 		exprValue.string(),
+		exprValue,
 		leftObject,
 	})
 }

@@ -1,63 +1,79 @@
 package interpreter
 
-type Arrayd struct {
+const (
+	Get_Method    = "get"
+	Add_Method    = "add"
+	Remove_Method = "remove"
+	Size_Method   = "size"
+)
+
+type BuiltinArray struct {
 	values []Value
 }
 
-func ArrayObject(values []Value) Value {
+func (self BuiltinArray) getValue(object Objectd, property Value, args ...Value) Value {
+	getMethod := object.getProperty(Get_Method)
+	return getMethod.functiond().call(property)
+}
+
+func (self BuiltinArray) setValue(object Objectd, property Value, values ...Value) {
+	addMethod := object.getProperty(Add_Method)
+	addMethod.functiond().call(values...)
+}
+
+func BuiltinArrayObject(values []Value) Value {
 	object := Value{
 		valueType: Object,
-		value:     nil,
 	}
-	array := Arrayd{
+	builtinArray := BuiltinArray{
 		values: values,
 	}
 	object.value = Objectd{
-		origin: array,
+		classObject: builtinArray,
 		propertys: map[string]Value{
-			"get": {
+			Get_Method: {
 				valueType: Function,
 				value: Functiond{
 					this: object,
-					name: "get",
+					name: Get_Method,
 					callee: func(arguments ...Value) Value {
-						return array.values[arguments[0].int64()]
+						return builtinArray.values[arguments[0].int64()]
 					},
 				},
 			},
-			"add": {
+			Add_Method: {
 				valueType: Function,
 				value: Functiond{
 					this: object,
-					name: "add",
+					name: Add_Method,
 					callee: func(arguments ...Value) Value {
 						for _, argument := range arguments {
-							array.values = append(array.values, argument)
+							builtinArray.values = append(builtinArray.values, argument)
 						}
 						return Const_Skip_Value
 					},
 				},
 			},
-			"remove": {
+			Remove_Method: {
 				valueType: Function,
 				value: Functiond{
 					this: object,
-					name: "remove",
+					name: Remove_Method,
 					callee: func(arguments ...Value) Value {
 						index := arguments[0].int64()
-						removeValue := array.values[index]
-						array.values = append(array.values[:index], array.values[index+1:]...)
+						removeValue := builtinArray.values[index]
+						builtinArray.values = append(builtinArray.values[:index], builtinArray.values[index+1:]...)
 						return removeValue
 					},
 				},
 			},
-			"size": {
+			Size_Method: {
 				valueType: Function,
 				value: Functiond{
 					this: object,
-					name: "size",
+					name: Size_Method,
 					callee: func(arguments ...Value) Value {
-						return NumberValue(len(array.values))
+						return NumberValue(len(builtinArray.values))
 					},
 				},
 			},

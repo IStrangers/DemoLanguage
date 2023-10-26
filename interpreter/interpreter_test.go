@@ -60,7 +60,8 @@ func TestInterpreter(t *testing.T) {
 		arr.add(555)
 		arr.remove(2)
 		var v = arr.get(arr.size() - 1)
-		return v
+		
+		return arr[0]
 	`)
 	println(fmt.Sprintf("%v", value.getVal()))
 }
