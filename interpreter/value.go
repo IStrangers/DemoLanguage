@@ -208,8 +208,26 @@ func (self *Value) bool() bool {
 
 func (self *Value) string() string {
 	switch v := self.getVal().(type) {
+	case int:
+		return strconv.FormatInt(int64(v), 10)
+	case int8:
+		return strconv.FormatInt(int64(v), 10)
+	case int16:
+		return strconv.FormatInt(int64(v), 10)
+	case int32:
+		return strconv.FormatInt(int64(v), 10)
 	case int64:
 		return strconv.FormatInt(v, 10)
+	case uint:
+		return strconv.FormatUint(uint64(v), 10)
+	case uint8:
+		return strconv.FormatUint(uint64(v), 10)
+	case uint16:
+		return strconv.FormatUint(uint64(v), 10)
+	case uint32:
+		return strconv.FormatUint(uint64(v), 10)
+	case uint64:
+		return strconv.FormatUint(v, 10)
 	case float64:
 		return floatToString(v, 32)
 	case string:
@@ -315,4 +333,27 @@ func (self StashReferenced) getValue() Value {
 
 func (self StashReferenced) setValue(value Value) {
 	self.stash.setValue(self.name, value)
+}
+
+type PropertyReferenced struct {
+	name   string
+	object Objectd
+}
+
+func (self PropertyReferenced) getName() string {
+	return self.name
+}
+
+func (self PropertyReferenced) getVal() any {
+	value := self.getValue()
+	return value.getVal()
+}
+
+func (self PropertyReferenced) getValue() Value {
+	value := self.object.getProperty(self.name)
+	return value
+}
+
+func (self PropertyReferenced) setValue(value Value) {
+	self.object.setProperty(self.name, value)
 }

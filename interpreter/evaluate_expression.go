@@ -35,6 +35,8 @@ func (self *Interpreter) evaluateExpression(expression ast.Expression) Value {
 		return self.evaluateCallExpression(expr)
 	case *ast.DotExpression:
 		return self.evaluateDotExpression(expr)
+	case *ast.BracketExpression:
+		return self.evaluateBracketExpression(expr)
 	}
 	return self.evaluateSkip()
 }
@@ -270,4 +272,15 @@ func (self *Interpreter) evaluateDotExpression(dotExpression *ast.DotExpression)
 	leftObject := leftValue.objectd()
 	identifier := dotExpression.Identifier
 	return leftObject.getProperty(identifier.Name)
+}
+
+func (self *Interpreter) evaluateBracketExpression(bracketExpression *ast.BracketExpression) Value {
+	leftValue := self.evaluateExpression(bracketExpression.Left)
+	leftValue = leftValue.flatResolve()
+	leftObject := leftValue.objectd()
+	exprValue := self.evaluateExpression(bracketExpression.Expression)
+	return ReferenceValue(PropertyReferenced{
+		exprValue.string(),
+		leftObject,
+	})
 }
