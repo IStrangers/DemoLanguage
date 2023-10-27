@@ -14,7 +14,7 @@ type BuiltinGlobal struct {
 }
 
 func (self BuiltinGlobal) json(object Objectd) string {
-	return "BuiltinGlobal"
+	return "@Class BuiltinGlobal"
 }
 
 func (self BuiltinGlobal) getValue(object Objectd, property Value, args ...Value) Value {
