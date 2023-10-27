@@ -289,7 +289,7 @@ func (self *Value) json() string {
 	} else if self.isObject() {
 		return self.objectd().json()
 	} else if self.isFunction() {
-		return strings.ReplaceAll(self.functiond().getFunDefinition(), "\n", "")
+		return strings.ReplaceAll(strings.ReplaceAll(self.functiond().getFunDefinition(), "\n", ""), "\r", "")
 	}
 	return ""
 }

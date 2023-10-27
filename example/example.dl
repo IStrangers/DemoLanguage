@@ -51,6 +51,7 @@ var obj = {
         }
     ],
     outArr: fun() {
+        println(this)
         for var i = 0;i < this.arr.size();i++ {
             println(this.arr[i])
         }
