@@ -8,10 +8,10 @@ import (
 type BuiltinObject struct {
 }
 
-func (self BuiltinObject) json(object Objectd) string {
+func (self BuiltinObject) ofLiteral(object Objectd) string {
 	var jsons []string
 	for name, property := range object.propertys {
-		jsons = append(jsons, fmt.Sprintf("%s: %s", name, property.json()))
+		jsons = append(jsons, fmt.Sprintf("%s: %s", name, property.ofLiteral()))
 	}
 	return fmt.Sprintf("{%s}", strings.Join(jsons, ","))
 }

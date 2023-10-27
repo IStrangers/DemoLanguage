@@ -1,6 +1,7 @@
 package interpreter
 
 import (
+	"fmt"
 	"math"
 	"strconv"
 	"strings"
@@ -280,14 +281,17 @@ func (self *Value) referenced() Referenced {
 	panic("Unable to convert to reference")
 }
 
-func (self *Value) json() string {
+func (self *Value) ofLiteral() string {
 	if self.isNull() || self.isBoolean() || self.isNumber() || self.isString() {
+		if self.isString() {
+			return fmt.Sprintf("\"%s\"", self.string())
+		}
 		return self.string()
 	} else if self.isReturn() {
 		value := self.ofValue()
-		return value.json()
+		return value.ofLiteral()
 	} else if self.isObject() {
-		return self.objectd().json()
+		return self.objectd().ofLiteral()
 	} else if self.isFunction() {
 		return strings.ReplaceAll(strings.ReplaceAll(self.functiond().getFunDefinition(), "\n", ""), "\r", "")
 	}
@@ -324,8 +328,8 @@ func (self Objectd) setValue(property Value, values ...Value) {
 	self.classObject.setValue(self, property, values...)
 }
 
-func (self Objectd) json() string {
-	return self.classObject.json(self)
+func (self Objectd) ofLiteral() string {
+	return self.classObject.ofLiteral(self)
 }
 
 type Functiond struct {

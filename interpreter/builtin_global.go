@@ -13,7 +13,7 @@ type BuiltinGlobal struct {
 	values []Value
 }
 
-func (self BuiltinGlobal) json(object Objectd) string {
+func (self BuiltinGlobal) ofLiteral(object Objectd) string {
 	return "@Class BuiltinGlobal"
 }
 
@@ -45,7 +45,7 @@ func BuiltinGlobalObject() Objectd {
 func toVals(values []Value) []any {
 	var vals []any
 	for _, value := range values {
-		vals = append(vals, value.json())
+		vals = append(vals, value.ofLiteral())
 	}
 	return vals
 }

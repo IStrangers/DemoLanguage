@@ -13,10 +13,10 @@ type BuiltinArray struct {
 	values []Value
 }
 
-func (self BuiltinArray) json(object Objectd) string {
+func (self BuiltinArray) ofLiteral(object Objectd) string {
 	var jsons []string
 	for _, value := range self.values {
-		jsons = append(jsons, value.json())
+		jsons = append(jsons, value.ofLiteral())
 	}
 	return "[" + strings.Join(jsons, ",") + "]"
 }
