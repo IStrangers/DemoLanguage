@@ -14,11 +14,11 @@ type BuiltinArray struct {
 }
 
 func (self BuiltinArray) ofLiteral(object Objectd) string {
-	var jsons []string
+	var literals []string
 	for _, value := range self.values {
-		jsons = append(jsons, value.ofLiteral())
+		literals = append(literals, value.ofLiteral())
 	}
-	return "[" + strings.Join(jsons, ",") + "]"
+	return "[" + strings.Join(literals, ",") + "]"
 }
 
 func (self BuiltinArray) getValue(object Objectd, property Value, args ...Value) Value {

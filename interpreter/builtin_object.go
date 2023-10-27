@@ -9,15 +9,15 @@ type BuiltinObject struct {
 }
 
 func (self BuiltinObject) ofLiteral(object Objectd) string {
-	var jsons []string
+	var literals []string
 	for name, property := range object.propertys {
 		valueFormat := "%s"
 		if property.isString() {
 			valueFormat = "\"%s\""
 		}
-		jsons = append(jsons, fmt.Sprintf("%s: %s", name, fmt.Sprintf(valueFormat, property.ofLiteral())))
+		literals = append(literals, fmt.Sprintf("%s: %s", name, fmt.Sprintf(valueFormat, property.ofLiteral())))
 	}
-	return fmt.Sprintf("{%s}", strings.Join(jsons, ","))
+	return fmt.Sprintf("{%s}", strings.Join(literals, ","))
 }
 
 func (self BuiltinObject) getValue(object Objectd, property Value, args ...Value) Value {
