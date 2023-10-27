@@ -31,20 +31,22 @@ const (
 	BOOLEAN
 	NULL
 
-	ADDITION         // +
-	SUBTRACT         // -
-	MULTIPLY         // *
-	DIVIDE           // /
-	REMAINDER        // %
-	AND_ARITHMETIC   // &
-	OR_ARITHMETIC    // |
-	INCREMENT        // ++
-	DECREMENT        // --
-	ADDITION_ASSIGN  // +=
-	SUBTRACT_ASSIGN  // -=
-	MULTIPLY_ASSIGN  // *=
-	DIVIDE_ASSIGN    // /=
-	REMAINDER_ASSIGN // %=
+	ADDITION              // +
+	SUBTRACT              // -
+	MULTIPLY              // *
+	DIVIDE                // /
+	REMAINDER             // %
+	AND_ARITHMETIC        // &
+	OR_ARITHMETIC         // |
+	INCREMENT             // ++
+	DECREMENT             // --
+	ADDITION_ASSIGN       // +=
+	SUBTRACT_ASSIGN       // -=
+	MULTIPLY_ASSIGN       // *=
+	DIVIDE_ASSIGN         // /=
+	REMAINDER_ASSIGN      // %=
+	AND_ARITHMETIC_ASSIGN // &=
+	OR_ARITHMETIC_ASSIGN  // |=
 
 	ASSIGN            // =
 	EQUAL             // ==
@@ -97,20 +99,22 @@ var tokenStringMap = [...]string{
 	BOOLEAN: "BOOLEAN",
 	NULL:    "NULL",
 
-	ADDITION:         "+",
-	SUBTRACT:         "-",
-	MULTIPLY:         "*",
-	DIVIDE:           "/",
-	REMAINDER:        "%",
-	AND_ARITHMETIC:   "&",
-	OR_ARITHMETIC:    "|",
-	INCREMENT:        "++",
-	DECREMENT:        "--",
-	ADDITION_ASSIGN:  "+=",
-	SUBTRACT_ASSIGN:  "-=",
-	MULTIPLY_ASSIGN:  "*=",
-	DIVIDE_ASSIGN:    "/=",
-	REMAINDER_ASSIGN: "%=",
+	ADDITION:              "+",
+	SUBTRACT:              "-",
+	MULTIPLY:              "*",
+	DIVIDE:                "/",
+	REMAINDER:             "%",
+	AND_ARITHMETIC:        "&",
+	OR_ARITHMETIC:         "|",
+	INCREMENT:             "++",
+	DECREMENT:             "--",
+	ADDITION_ASSIGN:       "+=",
+	SUBTRACT_ASSIGN:       "-=",
+	MULTIPLY_ASSIGN:       "*=",
+	DIVIDE_ASSIGN:         "/=",
+	REMAINDER_ASSIGN:      "%=",
+	AND_ARITHMETIC_ASSIGN: "&=",
+	OR_ARITHMETIC_ASSIGN:  "|=",
 
 	ASSIGN:            "=",
 	EQUAL:             "==",

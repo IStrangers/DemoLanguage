@@ -102,10 +102,10 @@ func (parser *Parser) scan() (tkn token.Token, literal string, index file.Index)
 				tkn = parser.switchToken("=", token.GREATER_OR_EQUEAL, token.GREATER)
 				break
 			case '&':
-				tkn = parser.switchToken("&", token.LOGICAL_AND, token.AND_ARITHMETIC)
+				tkn = parser.switchToken("&,=", token.LOGICAL_AND, token.AND_ARITHMETIC_ASSIGN, token.AND_ARITHMETIC)
 				break
 			case '|':
-				tkn = parser.switchToken("|", token.LOGICAL_OR, token.OR_ARITHMETIC)
+				tkn = parser.switchToken("|,=", token.LOGICAL_OR, token.OR_ARITHMETIC_ASSIGN, token.OR_ARITHMETIC)
 				break
 			default:
 				tkn = token.ILLEGAL

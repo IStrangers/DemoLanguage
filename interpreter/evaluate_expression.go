@@ -156,8 +156,12 @@ func (self *Interpreter) evaluateThisExpression(thisExpression *ast.ThisExpressi
 
 func (self *Interpreter) evaluateAssignExpression(assignExpression *ast.AssignExpression) Value {
 	leftValue := self.evaluateExpression(assignExpression.Left)
+	rightValue := self.evaluateExpression(assignExpression.Right)
+	if assignExpression.Operator != token.ASSIGN {
+		rightValue = self.evaluateBinary(leftValue, assignExpression.Operator, rightValue)
+	}
 	leftRef := leftValue.referenced()
-	leftRef.setValue(self.evaluateExpression(assignExpression.Right))
+	leftRef.setValue(rightValue)
 	return self.evaluateSkip()
 }
 

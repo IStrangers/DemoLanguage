@@ -70,4 +70,16 @@ println(this)
 println(arr[0],arr[r])
 println(obj.arr,obj["arr"])
 obj.outArr()
-return r
+println(a)
+a += 100
+println(a)
+a -= 50
+println(a)
+a *= 25
+println(a)
+a /= 10
+println(a)
+a &= 40
+println(a)
+a |= 5010
+println(a)

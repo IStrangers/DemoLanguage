@@ -116,7 +116,21 @@ func (parser *Parser) parseAssignExpression() ast.Expression {
 	var operator token.Token
 	switch parser.token {
 	case token.ASSIGN:
-		operator = token.ASSIGN
+		operator = parser.token
+	case token.ADDITION_ASSIGN:
+		operator = token.ADDITION
+	case token.SUBTRACT_ASSIGN:
+		operator = token.SUBTRACT
+	case token.MULTIPLY_ASSIGN:
+		operator = token.MULTIPLY
+	case token.DIVIDE_ASSIGN:
+		operator = token.DIVIDE
+	case token.REMAINDER_ASSIGN:
+		operator = token.REMAINDER
+	case token.AND_ARITHMETIC_ASSIGN:
+		operator = token.AND_ARITHMETIC
+	case token.OR_ARITHMETIC_ASSIGN:
+		operator = token.OR_ARITHMETIC
 	case token.ARROW:
 		parser.restoreParseState(parseState)
 		left = parser.parseArrowFunctionLiteral()
@@ -148,7 +162,7 @@ func (parser *Parser) parseAssignExpression() ast.Expression {
 			parser.nextStatement()
 			return &ast.BadExpression{Start: index, End: parser.index}
 		}
-		parser.expect(operator)
+		parser.expect(parser.token)
 		return &ast.AssignExpression{
 			Left:     left,
 			Operator: operator,
