@@ -5,4 +5,5 @@ type Scope struct {
 	outer   *Scope
 	stash   *Stash
 	this    Objectd
+	depth   int
 }

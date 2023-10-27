@@ -16,9 +16,11 @@ func (self *Runtime) openScope(this Objectd) {
 		runtime: self,
 		outer:   self.scope,
 		this:    this,
+		depth:   0,
 	}
 	var stashOuter *Stash
 	if self.scope.outer != nil {
+		self.scope.depth = self.scope.outer.depth + 1
 		stashOuter = self.scope.outer.stash
 	}
 	self.scope.stash = &Stash{
