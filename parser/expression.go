@@ -472,7 +472,7 @@ func (parser *Parser) parseArrayLiteral() ast.Expression {
 	var values []ast.Expression
 	for parser.token != token.RIGHT_BRACKET && parser.token != token.EOF {
 		if parser.token == token.COMMA {
-			values = append(values, nil)
+			values = append(values, &ast.NullLiteral{Index: parser.index})
 		} else {
 			values = append(values, parser.parseExpression())
 		}

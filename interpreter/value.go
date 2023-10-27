@@ -1,7 +1,6 @@
 package interpreter
 
 import (
-	"go/types"
 	"math"
 	"strconv"
 	"strings"
@@ -214,9 +213,10 @@ func (self *Value) bool() bool {
 }
 
 func (self *Value) string() string {
-	switch v := self.getVal().(type) {
-	case types.Nil:
+	if self.isNull() {
 		return "null"
+	}
+	switch v := self.getVal().(type) {
 	case bool:
 		return strconv.FormatBool(v)
 	case int:

@@ -69,3 +69,4 @@ println(this)
 println(arr[0],arr[r])
 println(obj.arr,obj["arr"])
 obj.outArr()
+return r
