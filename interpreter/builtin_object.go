@@ -11,7 +11,11 @@ type BuiltinObject struct {
 func (self BuiltinObject) ofLiteral(object Objectd) string {
 	var jsons []string
 	for name, property := range object.propertys {
-		jsons = append(jsons, fmt.Sprintf("%s: %s", name, property.ofLiteral()))
+		valueFormat := "%s"
+		if property.isString() {
+			valueFormat = "\"%s\""
+		}
+		jsons = append(jsons, fmt.Sprintf("%s: %s", name, fmt.Sprintf(valueFormat, property.ofLiteral())))
 	}
 	return fmt.Sprintf("{%s}", strings.Join(jsons, ","))
 }

@@ -1,7 +1,6 @@
 package interpreter
 
 import (
-	"fmt"
 	"math"
 	"strconv"
 	"strings"
@@ -283,9 +282,6 @@ func (self *Value) referenced() Referenced {
 
 func (self *Value) ofLiteral() string {
 	if self.isNull() || self.isBoolean() || self.isNumber() || self.isString() {
-		if self.isString() {
-			return fmt.Sprintf("\"%s\"", self.string())
-		}
 		return self.string()
 	} else if self.isReturn() {
 		value := self.ofValue()

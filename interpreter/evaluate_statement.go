@@ -48,7 +48,7 @@ func (self *Interpreter) evaluateStatement(statement ast.Statement) Value {
 }
 
 func (self *Interpreter) evaluateBlockStatement(blockStatement *ast.BlockStatement) Value {
-	var value Value
+	value := Const_Skip_Value
 	for _, st := range blockStatement.Body {
 		value = self.evaluateStatement(st)
 		if value.isBreak() || value.isContinue() || value.isReturn() {
