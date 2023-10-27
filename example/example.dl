@@ -24,11 +24,6 @@ for var i = 0;;i++ {
         continue
     }
 }
-for var index = 0;index < 100;index++ {
-    if index % 5 == 0 || (index >= 90 && index != 95) {
-        break
-    }
-}
 if r == 1 {
     println("one")
 } else if r == 2 {
@@ -83,3 +78,49 @@ a &= 40
 println(a)
 a |= 5010
 println(a)
+for var index = 1;index < 100;index++ {
+    if index % 5 == 0 || (index >= 90 && index != 95) {
+        if index == 5 {
+            continue
+        }
+        a = index
+        break
+    }
+}
+fun add(a = 1,b = 1) {
+    return a + b
+}
+println(add(100))
+fun getFebNum(n) {
+    if n == 1 || n == 2 {
+        return 1
+    } else {
+        return getFebNum(n - 1) + getFebNum(n - 2)
+    }
+}
+println(getFebNum(20))
+var obj1 = {
+    name: "Afghanistan",
+    count: add(),
+    ref: c,
+    inline: {
+        ref: a
+    },
+    arrowFun1: (p1) -> {
+        println(p1 + " * 2")
+        return p1 * 2
+    },
+    arrowFun2: p1 -> p1 / 2
+}
+var arr1 = [obj1.inline.ref,"sfd",500]
+arr1.add(555)
+arr1.remove(2)
+var v = arr1.get(arr1.size() - 1)
+arr1[0] = v
+obj1["name"] = 123
+obj1.name = "564654"
+println(obj1)
+println(arr1)
+var arrowFun = p1 -> p1 / 2
+println(arrowFun(5))
+return obj1.arrowFun1(500)
