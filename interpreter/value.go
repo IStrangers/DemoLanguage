@@ -347,7 +347,16 @@ func (self Functiond) call(arguments ...Value) Value {
 	return self.callee(arguments...)
 }
 
+type ReferencedType int
+
+const (
+	_ ReferencedType = iota
+	StashReferencedType
+	PropertyReferencedType
+)
+
 type Referenced interface {
+	getType() ReferencedType
 	getName() string
 	getVal() any
 	getValue() Value
@@ -357,6 +366,10 @@ type Referenced interface {
 type StashReferenced struct {
 	name  string
 	stash *Stash
+}
+
+func (self StashReferenced) getType() ReferencedType {
+	return StashReferencedType
 }
 
 func (self StashReferenced) getName() string {
@@ -381,6 +394,10 @@ type PropertyReferenced struct {
 	name     string
 	property Value
 	object   Objectd
+}
+
+func (self PropertyReferenced) getType() ReferencedType {
+	return PropertyReferencedType
 }
 
 func (self PropertyReferenced) getName() string {

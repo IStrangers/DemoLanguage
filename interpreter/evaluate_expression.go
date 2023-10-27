@@ -27,6 +27,8 @@ func (self *Interpreter) evaluateExpression(expression ast.Expression) Value {
 		return self.evaluateFunLiteral(expr)
 	case *ast.ArrowFunctionLiteral:
 		return self.evaluateArrowFunctionLiteral(expr)
+	case *ast.ThisExpression:
+		return self.evaluateThisExpression(expr)
 	case *ast.AssignExpression:
 		return self.evaluateAssignExpression(expr)
 	case *ast.BinaryExpression:
@@ -87,7 +89,7 @@ func (self *Interpreter) evaluateStringLiteral(value any) Value {
 func (self *Interpreter) evaluateBinding(binding *ast.Binding) Value {
 	targetValue := self.evaluateExpression(binding.Target)
 	targetRef := targetValue.referenced()
-	if targetRef.getVal() != nil {
+	if self.runtime.getStash().contains(targetRef.getName()) {
 		panic("already defined: " + targetRef.getName())
 	}
 	initValue := self.evaluateExpression(binding.Initializer)
@@ -146,6 +148,10 @@ func (self *Interpreter) evaluateFunLiteral(funLiteral *ast.FunLiteral) Value {
 
 func (self *Interpreter) evaluateArrowFunctionLiteral(arrowFunctionLiteral *ast.ArrowFunctionLiteral) Value {
 	return self.evaluateFunction(nil, arrowFunctionLiteral.ParameterList, arrowFunctionLiteral.Body, arrowFunctionLiteral.FunDefinition)
+}
+
+func (self *Interpreter) evaluateThisExpression(thisExpression *ast.ThisExpression) Value {
+	return ObjectValue(self.runtime.scope.this)
 }
 
 func (self *Interpreter) evaluateAssignExpression(assignExpression *ast.AssignExpression) Value {
@@ -250,12 +256,21 @@ func (self *Interpreter) evaluateUnaryExpression(unaryExpression *ast.UnaryExpre
 
 func (self *Interpreter) evaluateCallExpression(callExpression *ast.CallExpression) Value {
 	calleeValue := self.evaluateExpression(callExpression.Callee)
+	calleeRef := calleeValue.referenced()
 	calleeValue = calleeValue.flatResolve()
 	function := calleeValue.functiond()
 	var arguments []Value
 	for _, argument := range callExpression.Arguments {
 		arguments = append(arguments, self.evaluateExpression(argument))
 	}
+	var this Objectd
+	if calleeRef.getType() == PropertyReferencedType {
+		this = calleeRef.(PropertyReferenced).object
+	} else {
+		this = self.runtime.global
+	}
+	self.runtime.openScope(this)
+	defer self.runtime.closeScope()
 	resultValue := function.call(arguments...)
 	if resultValue.isReturn() {
 		return resultValue.ofValue()
@@ -264,8 +279,6 @@ func (self *Interpreter) evaluateCallExpression(callExpression *ast.CallExpressi
 }
 
 func (self *Interpreter) evaluateCallFunction(parameterList *ast.ParameterList, body ast.Statement, arguments ...Value) Value {
-	self.runtime.openScope()
-	defer self.runtime.closeScope()
 	argsLength := len(arguments)
 	for index, binding := range parameterList.List {
 		targetValue := self.evaluateExpression(binding.Target)

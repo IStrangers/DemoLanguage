@@ -25,7 +25,7 @@ func (self *Interpreter) run(fileName string, content string) Value {
 }
 
 func (self *Interpreter) runProgram(program *ast.Program) Value {
-	self.runtime.openScope()
+	self.runtime.openScope(self.runtime.global)
 	defer self.runtime.closeScope()
 	value := self.evaluateProgramBody(program.Body)
 	return value
