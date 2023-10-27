@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	BuiltinGlobal_Println = "println"
+	BuiltinGlobal_Println_Method = "println"
 )
 
 type BuiltinGlobal struct {
@@ -30,8 +30,8 @@ func BuiltinGlobalObject() Objectd {
 	object := Objectd{
 		classObject: builtinGlobal,
 		propertys: map[string]Value{
-			BuiltinGlobal_Println: FunctionValue(Functiond{
-				name: BuiltinGlobal_Println,
+			BuiltinGlobal_Println_Method: FunctionValue(Functiond{
+				name: BuiltinGlobal_Println_Method,
 				callee: func(arguments ...Value) Value {
 					fmt.Fprintln(os.Stdout, toVals(arguments)...)
 					return Const_Skip_Value
