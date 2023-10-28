@@ -29,13 +29,10 @@ func (self BuiltinObject) setValue(object Objectd, property Value, values ...Val
 }
 
 func BuiltinObjectObject(propertys map[string]Value) Value {
-	object := Value{
-		valueType: Object,
-	}
 	builtinArray := BuiltinObject{}
-	object.value = Objectd{
+	object := Objectd{
 		classObject: builtinArray,
 		propertys:   propertys,
 	}
-	return object
+	return ObjectValue(object)
 }

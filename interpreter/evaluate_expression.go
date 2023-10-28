@@ -272,12 +272,15 @@ func (self *Interpreter) evaluateCallExpression(callExpression *ast.CallExpressi
 		arguments = append(arguments, self.evaluateExpression(argument))
 	}
 	var this Objectd
+	var callee string
 	if calleeRef.getType() == PropertyReferencedType {
 		this = calleeRef.(PropertyReferenced).object
+		callee = calleeRef.getName()
 	} else {
 		this = self.runtime.global
+		callee = function.getName()
 	}
-	self.runtime.openScope(this)
+	self.runtime.openScope(this, callee)
 	defer self.runtime.closeScope()
 	resultValue := function.call(arguments...)
 	if resultValue.isReturn() {

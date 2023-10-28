@@ -330,13 +330,17 @@ func (self Objectd) ofLiteral() string {
 
 type Functiond struct {
 	funDefinition string
-	this          Value
+	this          Objectd
 	name          string
 	callee        func(arguments ...Value) Value
 }
 
 func (self Functiond) getFunDefinition() string {
 	return self.funDefinition
+}
+
+func (self Functiond) getThis() Objectd {
+	return self.this
 }
 
 func (self Functiond) getName() string {

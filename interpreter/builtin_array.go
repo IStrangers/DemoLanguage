@@ -35,50 +35,47 @@ func (self BuiltinArray) setValue(object Objectd, property Value, values ...Valu
 }
 
 func BuiltinArrayObject(values []Value) Value {
-	object := Value{
-		valueType: Object,
-	}
 	builtinArray := BuiltinArray{
 		values: values,
 	}
-	object.value = Objectd{
+	object := Objectd{
 		classObject: builtinArray,
-		propertys: map[string]Value{
-			BuiltinArray_Get_Method: FunctionValue(Functiond{
-				this: object,
-				name: BuiltinArray_Get_Method,
-				callee: func(arguments ...Value) Value {
-					return builtinArray.values[arguments[0].int64()]
-				},
-			}),
-			BuiltinArray_Add_Method: FunctionValue(Functiond{
-				this: object,
-				name: BuiltinArray_Add_Method,
-				callee: func(arguments ...Value) Value {
-					for _, argument := range arguments {
-						builtinArray.values = append(builtinArray.values, argument)
-					}
-					return Const_Skip_Value
-				},
-			}),
-			BuiltinArray_Remove_Method: FunctionValue(Functiond{
-				this: object,
-				name: BuiltinArray_Remove_Method,
-				callee: func(arguments ...Value) Value {
-					index := arguments[0].int64()
-					removeValue := builtinArray.values[index]
-					builtinArray.values = append(builtinArray.values[:index], builtinArray.values[index+1:]...)
-					return removeValue
-				},
-			}),
-			BuiltinArray_Size_Method: FunctionValue(Functiond{
-				this: object,
-				name: BuiltinArray_Size_Method,
-				callee: func(arguments ...Value) Value {
-					return NumberValue(len(builtinArray.values))
-				},
-			}),
-		},
 	}
-	return object
+	object.propertys = map[string]Value{
+		BuiltinArray_Get_Method: FunctionValue(Functiond{
+			this: object,
+			name: BuiltinArray_Get_Method,
+			callee: func(arguments ...Value) Value {
+				return builtinArray.values[arguments[0].int64()]
+			},
+		}),
+		BuiltinArray_Add_Method: FunctionValue(Functiond{
+			this: object,
+			name: BuiltinArray_Add_Method,
+			callee: func(arguments ...Value) Value {
+				for _, argument := range arguments {
+					builtinArray.values = append(builtinArray.values, argument)
+				}
+				return Const_Skip_Value
+			},
+		}),
+		BuiltinArray_Remove_Method: FunctionValue(Functiond{
+			this: object,
+			name: BuiltinArray_Remove_Method,
+			callee: func(arguments ...Value) Value {
+				index := arguments[0].int64()
+				removeValue := builtinArray.values[index]
+				builtinArray.values = append(builtinArray.values[:index], builtinArray.values[index+1:]...)
+				return removeValue
+			},
+		}),
+		BuiltinArray_Size_Method: FunctionValue(Functiond{
+			this: object,
+			name: BuiltinArray_Size_Method,
+			callee: func(arguments ...Value) Value {
+				return NumberValue(len(builtinArray.values))
+			},
+		}),
+	}
+	return ObjectValue(object)
 }

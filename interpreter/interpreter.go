@@ -29,7 +29,7 @@ func (self *Interpreter) run(fileName string, content string) Value {
 }
 
 func (self *Interpreter) runProgram(program *ast.Program) Value {
-	self.runtime.openScope(self.runtime.global)
+	self.runtime.openScope(self.runtime.global, "")
 	defer self.runtime.closeScope()
 	value := self.evaluateProgramBody(program.Body)
 	return value
@@ -39,7 +39,7 @@ func (self *Interpreter) panic(msg string, index file.Index) Value {
 	trace := ""
 	if index != -1 {
 		position := self.file.PositionByIndex(index)
-		trace = fmt.Sprintf(" at %s %d:%d", position.FileName, position.Line, position.Column)
+		trace = fmt.Sprintf(" at %s (%s %d:%d)", self.runtime.scope.callee, position.FileName, position.Line, position.Column)
 	}
 	panic(fmt.Sprintf("%s\n\t%s", msg, trace))
 	return Const_Skip_Value

@@ -29,15 +29,16 @@ func BuiltinGlobalObject() Objectd {
 	builtinGlobal := BuiltinGlobal{}
 	object := Objectd{
 		classObject: builtinGlobal,
-		propertys: map[string]Value{
-			BuiltinGlobal_Println_Method: FunctionValue(Functiond{
-				name: BuiltinGlobal_Println_Method,
-				callee: func(arguments ...Value) Value {
-					fmt.Fprintln(os.Stdout, toVals(arguments)...)
-					return Const_Skip_Value
-				},
-			}),
-		},
+	}
+	object.propertys = map[string]Value{
+		BuiltinGlobal_Println_Method: FunctionValue(Functiond{
+			this: object,
+			name: BuiltinGlobal_Println_Method,
+			callee: func(arguments ...Value) Value {
+				fmt.Fprintln(os.Stdout, toVals(arguments)...)
+				return Const_Skip_Value
+			},
+		}),
 	}
 	return object
 }

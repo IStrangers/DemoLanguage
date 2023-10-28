@@ -11,11 +11,12 @@ func createRunTime() *Runtime {
 	}
 }
 
-func (self *Runtime) openScope(this Objectd) {
+func (self *Runtime) openScope(this Objectd, callee string) {
 	self.scope = &Scope{
 		runtime: self,
 		outer:   self.scope,
 		this:    this,
+		callee:  callee,
 		depth:   0,
 	}
 	var stashOuter *Stash
