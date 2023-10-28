@@ -22,6 +22,10 @@ type File struct {
 	LastScannedOffset int
 }
 
+func (file *File) PositionByIndex(index Index) *Position {
+	return file.Position(int(index) - file.BaseOffset)
+}
+
 func (file *File) Position(offset int) *Position {
 	var line int
 	var lineOffsets []int

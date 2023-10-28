@@ -2,11 +2,14 @@ package interpreter
 
 import (
 	"DemoLanguage/ast"
+	"DemoLanguage/file"
 	"DemoLanguage/parser"
+	"fmt"
 )
 
 type Interpreter struct {
 	runtime *Runtime
+	file    *file.File
 }
 
 func CreateInterpreter() *Interpreter {
@@ -21,6 +24,7 @@ func (self *Interpreter) run(fileName string, content string) Value {
 	if err != nil {
 		panic(err.Error())
 	}
+	self.file = program.File
 	return self.runProgram(program)
 }
 
@@ -29,4 +33,14 @@ func (self *Interpreter) runProgram(program *ast.Program) Value {
 	defer self.runtime.closeScope()
 	value := self.evaluateProgramBody(program.Body)
 	return value
+}
+
+func (self *Interpreter) panic(msg string, index file.Index) Value {
+	trace := ""
+	if index != -1 {
+		position := self.file.PositionByIndex(index)
+		trace = fmt.Sprintf(" at %s %d:%d", position.FileName, position.Line, position.Column)
+	}
+	panic(fmt.Sprintf("%s\n\t%s", msg, trace))
+	return Const_Skip_Value
 }

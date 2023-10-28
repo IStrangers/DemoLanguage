@@ -9,6 +9,6 @@ import (
 func TestInterpreter(t *testing.T) {
 	interpreter := CreateInterpreter()
 	content, _ := os.ReadFile("../example/example.dl")
-	value := interpreter.run("", string(content))
+	value := interpreter.run("example.dl", string(content))
 	println(fmt.Sprintf("%v", value.getVal()))
 }

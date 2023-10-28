@@ -3,6 +3,7 @@ package interpreter
 import (
 	"DemoLanguage/ast"
 	"DemoLanguage/token"
+	"fmt"
 )
 
 func (self *Interpreter) evaluateExpression(expression ast.Expression) Value {
@@ -90,7 +91,7 @@ func (self *Interpreter) evaluateBinding(binding *ast.Binding) Value {
 	targetValue := self.evaluateExpression(binding.Target)
 	targetRef := targetValue.referenced()
 	if self.runtime.getStash().contains(targetRef.getName()) {
-		panic("already defined: " + targetRef.getName())
+		self.panic("already defined: "+targetRef.getName(), binding.StartIndex())
 	}
 	initValue := self.evaluateExpression(binding.Initializer)
 	targetRef.setValue(initValue)
@@ -238,7 +239,7 @@ func (self *Interpreter) evaluateBinary(leftValue Value, operator token.Token, r
 	case token.OR_ARITHMETIC:
 		return self.evaluateNumberLiteral(leftValue.int64() | rightValue.int64())
 	}
-	panic("Unsupported operator: " + operator.String())
+	return self.panic("Unsupported operator: "+operator.String(), -1)
 }
 
 func (self *Interpreter) evaluateUnaryExpression(unaryExpression *ast.UnaryExpression) Value {
@@ -262,6 +263,9 @@ func (self *Interpreter) evaluateCallExpression(callExpression *ast.CallExpressi
 	calleeValue := self.evaluateExpression(callExpression.Callee)
 	calleeRef := calleeValue.referenced()
 	calleeValue = calleeValue.flatResolve()
+	if !calleeValue.isFunction() {
+		self.panic(fmt.Sprintf("%s is not a function", calleeRef.getName()), callExpression.StartIndex())
+	}
 	function := calleeValue.functiond()
 	var arguments []Value
 	for _, argument := range callExpression.Arguments {
