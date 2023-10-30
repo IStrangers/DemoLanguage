@@ -18,6 +18,12 @@ var (
 	Div _Div
 	Mod _Mod
 
+	AND _AND
+	OR  _OR
+	Inc _Inc
+	Dec _Dec
+	Neg _Neg
+
 	EQ _EQ
 	NE _NE
 	LT _LT
@@ -122,6 +128,77 @@ func (self _Mod) exec(vm *VM) {
 
 	vm.stack[vm.sp-2] = value
 	vm.sp--
+	vm.pc++
+}
+
+type _AND struct{}
+
+func (self _AND) exec(vm *VM) {
+	left := vm.stack[vm.sp-2]
+	right := vm.stack[vm.sp-1]
+
+	value := ToIntValue(left.toInt() & right.toInt())
+
+	vm.stack[vm.sp-2] = value
+	vm.sp--
+	vm.pc++
+}
+
+type _OR struct{}
+
+func (self _OR) exec(vm *VM) {
+	left := vm.stack[vm.sp-2]
+	right := vm.stack[vm.sp-1]
+
+	value := ToIntValue(left.toInt() | right.toInt())
+
+	vm.stack[vm.sp-2] = value
+	vm.sp--
+	vm.pc++
+}
+
+type _Inc struct{}
+
+func (self _Inc) exec(vm *VM) {
+	value := vm.stack[vm.sp-1]
+
+	if value.isFloat() {
+		value = ToFloatValue(value.toFloat() + 1.0)
+	} else {
+		value = ToIntValue(value.toInt() + 1)
+	}
+
+	vm.stack[vm.sp-1] = value
+	vm.pc++
+}
+
+type _Dec struct{}
+
+func (self _Dec) exec(vm *VM) {
+	value := vm.stack[vm.sp-1]
+
+	if value.isFloat() {
+		value = ToFloatValue(value.toFloat() - 1.0)
+	} else {
+		value = ToIntValue(value.toInt() - 1)
+	}
+
+	vm.stack[vm.sp-1] = value
+	vm.pc++
+}
+
+type _Neg struct{}
+
+func (self _Neg) exec(vm *VM) {
+	value := vm.stack[vm.sp-1]
+
+	if value.isFloat() {
+		value = ToFloatValue(-value.toFloat())
+	} else {
+		value = ToIntValue(-value.toInt())
+	}
+
+	vm.stack[vm.sp-1] = value
 	vm.pc++
 }
 
@@ -230,6 +307,30 @@ func lessComp(left Value, right Value) Value {
 		return Const_Bool_True_Value
 	}
 	return Const_Bool_False_Value
+}
+
+type Jeq int
+
+func (self Jeq) exec(vm *VM) {
+	vm.sp--
+	value := vm.stack[vm.sp]
+	if value.toBool() {
+		vm.pc += int(self)
+	} else {
+		vm.pc++
+	}
+}
+
+type Jne int
+
+func (self Jne) exec(vm *VM) {
+	vm.sp--
+	value := vm.stack[vm.sp]
+	if !value.toBool() {
+		vm.pc += int(self)
+	} else {
+		vm.pc++
+	}
 }
 
 type Jump int
