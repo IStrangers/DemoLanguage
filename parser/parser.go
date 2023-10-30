@@ -39,8 +39,9 @@ func CreateParser(baseOffset int, fileName string, content string) *Parser {
 func (parser *Parser) ParseProgram() *ast.Program {
 	parser.next()
 	return &ast.Program{
-		Body: parser.parseStatementList(),
-		File: parser.file,
+		Body:            parser.parseStatementList(),
+		DeclarationList: parser.scope.declarationList,
+		File:            parser.file,
 	}
 }
 

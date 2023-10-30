@@ -6,8 +6,9 @@ import (
 )
 
 type Program struct {
-	Body []Statement
-	File *file.File
+	Body            []Statement
+	DeclarationList []*VariableDeclaration
+	File            *file.File
 }
 
 type Node interface {
