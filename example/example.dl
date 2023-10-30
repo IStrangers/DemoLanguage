@@ -123,4 +123,7 @@ println(obj1)
 println(arr1)
 var arrowFun = p1 -> p1 / 2
 println(arrowFun(5))
-return obj1.arrowFun1(500)
+println(obj1.arrowFun1(500))
+var fs = -100
+println(fs)
+return +fs

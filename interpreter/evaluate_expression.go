@@ -244,18 +244,43 @@ func (self *Interpreter) evaluateBinary(leftValue Value, operator token.Token, r
 
 func (self *Interpreter) evaluateUnaryExpression(unaryExpression *ast.UnaryExpression) Value {
 	operandValue := self.evaluateExpression(unaryExpression.Operand)
-	operandRef := operandValue.referenced()
-	switch unaryExpression.Operator {
-	case token.NOT:
-		operandRef.setValue(self.evaluateBooleanLiteral(!operandValue.bool()))
-		return operandValue
-	case token.INCREMENT:
-		operandRef.setValue(self.evaluateNumberLiteral(operandValue.float64() + 1))
-		return operandValue
-	case token.DECREMENT:
-		operandRef.setValue(self.evaluateNumberLiteral(operandValue.float64() - 1))
-		return operandValue
+
+	if operandValue.isReferenced() {
+		operandRef := operandValue.referenced()
+		switch unaryExpression.Operator {
+		case token.NOT:
+			operandRef.setValue(self.evaluateBooleanLiteral(!operandValue.bool()))
+			return operandValue
+		case token.ADDITION:
+			val := operandValue.float64()
+			if val < 0 {
+				val = -val
+			}
+			operandRef.setValue(self.evaluateNumberLiteral(val))
+			return operandValue
+		case token.SUBTRACT:
+			operandRef.setValue(self.evaluateNumberLiteral(-operandValue.float64()))
+			return operandValue
+		case token.INCREMENT:
+			operandRef.setValue(self.evaluateNumberLiteral(operandValue.float64() + 1))
+			return operandValue
+		case token.DECREMENT:
+			operandRef.setValue(self.evaluateNumberLiteral(operandValue.float64() - 1))
+			return operandValue
+		}
+	} else {
+		switch unaryExpression.Operator {
+		case token.ADDITION:
+			val := operandValue.float64()
+			if val < 0 {
+				val = -val
+			}
+			return self.evaluateNumberLiteral(val)
+		case token.SUBTRACT:
+			return self.evaluateNumberLiteral(-operandValue.float64())
+		}
 	}
+
 	return self.evaluateSkip()
 }
 

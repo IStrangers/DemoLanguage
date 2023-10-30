@@ -313,11 +313,12 @@ func (parser *Parser) parseExponentiationExpression() ast.Expression {
 
 func (parser *Parser) parseUnaryExpression() ast.Expression {
 
-	switch parser.token {
-	case token.NOT:
+	tkn := parser.token
+	switch tkn {
+	case token.NOT, token.ADDITION, token.SUBTRACT:
 		unaryExpression := &ast.UnaryExpression{
-			Index:    parser.expect(parser.token),
-			Operator: parser.token,
+			Index:    parser.expect(tkn),
+			Operator: tkn,
 			Operand:  parser.parseUnaryExpression(),
 		}
 		return unaryExpression
