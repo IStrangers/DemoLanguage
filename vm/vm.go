@@ -55,7 +55,7 @@ func (self *VM) execInstruction(pc int) {
 	instruction.exec(self)
 }
 
-func (self *VM) getValue(index int) Value {
+func (self *VM) getValue(index uint32) Value {
 	return self.program.values[index]
 }
 

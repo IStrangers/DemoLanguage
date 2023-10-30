@@ -13,10 +13,10 @@ var (
 	Divide   _Divide
 )
 
-type LoadValue int
+type LoadValue uint32
 
 func (self LoadValue) exec(vm *VM) {
-	vm.push(vm.getValue(int(self)))
+	vm.push(vm.getValue(uint32(self)))
 	vm.pc++
 }
 
