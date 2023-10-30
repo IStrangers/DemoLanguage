@@ -1,6 +1,9 @@
 package vm
 
-import "strings"
+import (
+	"math"
+	"strings"
+)
 
 type Instruction interface {
 	exec(*VM)
@@ -9,27 +12,28 @@ type Instruction interface {
 type InstructionArray []Instruction
 
 var (
-	Addition _Addition
-	Subtract _Subtract
-	Multiply _Multiply
-	Divide   _Divide
+	Add _Add
+	Sub _Sub
+	Mul _Mul
+	Div _Div
+	Mod _Mod
 
-	Less           _Less
-	LessOrEqual    _LessOrEqual
-	Greater        _Greater
-	GreaterOrEqual _GreaterOrEqual
+	LT _LT
+	LE _LE
+	GT _GT
+	GE _GE
 )
 
-type LoadValue uint32
+type LoadVal uint32
 
-func (self LoadValue) exec(vm *VM) {
+func (self LoadVal) exec(vm *VM) {
 	vm.push(vm.getValue(uint32(self)))
 	vm.pc++
 }
 
-type _Addition struct{}
+type _Add struct{}
 
-func (self _Addition) exec(vm *VM) {
+func (self _Add) exec(vm *VM) {
 	left := vm.stack[vm.sp-2]
 	right := vm.stack[vm.sp-1]
 
@@ -47,9 +51,9 @@ func (self _Addition) exec(vm *VM) {
 	vm.pc++
 }
 
-type _Subtract struct{}
+type _Sub struct{}
 
-func (self _Subtract) exec(vm *VM) {
+func (self _Sub) exec(vm *VM) {
 	left := vm.stack[vm.sp-2]
 	right := vm.stack[vm.sp-1]
 
@@ -65,9 +69,9 @@ func (self _Subtract) exec(vm *VM) {
 	vm.pc++
 }
 
-type _Multiply struct{}
+type _Mul struct{}
 
-func (self _Multiply) exec(vm *VM) {
+func (self _Mul) exec(vm *VM) {
 	left := vm.stack[vm.sp-2]
 	right := vm.stack[vm.sp-1]
 
@@ -83,9 +87,9 @@ func (self _Multiply) exec(vm *VM) {
 	vm.pc++
 }
 
-type _Divide struct{}
+type _Div struct{}
 
-func (self _Divide) exec(vm *VM) {
+func (self _Div) exec(vm *VM) {
 	left := vm.stack[vm.sp-2]
 	right := vm.stack[vm.sp-1]
 
@@ -101,9 +105,27 @@ func (self _Divide) exec(vm *VM) {
 	vm.pc++
 }
 
-type _Less struct{}
+type _Mod struct{}
 
-func (self _Less) exec(vm *VM) {
+func (self _Mod) exec(vm *VM) {
+	left := vm.stack[vm.sp-2]
+	right := vm.stack[vm.sp-1]
+
+	var value Value
+	if left.isFloat() || right.isFloat() {
+		value = ToFloatValue(math.Mod(left.toFloat(), right.toFloat()))
+	} else {
+		value = ToIntValue(left.toInt() % right.toInt())
+	}
+
+	vm.stack[vm.sp-2] = value
+	vm.sp--
+	vm.pc++
+}
+
+type _LT struct{}
+
+func (self _LT) exec(vm *VM) {
 	left := vm.stack[vm.sp-2]
 	right := vm.stack[vm.sp-1]
 
@@ -114,9 +136,9 @@ func (self _Less) exec(vm *VM) {
 	vm.pc++
 }
 
-type _LessOrEqual struct{}
+type _LE struct{}
 
-func (self _LessOrEqual) exec(vm *VM) {
+func (self _LE) exec(vm *VM) {
 	left := vm.stack[vm.sp-2]
 	right := vm.stack[vm.sp-1]
 
@@ -130,9 +152,9 @@ func (self _LessOrEqual) exec(vm *VM) {
 	vm.pc++
 }
 
-type _Greater struct{}
+type _GT struct{}
 
-func (self _Greater) exec(vm *VM) {
+func (self _GT) exec(vm *VM) {
 	left := vm.stack[vm.sp-2]
 	right := vm.stack[vm.sp-1]
 
@@ -143,9 +165,9 @@ func (self _Greater) exec(vm *VM) {
 	vm.pc++
 }
 
-type _GreaterOrEqual struct{}
+type _GE struct{}
 
-func (self _GreaterOrEqual) exec(vm *VM) {
+func (self _GE) exec(vm *VM) {
 	left := vm.stack[vm.sp-2]
 	right := vm.stack[vm.sp-1]
 

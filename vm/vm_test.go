@@ -10,15 +10,17 @@ func TestOperator(t *testing.T) {
 		program: &Program{
 			values: ValueArray{ToFloatValue(5.99), ToIntValue(10)},
 			instructions: InstructionArray{
-				LoadValue(0),
-				LoadValue(1),
-				Addition,
-				LoadValue(1),
-				Subtract,
-				LoadValue(1),
-				Multiply,
-				LoadValue(1),
-				Divide,
+				LoadVal(0),
+				LoadVal(1),
+				Add,
+				LoadVal(1),
+				Sub,
+				LoadVal(1),
+				Mul,
+				LoadVal(1),
+				Div,
+				LoadVal(1),
+				Mod,
 			},
 		},
 	}
@@ -35,36 +37,36 @@ func TestLogicalOperator(t *testing.T) {
 		},
 	}
 	vm.program.instructions = InstructionArray{
-		LoadValue(0),
-		LoadValue(1),
-		Less,
+		LoadVal(0),
+		LoadVal(1),
+		LT,
 	}
 	vm.run()
 	println(vm.pop().toString())
 	vm.pc = 0
 	vm.clearStack()
 	vm.program.instructions = InstructionArray{
-		LoadValue(0),
-		LoadValue(1),
-		LessOrEqual,
+		LoadVal(0),
+		LoadVal(1),
+		LE,
 	}
 	vm.run()
 	println(vm.pop().toString())
 	vm.pc = 0
 	vm.clearStack()
 	vm.program.instructions = InstructionArray{
-		LoadValue(0),
-		LoadValue(1),
-		Greater,
+		LoadVal(0),
+		LoadVal(1),
+		GT,
 	}
 	vm.run()
 	println(vm.pop().toString())
 	vm.pc = 0
 	vm.clearStack()
 	vm.program.instructions = InstructionArray{
-		LoadValue(0),
-		LoadValue(1),
-		GreaterOrEqual,
+		LoadVal(0),
+		LoadVal(1),
+		GE,
 	}
 	vm.run()
 	println(vm.pop().toString())
