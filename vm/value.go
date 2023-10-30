@@ -13,6 +13,8 @@ type Value interface {
 	toFloat() float64
 	toString() string
 	toBool() bool
+
+	equals(Value) bool
 }
 
 type ValueArray []Value
@@ -64,6 +66,13 @@ func (self IntValue) toBool() bool {
 	return false
 }
 
+func (self IntValue) equals(value Value) bool {
+	if value.isInt() {
+		return self == value
+	}
+	return self.toFloat() == value.toFloat()
+}
+
 func ToIntValue(value int64) IntValue {
 	return IntValue(value)
 }
@@ -107,6 +116,13 @@ func (self FloatValue) toBool() bool {
 		return true
 	}
 	return false
+}
+
+func (self FloatValue) equals(value Value) bool {
+	if value.isFloat() {
+		return self == value
+	}
+	return self.toFloat() == value.toFloat()
 }
 
 func ToFloatValue(value float64) FloatValue {
@@ -154,6 +170,13 @@ func (self StringValue) toBool() bool {
 		return true
 	}
 	return false
+}
+
+func (self StringValue) equals(value Value) bool {
+	if value.isString() {
+		return self == value
+	}
+	return self.toString() == value.toString()
 }
 
 func ToStringValue(value string) StringValue {
@@ -204,6 +227,13 @@ func (self BoolValue) toBool() bool {
 	return bool(self)
 }
 
+func (self BoolValue) equals(value Value) bool {
+	if value.isBool() {
+		return self == value
+	}
+	return self.toBool() == value.toBool()
+}
+
 type NullValue struct{}
 
 func (self NullValue) isInt() bool {
@@ -240,4 +270,8 @@ func (self NullValue) toString() string {
 
 func (self NullValue) toBool() bool {
 	return false
+}
+
+func (self NullValue) equals(value Value) bool {
+	return value.isNull()
 }

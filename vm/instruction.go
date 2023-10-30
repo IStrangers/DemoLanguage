@@ -18,6 +18,8 @@ var (
 	Div _Div
 	Mod _Mod
 
+	EQ _EQ
+	NE _NE
 	LT _LT
 	LE _LE
 	GT _GT
@@ -116,6 +118,38 @@ func (self _Mod) exec(vm *VM) {
 		value = ToFloatValue(math.Mod(left.toFloat(), right.toFloat()))
 	} else {
 		value = ToIntValue(left.toInt() % right.toInt())
+	}
+
+	vm.stack[vm.sp-2] = value
+	vm.sp--
+	vm.pc++
+}
+
+type _EQ struct{}
+
+func (self _EQ) exec(vm *VM) {
+	left := vm.stack[vm.sp-2]
+	right := vm.stack[vm.sp-1]
+
+	value := Const_Bool_False_Value
+	if left.equals(right) {
+		value = Const_Bool_True_Value
+	}
+
+	vm.stack[vm.sp-2] = value
+	vm.sp--
+	vm.pc++
+}
+
+type _NE struct{}
+
+func (self _NE) exec(vm *VM) {
+	left := vm.stack[vm.sp-2]
+	right := vm.stack[vm.sp-1]
+
+	value := Const_Bool_True_Value
+	if left.equals(right) {
+		value = Const_Bool_False_Value
 	}
 
 	vm.stack[vm.sp-2] = value

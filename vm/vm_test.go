@@ -39,6 +39,24 @@ func TestLogicalOperator(t *testing.T) {
 	vm.program.instructions = InstructionArray{
 		LoadVal(0),
 		LoadVal(1),
+		EQ,
+	}
+	vm.run()
+	println(vm.pop().toString())
+	vm.pc = 0
+	vm.clearStack()
+	vm.program.instructions = InstructionArray{
+		LoadVal(0),
+		LoadVal(1),
+		NE,
+	}
+	vm.run()
+	println(vm.pop().toString())
+	vm.pc = 0
+	vm.clearStack()
+	vm.program.instructions = InstructionArray{
+		LoadVal(0),
+		LoadVal(1),
 		LT,
 	}
 	vm.run()
