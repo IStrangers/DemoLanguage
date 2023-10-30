@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-func TestVM(t *testing.T) {
+func TestOperator(t *testing.T) {
 	vm := &VM{
 		pc: 0,
 		program: &Program{
@@ -25,4 +25,49 @@ func TestVM(t *testing.T) {
 	vm.run()
 	value := vm.pop()
 	println(value.toString())
+}
+
+func TestLogicalOperator(t *testing.T) {
+	vm := &VM{
+		pc: 0,
+		program: &Program{
+			values: ValueArray{ToFloatValue(5.99), ToIntValue(10)},
+		},
+	}
+	vm.program.instructions = InstructionArray{
+		LoadValue(0),
+		LoadValue(1),
+		Less,
+	}
+	vm.run()
+	println(vm.pop().toString())
+	vm.pc = 0
+	vm.clearStack()
+	vm.program.instructions = InstructionArray{
+		LoadValue(0),
+		LoadValue(1),
+		LessOrEqual,
+	}
+	vm.run()
+	println(vm.pop().toString())
+	vm.pc = 0
+	vm.clearStack()
+	vm.program.instructions = InstructionArray{
+		LoadValue(0),
+		LoadValue(1),
+		Greater,
+	}
+	vm.run()
+	println(vm.pop().toString())
+	vm.pc = 0
+	vm.clearStack()
+	vm.program.instructions = InstructionArray{
+		LoadValue(0),
+		LoadValue(1),
+		GreaterOrEqual,
+	}
+	vm.run()
+	println(vm.pop().toString())
+	vm.pc = 0
+	vm.clearStack()
 }

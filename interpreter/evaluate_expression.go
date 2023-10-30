@@ -212,7 +212,7 @@ func (self *Interpreter) evaluateComparison(leftValue Value, operator token.Toke
 		return self.evaluateBooleanLiteral(leftValue.float64() < rightValue.float64() || leftValue.float64() == rightValue.float64())
 	case token.GREATER:
 		return self.evaluateBooleanLiteral(leftValue.float64() > rightValue.float64())
-	case token.GREATER_OR_EQUEAL:
+	case token.GREATER_OR_EQUAL:
 		return self.evaluateBooleanLiteral(leftValue.float64() > rightValue.float64() || leftValue.float64() == rightValue.float64())
 	}
 	return self.evaluateBooleanLiteral(false)

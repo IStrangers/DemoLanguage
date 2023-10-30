@@ -253,7 +253,7 @@ func (parser *Parser) parseRelationalExpression() ast.Expression {
 	left := parser.parseShiftExpression()
 
 	switch parser.token {
-	case token.LESS, token.LESS_OR_EQUAL, token.GREATER, token.GREATER_OR_EQUEAL:
+	case token.LESS, token.LESS_OR_EQUAL, token.GREATER, token.GREATER_OR_EQUAL:
 		binaryExpression := &ast.BinaryExpression{
 			Operator:   parser.expectToken(parser.token),
 			Left:       left,

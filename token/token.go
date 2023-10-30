@@ -48,16 +48,16 @@ const (
 	AND_ARITHMETIC_ASSIGN // &=
 	OR_ARITHMETIC_ASSIGN  // |=
 
-	ASSIGN            // =
-	EQUAL             // ==
-	NOT               // ！
-	NOT_EQUAL         // !=
-	LESS              // <
-	LESS_OR_EQUAL     // <=
-	GREATER           // >
-	GREATER_OR_EQUEAL // >=
-	LOGICAL_AND       // &&
-	LOGICAL_OR        // ||
+	ASSIGN           // =
+	EQUAL            // ==
+	NOT              // ！
+	NOT_EQUAL        // !=
+	LESS             // <
+	LESS_OR_EQUAL    // <=
+	GREATER          // >
+	GREATER_OR_EQUAL // >=
+	LOGICAL_AND      // &&
+	LOGICAL_OR       // ||
 
 	VAR    // var
 	FUN    // fun
@@ -116,16 +116,16 @@ var tokenStringMap = [...]string{
 	AND_ARITHMETIC_ASSIGN: "&=",
 	OR_ARITHMETIC_ASSIGN:  "|=",
 
-	ASSIGN:            "=",
-	EQUAL:             "==",
-	NOT:               "!",
-	NOT_EQUAL:         "!=",
-	LESS:              "<",
-	LESS_OR_EQUAL:     "<=",
-	GREATER:           ">",
-	GREATER_OR_EQUEAL: ">=",
-	LOGICAL_AND:       "&&",
-	LOGICAL_OR:        "||",
+	ASSIGN:           "=",
+	EQUAL:            "==",
+	NOT:              "!",
+	NOT_EQUAL:        "!=",
+	LESS:             "<",
+	LESS_OR_EQUAL:    "<=",
+	GREATER:          ">",
+	GREATER_OR_EQUAL: ">=",
+	LOGICAL_AND:      "&&",
+	LOGICAL_OR:       "||",
 
 	VAR:    "var",
 	FUN:    "fun",

@@ -99,7 +99,7 @@ func (parser *Parser) scan() (tkn token.Token, literal string, index file.Index)
 				tkn = parser.switchToken("=", token.LESS_OR_EQUAL, token.LESS)
 				break
 			case '>':
-				tkn = parser.switchToken("=", token.GREATER_OR_EQUEAL, token.GREATER)
+				tkn = parser.switchToken("=", token.GREATER_OR_EQUAL, token.GREATER)
 				break
 			case '&':
 				tkn = parser.switchToken("&,=", token.LOGICAL_AND, token.AND_ARITHMETIC_ASSIGN, token.AND_ARITHMETIC)

@@ -69,3 +69,16 @@ func (self *VM) pop() Value {
 	self.sp--
 	return self.stack[self.sp]
 }
+
+func (self *VM) peek() Value {
+	return self.stack[self.sp-1]
+}
+
+func (self *VM) clearStack() {
+	sp := self.sp
+	stackTail := self.stack[sp:]
+	for i := range stackTail {
+		stackTail[i] = nil
+	}
+	self.stack = self.stack[:sp]
+}
