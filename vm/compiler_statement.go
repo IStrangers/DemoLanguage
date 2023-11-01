@@ -18,7 +18,12 @@ func (self *Compiler) compileStatement(statement ast.Statement, needResult bool)
 }
 
 func (self *Compiler) compileIfStatement(st *ast.IfStatement, needResult bool) {
+	conditionExpr := self.compileExpression(st.Condition)
+	if conditionExpr.isConstExpr() {
 
+	} else {
+
+	}
 }
 
 func (self *Compiler) compileExpressionStatement(st *ast.ExpressionStatement, needResult bool) {
