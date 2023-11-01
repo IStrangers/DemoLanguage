@@ -15,9 +15,27 @@ type Value interface {
 	toBool() bool
 
 	equals(Value) bool
+	sameAs(Value) bool
 }
 
 type ValueArray []Value
+
+func (self ValueArray) findIndex(value Value) int {
+	for index, v := range self {
+		if v.sameAs(value) {
+			return index
+		}
+	}
+	return -1
+}
+
+func (self *ValueArray) add(values ...Value) {
+	*self = append(*self, values...)
+}
+
+func (self *ValueArray) size() int {
+	return len(*self)
+}
 
 var (
 	Const_Bool_True_Value  = BoolValue(true)
@@ -67,10 +85,17 @@ func (self IntValue) toBool() bool {
 }
 
 func (self IntValue) equals(value Value) bool {
+	if self.sameAs(value) {
+		return true
+	}
+	return self.toFloat() == value.toFloat()
+}
+
+func (self IntValue) sameAs(value Value) bool {
 	if value.isInt() {
 		return self == value
 	}
-	return self.toFloat() == value.toFloat()
+	return false
 }
 
 func ToIntValue(value int64) IntValue {
@@ -119,10 +144,17 @@ func (self FloatValue) toBool() bool {
 }
 
 func (self FloatValue) equals(value Value) bool {
+	if self.sameAs(value) {
+		return true
+	}
+	return self.toFloat() == value.toFloat()
+}
+
+func (self FloatValue) sameAs(value Value) bool {
 	if value.isFloat() {
 		return self == value
 	}
-	return self.toFloat() == value.toFloat()
+	return false
 }
 
 func ToFloatValue(value float64) FloatValue {
@@ -173,10 +205,17 @@ func (self StringValue) toBool() bool {
 }
 
 func (self StringValue) equals(value Value) bool {
+	if self.sameAs(value) {
+		return true
+	}
+	return self.toString() == value.toString()
+}
+
+func (self StringValue) sameAs(value Value) bool {
 	if value.isString() {
 		return self == value
 	}
-	return self.toString() == value.toString()
+	return false
 }
 
 func ToStringValue(value string) StringValue {
@@ -228,10 +267,17 @@ func (self BoolValue) toBool() bool {
 }
 
 func (self BoolValue) equals(value Value) bool {
+	if self.sameAs(value) {
+		return true
+	}
+	return self.toBool() == value.toBool()
+}
+
+func (self BoolValue) sameAs(value Value) bool {
 	if value.isBool() {
 		return self == value
 	}
-	return self.toBool() == value.toBool()
+	return false
 }
 
 type NullValue struct{}
@@ -273,5 +319,9 @@ func (self NullValue) toBool() bool {
 }
 
 func (self NullValue) equals(value Value) bool {
+	return self.sameAs(value)
+}
+
+func (self NullValue) sameAs(value Value) bool {
 	return value.isNull()
 }

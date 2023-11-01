@@ -11,6 +11,14 @@ type Instruction interface {
 
 type InstructionArray []Instruction
 
+func (self *InstructionArray) size() int {
+	return len(*self)
+}
+
+func (self *InstructionArray) add(instructions ...Instruction) {
+	*self = append(*self, instructions...)
+}
+
 var (
 	Add _Add
 	Sub _Sub
@@ -30,12 +38,14 @@ var (
 	LE _LE
 	GT _GT
 	GE _GE
+
+	Pop _Pop
 )
 
-type LoadVal uint32
+type LoadVal uint
 
 func (self LoadVal) exec(vm *VM) {
-	vm.push(vm.getValue(uint32(self)))
+	vm.push(vm.getValue(uint(self)))
 	vm.pc++
 }
 
@@ -337,4 +347,11 @@ type Jump int
 
 func (self Jump) exec(vm *VM) {
 	vm.pc += int(self)
+}
+
+type _Pop struct{}
+
+func (self _Pop) exec(vm *VM) {
+	vm.sp--
+	vm.pc++
 }

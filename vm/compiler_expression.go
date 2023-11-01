@@ -7,7 +7,7 @@ import (
 )
 
 type CompiledExpression interface {
-	isConstExpr() bool
+	isConstExpression() bool
 }
 
 type CompiledBaseExpression struct {
@@ -16,23 +16,43 @@ type CompiledBaseExpression struct {
 }
 
 type CompiledLiteralExpression struct {
-	base  CompiledBaseExpression
+	CompiledBaseExpression
 	value Value
 }
 
-func (self CompiledLiteralExpression) isConstExpr() bool {
+func (self CompiledLiteralExpression) isConstExpression() bool {
 	return true
 }
 
+type CompiledIdentifierExpression struct {
+	CompiledBaseExpression
+	name string
+}
+
+func (self CompiledIdentifierExpression) isConstExpression() bool {
+	return false
+}
+
+type CompiledUnaryExpression struct {
+	CompiledBaseExpression
+	operator token.Token
+	operand  CompiledExpression
+	postfix  bool
+}
+
+func (self CompiledUnaryExpression) isConstExpression() bool {
+	return self.operand.isConstExpression()
+}
+
 type CompiledBinaryExpression struct {
-	base     CompiledBaseExpression
+	CompiledBaseExpression
 	left     CompiledExpression
 	operator token.Token
 	right    CompiledExpression
 }
 
-func (self CompiledBinaryExpression) isConstExpr() bool {
-	return self.left.isConstExpr() && self.right.isConstExpr()
+func (self CompiledBinaryExpression) isConstExpression() bool {
+	return self.left.isConstExpression() && self.right.isConstExpression()
 }
 
 func (self *Compiler) createCompiledBaseExpression(index file.Index) CompiledBaseExpression {
@@ -47,6 +67,8 @@ func (self *Compiler) compileExpression(expression ast.Expression) CompiledExpre
 		return self.compileNumberLiteral(expr)
 	case *ast.StringLiteral:
 		return self.compileStringLiteral(expr)
+	case *ast.Identifier:
+		return self.compileIdentifier(expr)
 	case *ast.UnaryExpression:
 		return self.compileUnaryExpression(expr)
 	case *ast.BinaryExpression:
@@ -86,12 +108,23 @@ func (self *Compiler) compileStringLiteral(expr *ast.StringLiteral) CompiledExpr
 	}
 }
 
+func (self *Compiler) compileIdentifier(expr *ast.Identifier) CompiledExpression {
+	return &CompiledIdentifierExpression{
+		self.createCompiledBaseExpression(expr.StartIndex()),
+		expr.Name,
+	}
+}
+
 func (self *Compiler) compileUnaryExpression(expr *ast.UnaryExpression) CompiledExpression {
-	return nil
+	return &CompiledUnaryExpression{
+		self.createCompiledBaseExpression(expr.StartIndex()),
+		expr.Operator,
+		self.compileExpression(expr.Operand),
+		expr.Postfix,
+	}
 }
 
 func (self *Compiler) compileBinaryExpression(expr *ast.BinaryExpression) CompiledExpression {
-
 	return &CompiledBinaryExpression{
 		self.createCompiledBaseExpression(expr.StartIndex()),
 		self.compileExpression(expr.Left),

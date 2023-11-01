@@ -36,7 +36,7 @@ func CreateParser(baseOffset int, fileName string, content string) *Parser {
 	}
 }
 
-func (parser *Parser) ParseProgram() *ast.Program {
+func (parser *Parser) parseProgram() *ast.Program {
 	parser.next()
 	return &ast.Program{
 		Body:            parser.parseStatementList(),
@@ -48,7 +48,7 @@ func (parser *Parser) ParseProgram() *ast.Program {
 func (parser *Parser) Parse() (*ast.Program, error) {
 	parser.openScope()
 	defer parser.closeScope()
-	program := parser.ParseProgram()
+	program := parser.parseProgram()
 	return program, parser.errors.Errors()
 }
 

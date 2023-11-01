@@ -22,6 +22,7 @@ type CompilerReferenceError struct {
 
 type Compiler struct {
 	program *Program
+	evalVM  *VM
 }
 
 func (self *Compiler) compile(in *ast.Program) {
@@ -29,12 +30,20 @@ func (self *Compiler) compile(in *ast.Program) {
 	self.compileStatements(body, true)
 }
 
+func (self *Compiler) addProgramValue(value Value) uint {
+	return self.program.addValue(value)
+}
+
+func (self *Compiler) addProgramInstructions(instructions ...Instruction) {
+	self.program.addInstructions(instructions...)
+}
+
 func (self *Compiler) throwSyntaxError(offset int, format string, args ...any) CompiledExpression {
 	panic(&CompilerSyntaxError{
 		CompilerError{
 			File:    self.program.file,
 			Offset:  offset,
-			Message: fmt.Sprintf(format, args),
+			Message: fmt.Sprintf(format, args...),
 		},
 	})
 	return nil
