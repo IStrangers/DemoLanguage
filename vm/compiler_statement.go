@@ -10,11 +10,17 @@ func (self *Compiler) compileStatements(statements []ast.Statement, needResult b
 
 func (self *Compiler) compileStatement(statement ast.Statement, needResult bool) {
 	switch st := statement.(type) {
+	case *ast.BlockStatement:
+		self.compileBlockStatement(st, needResult)
 	case *ast.IfStatement:
 		self.compileIfStatement(st, needResult)
 	case *ast.ExpressionStatement:
 		self.compileExpressionStatement(st, needResult)
 	}
+}
+
+func (self *Compiler) compileBlockStatement(st *ast.BlockStatement, needResult bool) {
+	self.compileStatements(st.Body, needResult)
 }
 
 func (self *Compiler) compileIfStatement(st *ast.IfStatement, needResult bool) {
@@ -27,9 +33,9 @@ func (self *Compiler) compileIfStatement(st *ast.IfStatement, needResult bool) {
 			return
 		}
 		if res.toBool() {
-
-		} else {
-
+			self.compileStatement(st.Consequent, needResult)
+		} else if st.Alternate != nil {
+			self.compileStatement(st.Alternate, needResult)
 		}
 	} else {
 

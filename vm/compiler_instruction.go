@@ -3,7 +3,7 @@ package vm
 import "DemoLanguage/token"
 
 func (self *Compiler) evalConstExpr(expr CompiledExpression) (Value, *Exception) {
-	if expr, ok := expr.(CompiledLiteralExpression); ok {
+	if expr, ok := expr.(*CompiledLiteralExpression); ok {
 		return expr.value, nil
 	}
 	evalVM := self.evalVM
@@ -56,11 +56,6 @@ func (self *Compiler) handlingConstExpression(expr CompiledExpression, putOnStac
 }
 
 func (self *Compiler) handlingGetterExpression(expr CompiledExpression, putOnStack bool) {
-	if expr.isConstExpression() {
-		self.handlingConstExpression(expr, putOnStack)
-		return
-	}
-
 	switch expr := expr.(type) {
 	case *CompiledLiteralExpression:
 		self.handlingGetterCompiledLiteralExpression(expr, putOnStack)
@@ -71,12 +66,20 @@ func (self *Compiler) handlingGetterExpression(expr CompiledExpression, putOnSta
 	}
 }
 
+func (self *Compiler) chooseHandlingGetterExpression(expr CompiledExpression, putOnStack bool) {
+	if expr.isConstExpression() {
+		self.handlingConstExpression(expr, putOnStack)
+	} else {
+		self.handlingGetterExpression(expr, putOnStack)
+	}
+}
+
 func (self *Compiler) handlingGetterCompiledLiteralExpression(expr *CompiledLiteralExpression, putOnStack bool) {
 	self.emitLoadValue(expr.value, putOnStack)
 }
 
 func (self *Compiler) handlingGetterCompiledUnaryExpression(expr *CompiledUnaryExpression, putOnStack bool) {
-	self.handlingGetterExpression(expr.operand, true)
+	self.chooseHandlingGetterExpression(expr.operand, true)
 
 	switch expr.operator {
 	case token.NOT:
@@ -93,8 +96,8 @@ func (self *Compiler) handlingGetterCompiledUnaryExpression(expr *CompiledUnaryE
 }
 
 func (self *Compiler) handlingGetterCompiledBinaryExpression(expr *CompiledBinaryExpression, putOnStack bool) {
-	self.handlingGetterExpression(expr.left, true)
-	self.handlingGetterExpression(expr.right, true)
+	self.chooseHandlingGetterExpression(expr.left, true)
+	self.chooseHandlingGetterExpression(expr.right, true)
 	expr.addSourceMap()
 
 	switch expr.operator {
