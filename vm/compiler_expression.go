@@ -63,6 +63,17 @@ func (self CompiledBinaryExpression) isConstExpression() bool {
 	return self.left.isConstExpression() && self.right.isConstExpression()
 }
 
+type CompiledAssignExpression struct {
+	CompiledBaseExpression
+	left     CompiledExpression
+	operator token.Token
+	right    CompiledExpression
+}
+
+func (self CompiledAssignExpression) isConstExpression() bool {
+	return false
+}
+
 func (self *Compiler) createCompiledBaseExpression(index file.Index) CompiledBaseExpression {
 	return CompiledBaseExpression{self, int(index) - 1}
 }
@@ -81,6 +92,8 @@ func (self *Compiler) compileExpression(expression ast.Expression) CompiledExpre
 		return self.compileUnaryExpression(expr)
 	case *ast.BinaryExpression:
 		return self.compileBinaryExpression(expr)
+	case *ast.AssignExpression:
+		return self.compileAssignExpression(expr)
 	default:
 		return self.errorAssert(false, int(expression.StartIndex())-1, "Unknown expression type: %T", expression)
 	}
@@ -134,6 +147,15 @@ func (self *Compiler) compileUnaryExpression(expr *ast.UnaryExpression) Compiled
 
 func (self *Compiler) compileBinaryExpression(expr *ast.BinaryExpression) CompiledExpression {
 	return &CompiledBinaryExpression{
+		self.createCompiledBaseExpression(expr.StartIndex()),
+		self.compileExpression(expr.Left),
+		expr.Operator,
+		self.compileExpression(expr.Right),
+	}
+}
+
+func (self *Compiler) compileAssignExpression(expr *ast.AssignExpression) CompiledExpression {
+	return &CompiledAssignExpression{
 		self.createCompiledBaseExpression(expr.StartIndex()),
 		self.compileExpression(expr.Left),
 		expr.Operator,

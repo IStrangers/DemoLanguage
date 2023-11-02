@@ -25,13 +25,13 @@ type Program struct {
 	sourceMaps   SourceMapItemArray
 }
 
-func (self *Program) addValue(value Value) uint {
+func (self *Program) addValue(value Value) int {
 	index := self.values.findIndex(value)
 	if index != -1 {
-		return uint(index)
+		return index
 	}
 	self.values.add(value)
-	return uint(self.values.size() - 1)
+	return self.values.size() - 1
 }
 
 func (self *Program) getInstructionSize() int {
@@ -42,6 +42,10 @@ func (self *Program) addInstructions(instructions ...Instruction) {
 	self.instructions.add(instructions...)
 }
 
+func (self *Program) setProgramInstruction(index int, instruction Instruction) {
+	self.instructions[index] = instruction
+}
+
 func (self *Program) getInstruction(index int) Instruction {
 	return self.instructions[index]
 }
@@ -50,5 +54,5 @@ func (self *Program) addSourceMap(pos int) {
 	if len(self.sourceMaps) > 0 && self.sourceMaps[self.sourceMaps.size()-1].pos == pos {
 		return
 	}
-	self.sourceMaps.add(SourceMapItem{self.instructions.size(), pos})
+	self.sourceMaps.add(SourceMapItem{int(self.instructions.size()), pos})
 }

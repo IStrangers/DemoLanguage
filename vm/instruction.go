@@ -43,10 +43,10 @@ var (
 	Pop _Pop
 )
 
-type LoadVal uint
+type LoadVal int
 
 func (self LoadVal) exec(vm *VM) {
-	vm.push(vm.getValue(uint(self)))
+	vm.push(vm.getValue(int(self)))
 	vm.pc++
 }
 

@@ -20,7 +20,7 @@ func (self *ValueStack) expand(index int) {
 
 type TryFrame struct {
 	exception      *Exception
-	callStackDepth uint
+	callStackDepth int
 	sp             int
 	catchPos       int
 	finallyPos     int
@@ -64,7 +64,7 @@ func (self *VM) execInstruction(pc int) {
 	instruction.exec(self)
 }
 
-func (self *VM) getValue(index uint) Value {
+func (self *VM) getValue(index int) Value {
 	return self.program.values[index]
 }
 

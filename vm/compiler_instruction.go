@@ -1,6 +1,8 @@
 package vm
 
-import "DemoLanguage/token"
+import (
+	"DemoLanguage/token"
+)
 
 func (self *Compiler) evalConstExpr(expr CompiledExpression) (Value, *Exception) {
 	if expr, ok := expr.(*CompiledLiteralExpression); ok {
@@ -59,10 +61,14 @@ func (self *Compiler) handlingGetterExpression(expr CompiledExpression, putOnSta
 	switch expr := expr.(type) {
 	case *CompiledLiteralExpression:
 		self.handlingGetterCompiledLiteralExpression(expr, putOnStack)
+	case *CompiledIdentifierExpression:
+		self.handlingGetterCompiledIdentifierExpression(expr, putOnStack)
 	case *CompiledUnaryExpression:
 		self.handlingGetterCompiledUnaryExpression(expr, putOnStack)
 	case *CompiledBinaryExpression:
 		self.handlingGetterCompiledBinaryExpression(expr, putOnStack)
+	case *CompiledAssignExpression:
+		self.handlingGetterCompiledAssignExpression(expr, putOnStack)
 	}
 }
 
@@ -76,6 +82,11 @@ func (self *Compiler) chooseHandlingGetterExpression(expr CompiledExpression, pu
 
 func (self *Compiler) handlingGetterCompiledLiteralExpression(expr *CompiledLiteralExpression, putOnStack bool) {
 	self.emitLoadValue(expr.value, putOnStack)
+}
+
+func (self *Compiler) handlingGetterCompiledIdentifierExpression(expr *CompiledIdentifierExpression, putOnStack bool) {
+	expr.addSourceMap()
+	self.emitLoadValue(ToIntValue(100), putOnStack)
 }
 
 func (self *Compiler) handlingGetterCompiledUnaryExpression(expr *CompiledUnaryExpression, putOnStack bool) {
@@ -132,6 +143,26 @@ func (self *Compiler) handlingGetterCompiledBinaryExpression(expr *CompiledBinar
 	}
 }
 
-func (self *Compiler) handlingSetterExpression(expr CompiledExpression, putOnStack bool) {
+func (self *Compiler) handlingGetterCompiledAssignExpression(expr *CompiledAssignExpression, putOnStack bool) {
+	switch expr.operator {
+	case token.ASSIGN:
+		self.handlingSetterExpression(expr.left, expr.right, putOnStack)
+	default:
+		self.errorAssert(false, expr.offset, "Unknown assign operator: %s", expr.operator.String())
+	}
 
+	if !putOnStack {
+		self.addProgramInstructions(Pop)
+	}
+}
+
+func (self *Compiler) handlingSetterExpression(expr CompiledExpression, valueExpr CompiledExpression, putOnStack bool) {
+	switch expr := expr.(type) {
+	case *CompiledIdentifierExpression:
+		self.handlingSetterCompiledIdentifierExpression(expr, valueExpr, putOnStack)
+	}
+}
+
+func (self *Compiler) handlingSetterCompiledIdentifierExpression(expr *CompiledIdentifierExpression, valueExpr CompiledExpression, putOnStack bool) {
+	self.handlingGetterExpression(valueExpr, putOnStack)
 }

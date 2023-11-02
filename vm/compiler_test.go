@@ -7,7 +7,11 @@ import (
 
 func TestCompiler(t *testing.T) {
 	parser := parser.CreateParser(1, "", `
-		if 50 > 1 {
+		var a = 100
+		if a > 50 {
+			a = 1
+		} else {
+			a = 2
 		}
 	`)
 	program, err := parser.Parse()
