@@ -8,11 +8,19 @@ import (
 
 type CompiledExpression interface {
 	isConstExpression() bool
+	addSourceMap()
 }
 
 type CompiledBaseExpression struct {
 	compile *Compiler
 	offset  int
+}
+
+func (self CompiledBaseExpression) addSourceMap() {
+	if self.offset < 0 {
+		return
+	}
+	self.compile.program.addSourceMap(self.offset)
 }
 
 type CompiledLiteralExpression struct {

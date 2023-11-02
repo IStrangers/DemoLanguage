@@ -11,7 +11,7 @@ func (self *Compiler) evalConstExpr(expr CompiledExpression) (Value, *Exception)
 	isNewProgram := false
 	if evalVM.program == nil {
 		evalVM.program = &Program{
-			file: self.program.file,
+			source: self.program.source,
 		}
 		self.program = evalVM.program
 		isNewProgram = true
@@ -42,10 +42,14 @@ func (self *Compiler) emitLoadValue(value Value, putOnStack bool) {
 	self.addProgramInstructions(LoadVal(index))
 }
 
+func (self *Compiler) emitThrow(value Value) {
+
+}
+
 func (self *Compiler) handlingConstExpression(expr CompiledExpression, putOnStack bool) {
 	value, ex := self.evalConstExpr(expr)
 	if ex != nil {
-
+		self.emitThrow(ex.value)
 	} else {
 		self.emitLoadValue(value, putOnStack)
 	}
@@ -91,6 +95,7 @@ func (self *Compiler) handlingGetterCompiledUnaryExpression(expr *CompiledUnaryE
 func (self *Compiler) handlingGetterCompiledBinaryExpression(expr *CompiledBinaryExpression, putOnStack bool) {
 	self.handlingGetterExpression(expr.left, true)
 	self.handlingGetterExpression(expr.right, true)
+	expr.addSourceMap()
 
 	switch expr.operator {
 	case token.ADDITION:

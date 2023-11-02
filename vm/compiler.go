@@ -41,7 +41,7 @@ func (self *Compiler) addProgramInstructions(instructions ...Instruction) {
 func (self *Compiler) throwSyntaxError(offset int, format string, args ...any) CompiledExpression {
 	panic(&CompilerSyntaxError{
 		CompilerError{
-			File:    self.program.file,
+			File:    self.program.source,
 			Offset:  offset,
 			Message: fmt.Sprintf(format, args...),
 		},

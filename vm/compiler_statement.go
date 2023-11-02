@@ -22,7 +22,9 @@ func (self *Compiler) compileIfStatement(st *ast.IfStatement, needResult bool) {
 	if conditionExpr.isConstExpression() {
 		res, ex := self.evalConstExpr(conditionExpr)
 		if ex != nil {
-
+			conditionExpr.addSourceMap()
+			self.emitThrow(ex.value)
+			return
 		}
 		if res.toBool() {
 

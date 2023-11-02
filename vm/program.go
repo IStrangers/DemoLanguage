@@ -2,10 +2,27 @@ package vm
 
 import "DemoLanguage/file"
 
+type SourceMapItem struct {
+	pc  int
+	pos int
+}
+
+type SourceMapItemArray []SourceMapItem
+
+func (self *SourceMapItemArray) add(item SourceMapItem) {
+	*self = append(*self, item)
+}
+
+func (self *SourceMapItemArray) size() int {
+	return len(*self)
+}
+
 type Program struct {
 	values       ValueArray
 	instructions InstructionArray
-	file         *file.File
+	functionName string
+	source       *file.File
+	sourceMaps   SourceMapItemArray
 }
 
 func (self *Program) addValue(value Value) uint {
@@ -27,4 +44,11 @@ func (self *Program) addInstructions(instructions ...Instruction) {
 
 func (self *Program) getInstruction(index int) Instruction {
 	return self.instructions[index]
+}
+
+func (self *Program) addSourceMap(pos int) {
+	if len(self.sourceMaps) > 0 && self.sourceMaps[self.sourceMaps.size()-1].pos == pos {
+		return
+	}
+	self.sourceMaps.add(SourceMapItem{self.instructions.size(), pos})
 }
