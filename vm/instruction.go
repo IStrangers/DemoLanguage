@@ -28,6 +28,7 @@ var (
 
 	AND _AND
 	OR  _OR
+	Not _Not
 	Inc _Inc
 	Dec _Dec
 	Neg _Neg
@@ -164,6 +165,21 @@ func (self _OR) exec(vm *VM) {
 
 	vm.stack[vm.sp-2] = value
 	vm.sp--
+	vm.pc++
+}
+
+type _Not struct{}
+
+func (self _Not) exec(vm *VM) {
+	value := vm.stack[vm.sp-1]
+
+	if value.toBool() {
+		value = Const_Bool_False_Value
+	} else {
+		value = Const_Bool_True_Value
+	}
+
+	vm.stack[vm.sp-1] = value
 	vm.pc++
 }
 

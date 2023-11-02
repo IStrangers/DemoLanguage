@@ -34,7 +34,29 @@ func (self *Compiler) evalConstExpr(expr CompiledExpression) (Value, *Exception)
 	return evalVM.pop(), nil
 }
 
+func (self *Compiler) emitLoadValue(value Value, putOnStack bool) {
+	if !putOnStack {
+		return
+	}
+	index := self.addProgramValue(value)
+	self.addProgramInstructions(LoadVal(index))
+}
+
+func (self *Compiler) handlingConstExpression(expr CompiledExpression, putOnStack bool) {
+	value, ex := self.evalConstExpr(expr)
+	if ex != nil {
+
+	} else {
+		self.emitLoadValue(value, putOnStack)
+	}
+}
+
 func (self *Compiler) handlingGetterExpression(expr CompiledExpression, putOnStack bool) {
+	if expr.isConstExpression() {
+		self.handlingConstExpression(expr, putOnStack)
+		return
+	}
+
 	switch expr := expr.(type) {
 	case *CompiledLiteralExpression:
 		self.handlingGetterCompiledLiteralExpression(expr, putOnStack)
@@ -46,11 +68,24 @@ func (self *Compiler) handlingGetterExpression(expr CompiledExpression, putOnSta
 }
 
 func (self *Compiler) handlingGetterCompiledLiteralExpression(expr *CompiledLiteralExpression, putOnStack bool) {
-	index := self.addProgramValue(expr.value)
-	self.addProgramInstructions(LoadVal(index))
+	self.emitLoadValue(expr.value, putOnStack)
 }
 
 func (self *Compiler) handlingGetterCompiledUnaryExpression(expr *CompiledUnaryExpression, putOnStack bool) {
+	self.handlingGetterExpression(expr.operand, true)
+
+	switch expr.operator {
+	case token.NOT:
+		self.addProgramInstructions(Not)
+	case token.INCREMENT:
+		self.addProgramInstructions(Inc)
+	case token.DECREMENT:
+		self.addProgramInstructions(Dec)
+	}
+
+	if !putOnStack {
+		self.addProgramInstructions(Pop)
+	}
 }
 
 func (self *Compiler) handlingGetterCompiledBinaryExpression(expr *CompiledBinaryExpression, putOnStack bool) {

@@ -78,10 +78,7 @@ func (self IntValue) toString() string {
 }
 
 func (self IntValue) toBool() bool {
-	if self.toInt() > 0 {
-		return true
-	}
-	return false
+	return self.toInt() > 0
 }
 
 func (self IntValue) equals(value Value) bool {
@@ -137,10 +134,7 @@ func (self FloatValue) toString() string {
 }
 
 func (self FloatValue) toBool() bool {
-	if self.toFloat() > 0.0 {
-		return true
-	}
-	return false
+	return self.toFloat() > 0.0
 }
 
 func (self FloatValue) equals(value Value) bool {
@@ -198,10 +192,7 @@ func (self StringValue) toString() string {
 }
 
 func (self StringValue) toBool() bool {
-	if len(self.toString()) > 0 {
-		return true
-	}
-	return false
+	return len(self.toString()) > 0
 }
 
 func (self StringValue) equals(value Value) bool {
