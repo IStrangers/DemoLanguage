@@ -19,7 +19,7 @@ func (self *Compiler) compileStatement(statement ast.Statement, needResult bool)
 	case *ast.BlockStatement:
 		self.compileBlockStatement(st, needResult)
 	case *ast.VarStatement:
-		self.compileVarStatement(st, needResult)
+		self.compileVarStatement(st)
 	case *ast.IfStatement:
 		self.compileIfStatement(st, needResult)
 	case *ast.ExpressionStatement:
@@ -31,7 +31,7 @@ func (self *Compiler) compileBlockStatement(st *ast.BlockStatement, needResult b
 	self.compileStatements(st.Body, needResult)
 }
 
-func (self *Compiler) compileVarStatement(st *ast.VarStatement, needResult bool) {
+func (self *Compiler) compileVarStatement(st *ast.VarStatement) {
 	for _, binding := range st.List {
 		switch target := binding.Target.(type) {
 		case *ast.Identifier:
