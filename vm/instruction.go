@@ -40,8 +40,9 @@ var (
 	GT _GT
 	GE _GE
 
-	Pop     _Pop
-	InitVar _InitVar
+	Pop        _Pop
+	SaveResult _SaveResult
+	InitVar    _InitVar
 )
 
 type LoadVal int
@@ -373,6 +374,14 @@ func (self _Pop) exec(vm *VM) {
 	vm.pc++
 }
 
+type _SaveResult struct{}
+
+func (self _SaveResult) exec(vm *VM) {
+	vm.sp--
+	vm.result = vm.stack[vm.sp]
+	vm.pc++
+}
+
 type ResolveVar string
 
 func (self ResolveVar) exec(vm *VM) {
@@ -388,6 +397,14 @@ type _InitVar struct{}
 func (self _InitVar) exec(vm *VM) {
 	ref := vm.refStack.pop()
 	vm.sp--
+	ref.set(vm.stack[vm.sp])
+	vm.pc++
+}
+
+type PutVar string
+
+func (self PutVar) exec(vm *VM) {
+	ref := vm.refStack.peek()
 	ref.set(vm.stack[vm.sp])
 	vm.pc++
 }

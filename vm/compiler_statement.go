@@ -60,21 +60,26 @@ func (self *Compiler) compileIfStatement(st *ast.IfStatement, needResult bool) {
 		}
 	} else {
 		self.handlingGetterExpression(conditionExpr, true)
-		consequentJmp := self.program.getInstructionSize()
+		program := self.program
+		consequentJmp := program.getInstructionSize()
 		self.addProgramInstructions(nil)
 		self.compileStatement(st.Consequent, needResult)
 		if st.Alternate != nil {
-			alternateJmp := self.program.getInstructionSize()
+			alternateJmp := program.getInstructionSize()
 			self.addProgramInstructions(nil)
-			self.setProgramInstruction(consequentJmp, Jne(self.program.getInstructionSize()-consequentJmp))
+			self.setProgramInstruction(consequentJmp, Jne(program.getInstructionSize()-consequentJmp))
 			self.compileStatement(st.Alternate, needResult)
-			self.setProgramInstruction(alternateJmp, Jump(self.program.getInstructionSize()-alternateJmp))
+			self.setProgramInstruction(alternateJmp, Jump(program.getInstructionSize()-alternateJmp))
 		} else {
-			self.setProgramInstruction(consequentJmp, Jne(self.program.getInstructionSize()-consequentJmp))
+			self.setProgramInstruction(consequentJmp, Jne(program.getInstructionSize()-consequentJmp))
 		}
 	}
 }
 
 func (self *Compiler) compileExpressionStatement(st *ast.ExpressionStatement, needResult bool) {
 	self.chooseHandlingGetterExpression(self.compileExpression(st.Expression), needResult)
+	if !needResult {
+		return
+	}
+	self.addProgramInstructions(SaveResult)
 }

@@ -37,6 +37,10 @@ func (self *RefStack) size() int {
 	return len(*self)
 }
 
+func (self *RefStack) peek() Ref {
+	return (*self)[self.size()-1]
+}
+
 func (self *RefStack) pop() Ref {
 	lastIndex := self.size() - 1
 	ref := (*self)[lastIndex]
@@ -59,6 +63,8 @@ type VM struct {
 
 	refStack RefStack
 	tryStack TryFrameArray
+
+	result Value
 }
 
 func (self *VM) run() {

@@ -175,5 +175,7 @@ func (self *Compiler) handlingSetterExpression(expr CompiledExpression, valueExp
 }
 
 func (self *Compiler) handlingSetterCompiledIdentifierExpression(expr *CompiledIdentifierExpression, valueExpr CompiledExpression, putOnStack bool) {
-	self.handlingGetterExpression(valueExpr, putOnStack)
+	self.addProgramInstructions(ResolveVar(expr.name))
+	self.chooseHandlingGetterExpression(valueExpr, putOnStack)
+	self.addProgramInstructions(PutVar(expr.name))
 }

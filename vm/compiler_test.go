@@ -8,10 +8,12 @@ import (
 func TestCompiler(t *testing.T) {
 	parser := parser.CreateParser(1, "", `
 		var a = 100
-		if a > 50 {
+		if a > 500 {
 			a = 1
-		} else {
+		} else if(a > 1000) {
 			a = 2
+		} else {
+			a = 3
 		}
 	`)
 	program, err := parser.Parse()
@@ -31,4 +33,9 @@ func TestCompiler(t *testing.T) {
 	compiler.compile(program)
 	compiler.evalVM.program = compiler.program
 	compiler.evalVM.runTry()
+	result := compiler.evalVM.result
+	if result == nil {
+		return
+	}
+	println(result.toString())
 }
