@@ -18,6 +18,8 @@ func (self *Compiler) compileStatement(statement ast.Statement, needResult bool)
 	switch st := statement.(type) {
 	case *ast.BlockStatement:
 		self.compileBlockStatement(st, needResult)
+	case *ast.VarStatement:
+		self.compileVarStatement(st, needResult)
 	case *ast.IfStatement:
 		self.compileIfStatement(st, needResult)
 	case *ast.ExpressionStatement:
@@ -27,6 +29,17 @@ func (self *Compiler) compileStatement(statement ast.Statement, needResult bool)
 
 func (self *Compiler) compileBlockStatement(st *ast.BlockStatement, needResult bool) {
 	self.compileStatements(st.Body, needResult)
+}
+
+func (self *Compiler) compileVarStatement(st *ast.VarStatement, needResult bool) {
+	for _, binding := range st.List {
+		switch target := binding.Target.(type) {
+		case *ast.Identifier:
+			self.emitVarAssign(target.Name, int(target.StartIndex()-1), self.compileExpression(binding.Initializer))
+		default:
+			self.throwSyntaxError(int(target.StartIndex()-1), "unsupported variable binding target: %T", target)
+		}
+	}
 }
 
 func (self *Compiler) compileIfStatement(st *ast.IfStatement, needResult bool) {

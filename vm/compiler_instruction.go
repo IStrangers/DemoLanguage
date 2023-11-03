@@ -44,6 +44,10 @@ func (self *Compiler) emitLoadValue(value Value, putOnStack bool) {
 	self.addProgramInstructions(LoadVal(index))
 }
 
+func (self *Compiler) emitVarAssign(name string, pos int, expr CompiledExpression) {
+
+}
+
 func (self *Compiler) emitThrow(value Value) {
 
 }
