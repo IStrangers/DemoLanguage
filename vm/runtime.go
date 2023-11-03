@@ -14,4 +14,5 @@ type Exception struct {
 }
 
 type Runtime struct {
+	globalObject *Object
 }

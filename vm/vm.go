@@ -27,6 +27,23 @@ type TryFrame struct {
 	finallyRet     int
 }
 
+type RefStack []Ref
+
+func (self *RefStack) add(ref Ref) {
+	*self = append(*self, ref)
+}
+
+func (self *RefStack) size() int {
+	return len(*self)
+}
+
+func (self *RefStack) pop() Ref {
+	lastIndex := self.size() - 1
+	ref := (*self)[lastIndex]
+	*self = (*self)[:lastIndex]
+	return ref
+}
+
 type TryFrameArray []TryFrame
 
 func (self *TryFrameArray) add(tryFrame TryFrame) {
@@ -34,11 +51,13 @@ func (self *TryFrameArray) add(tryFrame TryFrame) {
 }
 
 type VM struct {
+	runtime *Runtime
 	program *Program
 	stack   ValueStack
 	pc      int
 	sp      int
 
+	refStack RefStack
 	tryStack TryFrameArray
 }
 

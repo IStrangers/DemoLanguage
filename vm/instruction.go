@@ -40,7 +40,8 @@ var (
 	GT _GT
 	GE _GE
 
-	Pop _Pop
+	Pop     _Pop
+	InitVar _InitVar
 )
 
 type LoadVal int
@@ -369,5 +370,37 @@ type _Pop struct{}
 
 func (self _Pop) exec(vm *VM) {
 	vm.sp--
+	vm.pc++
+}
+
+type ResolveVar string
+
+func (self ResolveVar) exec(vm *VM) {
+	vm.refStack.add(&ObjectRef{
+		refObject: vm.runtime.globalObject,
+		refName:   string(self),
+	})
+	vm.pc++
+}
+
+type _InitVar struct{}
+
+func (self _InitVar) exec(vm *VM) {
+	ref := vm.refStack.pop()
+	vm.sp--
+	ref.set(vm.stack[vm.sp])
+	vm.pc++
+}
+
+type LoadVar string
+
+func (self LoadVar) exec(vm *VM) {
+	globalObject := vm.runtime.globalObject
+	name := string(self)
+	value := globalObject.self.getProperty(name)
+	if value == nil {
+
+	}
+	vm.push(value)
 	vm.pc++
 }

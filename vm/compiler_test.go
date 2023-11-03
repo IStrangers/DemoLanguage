@@ -20,7 +20,15 @@ func TestCompiler(t *testing.T) {
 	}
 	compiler := &Compiler{
 		program: &Program{},
-		evalVM:  &VM{},
+		evalVM: &VM{
+			runtime: &Runtime{
+				globalObject: &Object{self: &BaseObject{
+					valueMapping: make(map[string]Value),
+				}},
+			},
+		},
 	}
 	compiler.compile(program)
+	compiler.evalVM.program = compiler.program
+	compiler.evalVM.runTry()
 }

@@ -45,7 +45,9 @@ func (self *Compiler) emitLoadValue(value Value, putOnStack bool) {
 }
 
 func (self *Compiler) emitVarAssign(name string, pos int, expr CompiledExpression) {
-
+	self.addProgramInstructions(ResolveVar(name))
+	self.chooseHandlingGetterExpression(expr, true)
+	self.addProgramInstructions(InitVar)
 }
 
 func (self *Compiler) emitThrow(value Value) {
@@ -90,7 +92,12 @@ func (self *Compiler) handlingGetterCompiledLiteralExpression(expr *CompiledLite
 
 func (self *Compiler) handlingGetterCompiledIdentifierExpression(expr *CompiledIdentifierExpression, putOnStack bool) {
 	expr.addSourceMap()
-	self.emitLoadValue(ToIntValue(100), putOnStack)
+
+	self.addProgramInstructions(LoadVar(expr.name))
+
+	if !putOnStack {
+		self.addProgramInstructions(Pop)
+	}
 }
 
 func (self *Compiler) handlingGetterCompiledUnaryExpression(expr *CompiledUnaryExpression, putOnStack bool) {

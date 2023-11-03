@@ -8,6 +8,7 @@ type Value interface {
 	isString() bool
 	isBool() bool
 	isNull() bool
+	isObject() bool
 
 	toInt() int64
 	toFloat() float64
@@ -62,6 +63,10 @@ func (self IntValue) isBool() bool {
 }
 
 func (self IntValue) isNull() bool {
+	return false
+}
+
+func (self IntValue) isObject() bool {
 	return false
 }
 
@@ -121,6 +126,10 @@ func (self FloatValue) isNull() bool {
 	return false
 }
 
+func (self FloatValue) isObject() bool {
+	return false
+}
+
 func (self FloatValue) toInt() int64 {
 	return int64(self)
 }
@@ -174,6 +183,10 @@ func (self StringValue) isBool() bool {
 }
 
 func (self StringValue) isNull() bool {
+	return false
+}
+
+func (self StringValue) isObject() bool {
 	return false
 }
 
@@ -235,6 +248,10 @@ func (self BoolValue) isNull() bool {
 	return false
 }
 
+func (self BoolValue) isObject() bool {
+	return false
+}
+
 func (self BoolValue) toInt() int64 {
 	if self.toBool() {
 		return 1
@@ -293,6 +310,10 @@ func (self NullValue) isNull() bool {
 	return true
 }
 
+func (self NullValue) isObject() bool {
+	return false
+}
+
 func (self NullValue) toInt() int64 {
 	return 0
 }
@@ -315,4 +336,59 @@ func (self NullValue) equals(value Value) bool {
 
 func (self NullValue) sameAs(value Value) bool {
 	return value.isNull()
+}
+
+type Object struct {
+	self ObjectImpl
+}
+
+func (self Object) isInt() bool {
+	return false
+}
+
+func (self Object) isFloat() bool {
+	return false
+}
+
+func (self Object) isString() bool {
+	return false
+}
+
+func (self Object) isBool() bool {
+	return false
+}
+
+func (self Object) isNull() bool {
+	return false
+}
+
+func (self Object) isObject() bool {
+	return true
+}
+
+func (self Object) toInt() int64 {
+	return 1
+}
+
+func (self Object) toFloat() float64 {
+	return 1.0
+}
+
+func (self Object) toString() string {
+	return "Object"
+}
+
+func (self Object) toBool() bool {
+	return false
+}
+
+func (self Object) equals(value Value) bool {
+	return self.sameAs(value)
+}
+
+func (self Object) sameAs(value Value) bool {
+	if value.isObject() {
+		return self == value || self.self.equals(value.(Object).self)
+	}
+	return false
 }
