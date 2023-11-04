@@ -22,6 +22,8 @@ func (self *Compiler) compileStatement(statement ast.Statement, needResult bool)
 		self.compileVarStatement(st)
 	case *ast.IfStatement:
 		self.compileIfStatement(st, needResult)
+	case *ast.SwitchStatement:
+		self.compileSwitchStatement(st, needResult)
 	case *ast.ExpressionStatement:
 		self.compileExpressionStatement(st, needResult)
 	}
@@ -73,6 +75,21 @@ func (self *Compiler) compileIfStatement(st *ast.IfStatement, needResult bool) {
 		} else {
 			self.setProgramInstruction(consequentJmp, Jne(program.getInstructionSize()-consequentJmp))
 		}
+	}
+}
+
+func (self *Compiler) compileSwitchStatement(st *ast.SwitchStatement, needResult bool) {
+	discriminantExpr := self.compileExpression(st.Discriminant)
+	if discriminantExpr.isConstExpression() {
+		_, ex := self.evalConstExpr(discriminantExpr)
+		if ex != nil {
+			discriminantExpr.addSourceMap()
+			self.emitThrow(ex.value)
+			return
+		}
+	} else {
+		self.handlingGetterExpression(discriminantExpr, needResult)
+
 	}
 }
 
