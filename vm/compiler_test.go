@@ -7,20 +7,23 @@ import (
 
 func TestCompiler(t *testing.T) {
 	parser := parser.CreateParser(1, "", `
-		var a = 100
-		if a > 500 {
+		var a = 600
+		if a > 1000 {
 			a = 1
-		} else if(a > 1000) {
+		} else if(a > 500) {
 			a = 2
 		} else {
 			a = 3
 		}
-		switch 1 {
+		switch a {
 			case 1 {
 				a = 4
 			}
 			case 2 {
 				a = 5
+			}
+			default {
+				a = 6
 			}
 		}
 	`)

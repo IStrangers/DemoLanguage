@@ -5,8 +5,8 @@ import (
 )
 
 func (self *Compiler) evalConstExpr(expr CompiledExpression) (Value, *Exception) {
-	if expr, ok := expr.(*CompiledLiteralExpression); ok {
-		return expr.value, nil
+	if expr.isLiteralExpression() {
+		return expr.(*CompiledLiteralExpression).value, nil
 	}
 	evalVM := self.evalVM
 	originProgram := self.program

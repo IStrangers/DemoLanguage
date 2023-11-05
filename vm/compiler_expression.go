@@ -7,6 +7,7 @@ import (
 )
 
 type CompiledExpression interface {
+	isLiteralExpression() bool
 	isConstExpression() bool
 	addSourceMap()
 }
@@ -14,6 +15,10 @@ type CompiledExpression interface {
 type CompiledBaseExpression struct {
 	compile *Compiler
 	offset  int
+}
+
+func (self CompiledBaseExpression) isLiteralExpression() bool {
+	return false
 }
 
 func (self CompiledBaseExpression) addSourceMap() {
@@ -26,6 +31,10 @@ func (self CompiledBaseExpression) addSourceMap() {
 type CompiledLiteralExpression struct {
 	CompiledBaseExpression
 	value Value
+}
+
+func (self CompiledLiteralExpression) isLiteralExpression() bool {
+	return true
 }
 
 func (self CompiledLiteralExpression) isConstExpression() bool {

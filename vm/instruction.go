@@ -41,6 +41,7 @@ var (
 	GE _GE
 
 	Pop        _Pop
+	Dup        _Dup
 	SaveResult _SaveResult
 	InitVar    _InitVar
 )
@@ -374,6 +375,13 @@ func (self _Pop) exec(vm *VM) {
 	vm.pc++
 }
 
+type _Dup struct{}
+
+func (self _Dup) exec(vm *VM) {
+	vm.push(vm.stack[vm.sp-1])
+	vm.pc++
+}
+
 type _SaveResult struct{}
 
 func (self _SaveResult) exec(vm *VM) {
@@ -405,7 +413,7 @@ type PutVar string
 
 func (self PutVar) exec(vm *VM) {
 	ref := vm.refStack.peek()
-	ref.set(vm.stack[vm.sp])
+	ref.set(vm.stack[vm.sp-1])
 	vm.pc++
 }
 

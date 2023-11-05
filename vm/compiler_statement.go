@@ -82,12 +82,12 @@ func (self *Compiler) compileSwitchStatement(st *ast.SwitchStatement, needResult
 			if index == st.Default && consequent == nil {
 				consequent = caseStatement.Consequent
 			} else {
-				caseExpr := self.compileExpression(caseStatement.Condition)
-				if !caseExpr.isConstExpression() {
+				conditionExpr := self.compileExpression(caseStatement.Condition)
+				if !conditionExpr.isConstExpression() {
 					self.throwSyntaxError(int(caseStatement.StartIndex()-1), "Expression is not a constant")
 					return
 				}
-				caseValue := self.evalConstValueExpr(caseExpr)
+				caseValue := self.evalConstValueExpr(conditionExpr)
 				if discriminantValue.sameAs(caseValue) {
 					consequent = caseStatement.Consequent
 				}
@@ -99,8 +99,37 @@ func (self *Compiler) compileSwitchStatement(st *ast.SwitchStatement, needResult
 		}
 		self.compileStatement(consequent, needResult)
 	} else {
+		var jumpInstructionIndexs []int
+		program := self.program
 		self.handlingGetterExpression(discriminantExpr, needResult)
-
+		var defaultCaseStatement *ast.CaseStatement
+		for index, caseStatement := range st.Body {
+			if index == st.Default {
+				defaultCaseStatement = caseStatement
+				continue
+			}
+			conditionExpr := self.compileExpression(caseStatement.Condition)
+			if conditionExpr.isConstExpression() {
+				self.addProgramInstructions(Dup)
+				self.chooseHandlingGetterExpression(conditionExpr, needResult)
+				self.addProgramInstructions(EQ)
+			} else {
+				self.chooseHandlingGetterExpression(conditionExpr, needResult)
+			}
+			caseJmp := self.program.getInstructionSize()
+			self.addProgramInstructions(nil)
+			self.compileStatement(caseStatement.Consequent, needResult)
+			jumpInstructionIndexs = append(jumpInstructionIndexs, program.getInstructionSize())
+			self.addProgramInstructions(nil)
+			self.setProgramInstruction(caseJmp, Jne(program.getInstructionSize()-caseJmp))
+		}
+		if defaultCaseStatement != nil {
+			self.compileStatement(defaultCaseStatement.Consequent, needResult)
+		}
+		jump := program.getInstructionSize()
+		for _, jumpInstructionIndex := range jumpInstructionIndexs {
+			self.setProgramInstruction(jumpInstructionIndex, Jump(jump-jumpInstructionIndex))
+		}
 	}
 }
 
