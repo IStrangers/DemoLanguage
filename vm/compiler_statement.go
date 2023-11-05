@@ -47,13 +47,8 @@ func (self *Compiler) compileVarStatement(st *ast.VarStatement) {
 func (self *Compiler) compileIfStatement(st *ast.IfStatement, needResult bool) {
 	conditionExpr := self.compileExpression(st.Condition)
 	if conditionExpr.isConstExpression() {
-		res, ex := self.evalConstExpr(conditionExpr)
-		if ex != nil {
-			conditionExpr.addSourceMap()
-			self.emitThrow(ex.value)
-			return
-		}
-		if res.toBool() {
+		conditionValue := self.evalConstValueExpr(conditionExpr)
+		if conditionValue.toBool() {
 			self.compileStatement(st.Consequent, needResult)
 			self.checkStatementSyntax(st.Alternate)
 		} else if st.Alternate != nil {
@@ -81,12 +76,28 @@ func (self *Compiler) compileIfStatement(st *ast.IfStatement, needResult bool) {
 func (self *Compiler) compileSwitchStatement(st *ast.SwitchStatement, needResult bool) {
 	discriminantExpr := self.compileExpression(st.Discriminant)
 	if discriminantExpr.isConstExpression() {
-		_, ex := self.evalConstExpr(discriminantExpr)
-		if ex != nil {
-			discriminantExpr.addSourceMap()
-			self.emitThrow(ex.value)
+		discriminantValue := self.evalConstValueExpr(discriminantExpr)
+		var consequent ast.Statement
+		for index, caseStatement := range st.Body {
+			if index == st.Default && consequent == nil {
+				consequent = caseStatement.Consequent
+			} else {
+				caseExpr := self.compileExpression(caseStatement.Condition)
+				if !caseExpr.isConstExpression() {
+					self.throwSyntaxError(int(caseStatement.StartIndex()-1), "Expression is not a constant")
+					return
+				}
+				caseValue := self.evalConstValueExpr(caseExpr)
+				if discriminantValue.sameAs(caseValue) {
+					consequent = caseStatement.Consequent
+				}
+			}
+			self.checkStatementSyntax(caseStatement.Consequent)
+		}
+		if consequent == nil {
 			return
 		}
+		self.compileStatement(consequent, needResult)
 	} else {
 		self.handlingGetterExpression(discriminantExpr, needResult)
 

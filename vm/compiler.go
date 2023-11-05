@@ -16,6 +16,13 @@ type CompilerSyntaxError struct {
 	CompilerError
 }
 
+func (self CompilerSyntaxError) Error() string {
+	if self.File != nil {
+		return fmt.Sprintf("SyntaxError: %s at %s", self.Message, self.File.Position(self.Offset))
+	}
+	return fmt.Sprintf("SyntaxError: %s", self.Message)
+}
+
 type CompilerReferenceError struct {
 	CompilerError
 }
@@ -23,7 +30,6 @@ type CompilerReferenceError struct {
 type Compiler struct {
 	program *Program
 	scope   *Scope
-	block   *Block
 	evalVM  *VM
 }
 
@@ -56,20 +62,13 @@ func (self *Compiler) closeScope() {
 }
 
 func (self *Compiler) enterVirtualMode() func() {
-	originProgram, originBlock := self.program, self.block
-	if originBlock != nil {
-		self.block = &Block{
-			originBlock.outer,
-			originBlock.blockType,
-			originBlock.label,
-		}
-	}
+	originProgram := self.program
 	self.program = &Program{
 		source: self.program.source,
 	}
 	self.openScope()
 	return func() {
-		self.program, self.block = originProgram, originBlock
+		self.program = originProgram
 		self.closeScope()
 	}
 }
@@ -83,11 +82,4 @@ func (self *Compiler) throwSyntaxError(offset int, format string, args ...any) C
 		},
 	})
 	return nil
-}
-
-func (self *Compiler) errorAssert(cond bool, offset int, message string, args ...any) CompiledExpression {
-	if cond {
-		return nil
-	}
-	return self.throwSyntaxError(offset, "Compiler error: "+message, args...)
 }

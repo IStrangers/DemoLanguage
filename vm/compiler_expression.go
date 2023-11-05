@@ -95,7 +95,7 @@ func (self *Compiler) compileExpression(expression ast.Expression) CompiledExpre
 	case *ast.AssignExpression:
 		return self.compileAssignExpression(expr)
 	default:
-		return self.errorAssert(false, int(expression.StartIndex())-1, "Unknown expression type: %T", expression)
+		return self.throwSyntaxError(int(expression.StartIndex())-1, "Unknown expression type: %T", expression)
 	}
 }
 
@@ -114,7 +114,7 @@ func (self *Compiler) compileNumberLiteral(expr *ast.NumberLiteral) CompiledExpr
 	case float64:
 		value = ToFloatValue(val)
 	default:
-		return self.errorAssert(false, int(expr.StartIndex())-1, "Unsupported number literal type: %T", expr.Value)
+		return self.throwSyntaxError(int(expr.StartIndex())-1, "Unsupported number literal type: %T", expr.Value)
 	}
 	return &CompiledLiteralExpression{
 		self.createCompiledBaseExpression(expr.StartIndex()),

@@ -1,6 +1,7 @@
 package file
 
 import (
+	"fmt"
 	"sort"
 	"sync"
 )
@@ -11,6 +12,24 @@ type Position struct {
 	FileName string
 	Line     int
 	Column   int
+}
+
+func (self *Position) isValid() bool {
+	return self.Line > 0
+}
+
+func (self Position) String() string {
+	str := self.FileName
+	if self.isValid() {
+		if str != "" {
+			str += ":"
+		}
+		str += fmt.Sprintf("%d:%d", self.Line, self.Column)
+	}
+	if str == "" {
+		str = "-"
+	}
+	return str
 }
 
 type File struct {

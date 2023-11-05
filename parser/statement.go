@@ -23,7 +23,7 @@ func (parser *Parser) parseStatementListByCondition(endCondition func(token.Toke
 func (parser *Parser) nextStatement() {
 	for {
 		switch parser.token {
-		case token.LEFT_BRACE, token.VAR, token.FUN, token.RETURN, token.IF,
+		case token.VAR, token.FUN, token.RETURN, token.IF,
 			token.FOR, token.SWITCH, token.BREAK, token.CONTINUE:
 			return
 		case token.EOF:

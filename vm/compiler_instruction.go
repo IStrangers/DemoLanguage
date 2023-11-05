@@ -36,6 +36,15 @@ func (self *Compiler) evalConstExpr(expr CompiledExpression) (Value, *Exception)
 	return evalVM.pop(), nil
 }
 
+func (self *Compiler) evalConstValueExpr(expr CompiledExpression) Value {
+	value, ex := self.evalConstExpr(expr)
+	if ex != nil {
+		expr.addSourceMap()
+		self.emitThrow(ex.value)
+	}
+	return value
+}
+
 func (self *Compiler) emitLoadValue(value Value, putOnStack bool) {
 	if !putOnStack {
 		return
@@ -146,7 +155,7 @@ func (self *Compiler) handlingGetterCompiledBinaryExpression(expr *CompiledBinar
 	case token.GREATER_OR_EQUAL:
 		self.addProgramInstructions(GE)
 	default:
-		self.errorAssert(false, expr.offset, "Unknown operator: %s", expr.operator.String())
+		self.throwSyntaxError(expr.offset, "Unknown operator: %s", expr.operator.String())
 	}
 
 	if !putOnStack {
@@ -159,7 +168,7 @@ func (self *Compiler) handlingGetterCompiledAssignExpression(expr *CompiledAssig
 	case token.ASSIGN:
 		self.handlingSetterExpression(expr.left, expr.right, putOnStack)
 	default:
-		self.errorAssert(false, expr.offset, "Unknown assign operator: %s", expr.operator.String())
+		self.throwSyntaxError(expr.offset, "Unknown assign operator: %s", expr.operator.String())
 	}
 
 	if !putOnStack {

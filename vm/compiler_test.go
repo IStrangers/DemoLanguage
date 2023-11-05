@@ -15,13 +15,23 @@ func TestCompiler(t *testing.T) {
 		} else {
 			a = 3
 		}
+		switch 1 {
+			case 1 {
+				a = 4
+			}
+			case 2 {
+				a = 5
+			}
+		}
 	`)
 	program, err := parser.Parse()
 	if err != nil {
 		panic(err.Error())
 	}
 	compiler := &Compiler{
-		program: &Program{},
+		program: &Program{
+			source: program.File,
+		},
 		evalVM: &VM{
 			runtime: &Runtime{
 				globalObject: &Object{self: &BaseObject{
