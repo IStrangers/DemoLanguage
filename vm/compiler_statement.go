@@ -151,7 +151,7 @@ func (self *Compiler) compileForStatement(st *ast.ForStatement, needResult bool)
 	self.compileStatement(st.Body, needResult)
 	if st.Update != nil {
 		updateExpr := self.compileExpression(st.Update)
-		self.chooseHandlingGetterExpression(updateExpr, needResult)
+		self.handlingGetterExpression(updateExpr, needResult)
 	}
 	self.addProgramInstructions(Jump(jumpIndex - program.getInstructionSize()))
 	if conditionJumpIndex != -1 {

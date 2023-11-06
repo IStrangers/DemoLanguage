@@ -385,8 +385,8 @@ func (self _Dup) exec(vm *VM) {
 type _SaveResult struct{}
 
 func (self _SaveResult) exec(vm *VM) {
+	vm.result = vm.stack[vm.sp-1]
 	vm.sp--
-	vm.result = vm.stack[vm.sp]
 	vm.pc++
 }
 
@@ -404,16 +404,17 @@ type _InitVar struct{}
 
 func (self _InitVar) exec(vm *VM) {
 	ref := vm.refStack.pop()
+	ref.set(vm.stack[vm.sp-1])
 	vm.sp--
-	ref.set(vm.stack[vm.sp])
 	vm.pc++
 }
 
-type PutVar string
+type PutVar int
 
 func (self PutVar) exec(vm *VM) {
-	ref := vm.refStack.peek()
+	ref := vm.refStack.pop()
 	ref.set(vm.stack[vm.sp-1])
+	vm.sp += int(self)
 	vm.pc++
 }
 

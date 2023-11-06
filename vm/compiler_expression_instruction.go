@@ -113,15 +113,18 @@ func (self *Compiler) handlingGetterCompiledIdentifierExpression(expr *CompiledI
 }
 
 func (self *Compiler) handlingGetterCompiledUnaryExpression(expr *CompiledUnaryExpression, putOnStack bool) {
-	self.chooseHandlingGetterExpression(expr.operand, true)
-
 	switch expr.operator {
 	case token.NOT:
+		self.chooseHandlingGetterExpression(expr.operand, putOnStack)
 		self.addProgramInstructions(Not)
 	case token.INCREMENT:
-		self.addProgramInstructions(Inc)
+		self.handlingUnaryExpression(expr.operand, func() {
+			self.addProgramInstructions(Inc)
+		}, expr.postfix, putOnStack)
 	case token.DECREMENT:
-		self.addProgramInstructions(Dec)
+		self.handlingUnaryExpression(expr.operand, func() {
+			self.addProgramInstructions(Dec)
+		}, expr.postfix, putOnStack)
 	}
 
 	if !putOnStack {
@@ -189,5 +192,19 @@ func (self *Compiler) handlingSetterExpression(expr CompiledExpression, valueExp
 func (self *Compiler) handlingSetterCompiledIdentifierExpression(expr *CompiledIdentifierExpression, valueExpr CompiledExpression, putOnStack bool) {
 	self.addProgramInstructions(ResolveVar(expr.name))
 	self.chooseHandlingGetterExpression(valueExpr, putOnStack)
-	self.addProgramInstructions(PutVar(expr.name))
+	self.addProgramInstructions(PutVar(0))
+}
+
+func (self *Compiler) handlingUnaryExpression(expr CompiledExpression, instructionBody func(), postfix bool, putOnStack bool) {
+	switch expr := expr.(type) {
+	case *CompiledIdentifierExpression:
+		self.handlingUnaryCompiledIdentifierExpression(expr, instructionBody, postfix, putOnStack)
+	}
+}
+
+func (self *Compiler) handlingUnaryCompiledIdentifierExpression(expr *CompiledIdentifierExpression, instructionBody func(), postfix bool, putOnStack bool) {
+	self.addProgramInstructions(ResolveVar(expr.name))
+	self.chooseHandlingGetterExpression(expr, putOnStack)
+	instructionBody()
+	self.addProgramInstructions(PutVar(-1))
 }
