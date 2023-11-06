@@ -55,6 +55,9 @@ func (self *Compiler) emitLoadValue(value Value, putOnStack bool) {
 
 func (self *Compiler) emitVarAssign(name string, pos int, expr CompiledExpression) {
 	self.addProgramInstructions(ResolveVar(name))
+	if expr == nil {
+		return
+	}
 	self.chooseHandlingGetterExpression(expr, true)
 	self.addProgramInstructions(InitVar)
 }

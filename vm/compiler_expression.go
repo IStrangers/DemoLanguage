@@ -89,6 +89,8 @@ func (self *Compiler) createCompiledBaseExpression(index file.Index) CompiledBas
 
 func (self *Compiler) compileExpression(expression ast.Expression) CompiledExpression {
 	switch expr := expression.(type) {
+	case nil:
+		return nil
 	case *ast.NullLiteral:
 		return self.compileNullLiteral(expr)
 	case *ast.NumberLiteral:

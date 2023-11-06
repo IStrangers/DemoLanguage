@@ -24,6 +24,8 @@ func (self *Compiler) compileStatement(statement ast.Statement, needResult bool)
 		self.compileIfStatement(st, needResult)
 	case *ast.SwitchStatement:
 		self.compileSwitchStatement(st, needResult)
+	case *ast.ForStatement:
+		self.compileForStatement(st, needResult)
 	case *ast.ExpressionStatement:
 		self.compileExpressionStatement(st, needResult)
 	}
@@ -130,6 +132,30 @@ func (self *Compiler) compileSwitchStatement(st *ast.SwitchStatement, needResult
 		for _, jumpInstructionIndex := range jumpInstructionIndexs {
 			self.setProgramInstruction(jumpInstructionIndex, Jump(jump-jumpInstructionIndex))
 		}
+	}
+}
+
+func (self *Compiler) compileForStatement(st *ast.ForStatement, needResult bool) {
+	program := self.program
+	if st.Initializer != nil {
+		self.compileStatement(st.Initializer, needResult)
+	}
+	jumpIndex := program.getInstructionSize()
+	conditionJumpIndex := -1
+	if st.Condition != nil {
+		conditionExpr := self.compileExpression(st.Condition)
+		self.chooseHandlingGetterExpression(conditionExpr, needResult)
+		conditionJumpIndex = program.getInstructionSize()
+		self.addProgramInstructions(nil)
+	}
+	self.compileStatement(st.Body, needResult)
+	if st.Update != nil {
+		updateExpr := self.compileExpression(st.Update)
+		self.chooseHandlingGetterExpression(updateExpr, needResult)
+	}
+	self.addProgramInstructions(Jump(jumpIndex - program.getInstructionSize()))
+	if conditionJumpIndex != -1 {
+		self.setProgramInstruction(conditionJumpIndex, Jne(program.getInstructionSize()-conditionJumpIndex))
 	}
 }
 
