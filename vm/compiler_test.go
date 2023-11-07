@@ -26,8 +26,8 @@ func TestCompiler(t *testing.T) {
 		//		a = 6
 		//	}
 		//}
-		var a
-		for var i = 0; i <= 5 {
+		var i = 1
+		for ;i <= 5; {
 			i = 6
 		}
 	`)
