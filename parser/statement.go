@@ -126,12 +126,16 @@ func (parser *Parser) parseForStatement() ast.Statement {
 		if parser.token != token.SEMICOLON {
 			forStatement.Initializer = parser.parseVarStatement()
 		}
-		parser.expect(token.SEMICOLON)
+		if parser.token == token.SEMICOLON {
+			parser.expect(token.SEMICOLON)
+		}
 		if parser.token != token.SEMICOLON {
 			forStatement.Condition = parser.parseExpression()
 		}
-		parser.expect(token.SEMICOLON)
-		if parser.token != token.SEMICOLON {
+		if parser.token == token.SEMICOLON {
+			parser.expect(token.SEMICOLON)
+		}
+		if parser.token != token.SEMICOLON && parser.token != token.LEFT_BRACE {
 			forStatement.Update = parser.parseExpression()
 		}
 	}
