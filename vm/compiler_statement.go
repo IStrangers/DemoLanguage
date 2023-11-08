@@ -26,6 +26,8 @@ func (self *Compiler) compileStatement(statement ast.Statement, needResult bool)
 		self.compileSwitchStatement(st, needResult)
 	case *ast.ForStatement:
 		self.compileForStatement(st, needResult)
+	case *ast.FunStatement:
+		self.compileFunStatement(st)
 	case *ast.ExpressionStatement:
 		self.compileExpressionStatement(st, needResult)
 	}
@@ -157,6 +159,11 @@ func (self *Compiler) compileForStatement(st *ast.ForStatement, needResult bool)
 	if conditionJumpIndex != -1 {
 		self.setProgramInstruction(conditionJumpIndex, Jne(program.getInstructionSize()-conditionJumpIndex))
 	}
+}
+
+func (self *Compiler) compileFunStatement(st *ast.FunStatement) {
+	funLiteralExpr := self.compileExpression(st.FunLiteral)
+	self.handlingGetterExpression(funLiteralExpr, true)
 }
 
 func (self *Compiler) compileExpressionStatement(st *ast.ExpressionStatement, needResult bool) {

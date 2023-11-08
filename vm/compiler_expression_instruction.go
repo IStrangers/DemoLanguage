@@ -87,6 +87,8 @@ func (self *Compiler) handlingGetterExpression(expr CompiledExpression, putOnSta
 		self.handlingGetterCompiledBinaryExpression(expr, putOnStack)
 	case *CompiledAssignExpression:
 		self.handlingGetterCompiledAssignExpression(expr, putOnStack)
+	case *CompiledFunLiteralExpression:
+		self.handlingGetterCompiledFunLiteralExpression(expr, putOnStack)
 	}
 }
 
@@ -180,6 +182,10 @@ func (self *Compiler) handlingGetterCompiledAssignExpression(expr *CompiledAssig
 	if !putOnStack {
 		self.addProgramInstructions(Pop)
 	}
+}
+
+func (self *Compiler) handlingGetterCompiledFunLiteralExpression(expr *CompiledFunLiteralExpression, putOnStack bool) {
+
 }
 
 func (self *Compiler) handlingSetterExpression(expr CompiledExpression, valueExpr CompiledExpression, putOnStack bool) {

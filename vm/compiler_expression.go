@@ -83,6 +83,18 @@ func (self CompiledAssignExpression) isConstExpression() bool {
 	return false
 }
 
+type CompiledFunLiteralExpression struct {
+	CompiledBaseExpression
+	name            *ast.Identifier
+	parameterList   *ast.ParameterList
+	body            ast.Statement
+	declarationList []*ast.VariableDeclaration
+}
+
+func (self CompiledFunLiteralExpression) isConstExpression() bool {
+	return false
+}
+
 func (self *Compiler) createCompiledBaseExpression(index file.Index) CompiledBaseExpression {
 	return CompiledBaseExpression{self, int(index) - 1}
 }
@@ -105,6 +117,8 @@ func (self *Compiler) compileExpression(expression ast.Expression) CompiledExpre
 		return self.compileBinaryExpression(expr)
 	case *ast.AssignExpression:
 		return self.compileAssignExpression(expr)
+	case *ast.FunLiteral:
+		return self.compileFunLiteral(expr)
 	default:
 		return self.throwSyntaxError(int(expression.StartIndex())-1, "Unknown expression type: %T", expression)
 	}
@@ -171,5 +185,15 @@ func (self *Compiler) compileAssignExpression(expr *ast.AssignExpression) Compil
 		self.compileExpression(expr.Left),
 		expr.Operator,
 		self.compileExpression(expr.Right),
+	}
+}
+
+func (self *Compiler) compileFunLiteral(expr *ast.FunLiteral) CompiledExpression {
+	return &CompiledFunLiteralExpression{
+		self.createCompiledBaseExpression(expr.StartIndex()),
+		expr.Name,
+		expr.ParameterList,
+		expr.Body,
+		expr.DeclarationList,
 	}
 }
