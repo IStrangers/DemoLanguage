@@ -99,8 +99,14 @@ func (parser *Parser) parseFunStatement() ast.Statement {
 }
 
 func (parser *Parser) parseReturnStatement() ast.Statement {
+	returnIndex := parser.expect(token.RETURN)
+	if !parser.scope.inFunction {
+		parser.error(returnIndex, "Illegal return statement")
+		parser.nextStatement()
+		return &ast.BadStatement{Start: returnIndex, End: parser.index}
+	}
 	return &ast.ReturnStatement{
-		Return:    parser.expect(token.RETURN),
+		Return:    returnIndex,
 		Arguments: parser.parseReturnArguments(),
 	}
 }
@@ -139,7 +145,9 @@ func (parser *Parser) parseForStatement() ast.Statement {
 			forStatement.Update = parser.parseExpression()
 		}
 	}
+	parser.scope.inIteration = true
 	forStatement.Body = parser.parseBlockStatement()
+	parser.scope.inIteration = false
 	return forStatement
 }
 
@@ -149,7 +157,9 @@ func (parser *Parser) parseSwitchStatement() ast.Statement {
 		Discriminant: parser.parseExpression(),
 		Default:      -1,
 	}
+	parser.scope.inSwitch = true
 	switchStatement.Body, switchStatement.Default = parser.parseCaseStatementList()
+	parser.scope.inSwitch = false
 	switchStatement.RightBrace = parser.expect(token.RIGHT_BRACE)
 	return switchStatement
 }

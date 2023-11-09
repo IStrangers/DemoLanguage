@@ -76,12 +76,15 @@ func (parser *Parser) parseFunParameterList() *ast.ParameterList {
 	return parameterList
 }
 
-func (parser *Parser) parseFunBlock(openScope bool) (ast.Statement, []*ast.VariableDeclaration) {
+func (parser *Parser) parseFunBlock(openScope bool) (statement ast.Statement, variableDeclarations []*ast.VariableDeclaration) {
 	if openScope {
 		parser.openScope()
 		defer parser.closeScope()
 	}
-	return parser.parseBlockStatement(), parser.scope.declarationList
+	parser.scope.inFunction = true
+	statement, variableDeclarations = parser.parseBlockStatement(), parser.scope.declarationList
+	parser.scope.inFunction = false
+	return
 }
 
 func (parser *Parser) parseReturnArguments() (arguments []ast.Expression) {

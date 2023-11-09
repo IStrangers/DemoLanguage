@@ -6,6 +6,10 @@ type Scope struct {
 	outer           *Scope
 	declarationList []*ast.VariableDeclaration
 	labels          []string
+
+	inSwitch    bool
+	inIteration bool
+	inFunction  bool
 }
 
 func (scpoe *Scope) AddDeclaration(declaration *ast.VariableDeclaration) {
