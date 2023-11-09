@@ -196,14 +196,26 @@ func (parser *Parser) parseCaseStatement() *ast.CaseStatement {
 }
 
 func (parser *Parser) parseBreakStatement() ast.Expression {
+	breakIndex := parser.expect(token.BREAK)
+	if !parser.scope.inIteration {
+		parser.error(breakIndex, "Illegal break statement")
+		parser.nextStatement()
+		return &ast.BadStatement{Start: breakIndex, End: parser.index}
+	}
 	return &ast.BreakStatement{
-		Break: parser.expect(token.BREAK),
+		Break: breakIndex,
 	}
 }
 
 func (parser *Parser) parseContinueStatement() ast.Expression {
+	continueIndex := parser.expect(token.CONTINUE)
+	if !parser.scope.inIteration {
+		parser.error(continueIndex, "Illegal continue statement")
+		parser.nextStatement()
+		return &ast.BadStatement{Start: continueIndex, End: parser.index}
+	}
 	return &ast.ContinueStatement{
-		Continue: parser.expect(token.CONTINUE),
+		Continue: continueIndex,
 	}
 }
 
