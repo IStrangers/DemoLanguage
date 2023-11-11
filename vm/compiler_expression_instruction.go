@@ -1,6 +1,7 @@
 package vm
 
 import (
+	"DemoLanguage/ast"
 	"DemoLanguage/token"
 )
 
@@ -185,7 +186,34 @@ func (self *Compiler) handlingGetterCompiledAssignExpression(expr *CompiledAssig
 }
 
 func (self *Compiler) handlingGetterCompiledFunLiteralExpression(expr *CompiledFunLiteralExpression, putOnStack bool) {
+	originProgram := self.program
+	self.program = &Program{
+		source:       originProgram.source,
+		instructions: InstructionArray{},
+		sourceMaps:   SourceMapItemArray{{pos: expr.offset}},
+	}
+	self.openScope()
+	if expr.name != nil {
+		self.program.functionName = expr.name.Name
+	}
+	for _, binding := range expr.parameterList.List {
+		switch target := binding.Target.(type) {
+		case *ast.Identifier:
+			_, exists := self.scope.bindName(target.Name)
+			if exists {
+				self.throwSyntaxError(int(target.StartIndex())-1, "Duplicate parameter name not allowed in this context")
+			}
+		default:
+			self.throwSyntaxError(int(target.StartIndex())-1, "Unsupported BindingElement type: %T", target)
+		}
+	}
 
+	self.closeScope()
+	self.program = originProgram
+
+	if !putOnStack {
+		self.addProgramInstructions(Pop)
+	}
 }
 
 func (self *Compiler) handlingSetterExpression(expr CompiledExpression, valueExpr CompiledExpression, putOnStack bool) {
