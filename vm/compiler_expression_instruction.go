@@ -208,6 +208,8 @@ func (self *Compiler) handlingGetterCompiledFunLiteralExpression(expr *CompiledF
 		}
 	}
 
+	self.compileStatement(expr.body, false)
+
 	self.closeScope()
 	self.program = originProgram
 

@@ -52,8 +52,9 @@ func (self *Compiler) setProgramInstruction(index int, instruction Instruction) 
 
 func (self *Compiler) openScope() {
 	self.scope = &Scope{
-		outer:   self.scope,
-		program: self.program,
+		outer:          self.scope,
+		program:        self.program,
+		bindingMapping: make(map[string]*Binding),
 	}
 }
 

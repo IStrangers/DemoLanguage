@@ -175,7 +175,7 @@ func (parser *Parser) parseCaseStatementList() ([]*ast.CaseStatement, int) {
 			if defaultIndex == -1 {
 				defaultIndex = index
 			} else {
-				parser.error(caseStatement.Case, "Already saw a default in switch")
+				parser.error(caseStatement.StartIndex(), "Already saw a default in switch")
 			}
 		}
 	}
