@@ -26,9 +26,12 @@ func TestCompiler(t *testing.T) {
 		//		a = 6
 		//	}
 		//}
-		var i = 1
-		for ;i <= 5; {
-			i = 6
+		//var i = 1
+		//for ;i <= 5; {
+		//	i = 6
+		//}
+		fun a() {
+			var a = 1
 		}
 	`)
 	program, err := parser.Parse()

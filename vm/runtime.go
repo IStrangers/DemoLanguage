@@ -16,3 +16,11 @@ type Exception struct {
 type Runtime struct {
 	globalObject *Object
 }
+
+func (self *Runtime) newFun(name string) *FunObject {
+	funObject := &FunObject{}
+	funObject.className = classFunction
+	funObject.BaseObject.init()
+	funObject.BaseObject.setProperty("name", StringValue(name))
+	return funObject
+}

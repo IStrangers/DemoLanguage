@@ -1,5 +1,10 @@
 package vm
 
+const (
+	classObject   = "Object"
+	classFunction = "Function"
+)
+
 type ObjectImpl interface {
 	getClassName() string
 	getProperty(string) Value
@@ -10,6 +15,10 @@ type ObjectImpl interface {
 type BaseObject struct {
 	className    string
 	valueMapping map[string]Value
+}
+
+func (self *BaseObject) init() {
+	self.valueMapping = make(map[string]Value)
 }
 
 func (self *BaseObject) getClassName() string {

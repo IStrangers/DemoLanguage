@@ -438,5 +438,9 @@ type NewFun struct {
 }
 
 func (self NewFun) exec(vm *VM) {
+	fun := vm.runtime.newFun(self.name)
+	fun.funDefinition = self.funDefinition
+	fun.program = self.program
+	vm.push(Object{fun})
 	vm.pc++
 }
