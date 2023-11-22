@@ -430,3 +430,13 @@ func (self LoadVar) exec(vm *VM) {
 	vm.push(value)
 	vm.pc++
 }
+
+type NewFun struct {
+	funDefinition string
+	name          string
+	program       *Program
+}
+
+func (self NewFun) exec(vm *VM) {
+	vm.pc++
+}

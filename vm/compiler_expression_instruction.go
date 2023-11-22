@@ -209,9 +209,11 @@ func (self *Compiler) handlingGetterCompiledFunLiteralExpression(expr *CompiledF
 	}
 
 	self.compileStatement(expr.body, false)
-
 	self.closeScope()
+
+	newFun := &NewFun{expr.funDefinition, self.program.functionName, self.program}
 	self.program = originProgram
+	self.addProgramInstructions(newFun)
 
 	if !putOnStack {
 		self.addProgramInstructions(Pop)

@@ -85,6 +85,7 @@ func (self CompiledAssignExpression) isConstExpression() bool {
 
 type CompiledFunLiteralExpression struct {
 	CompiledBaseExpression
+	funDefinition   string
 	name            *ast.Identifier
 	parameterList   *ast.ParameterList
 	body            ast.Statement
@@ -191,6 +192,7 @@ func (self *Compiler) compileAssignExpression(expr *ast.AssignExpression) Compil
 func (self *Compiler) compileFunLiteral(expr *ast.FunLiteral) CompiledExpression {
 	return &CompiledFunLiteralExpression{
 		self.createCompiledBaseExpression(expr.StartIndex()),
+		expr.FunDefinition,
 		expr.Name,
 		expr.ParameterList,
 		expr.Body,
