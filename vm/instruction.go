@@ -434,7 +434,20 @@ func (self LoadVar) exec(vm *VM) {
 	name := string(self)
 	value := globalObject.self.getProperty(name)
 	if value == nil {
+		//wait adjust
+	}
+	vm.push(value)
+	vm.pc++
+}
 
+type LoadDynamicCallee string
+
+func (self LoadDynamicCallee) exec(vm *VM) {
+	globalObject := vm.runtime.globalObject
+	name := string(self)
+	value := globalObject.self.getProperty(name)
+	if value == nil {
+		//wait adjust
 	}
 	vm.push(value)
 	vm.pc++

@@ -22,6 +22,7 @@ type Context struct {
 	program *Program
 	pc      int
 	sb      int
+	args    int
 	result  Value
 }
 
@@ -82,9 +83,10 @@ type VM struct {
 	runtime *Runtime
 	program *Program
 
-	pc int
-	sp int
-	sb int
+	pc   int
+	sp   int
+	sb   int
+	args int
 
 	maxCallStackSize int
 
@@ -147,11 +149,11 @@ func (self *VM) clearStack() {
 }
 
 func (self *VM) saveCtx(ctx Context) {
-	ctx.program, ctx.pc, ctx.sb, ctx.result = self.program, self.pc, self.sb, self.result
+	ctx.program, ctx.pc, ctx.sb, ctx.args, ctx.result = self.program, self.pc, self.sb, self.args, self.result
 }
 
 func (self *VM) restoreCtx(ctx Context) {
-	self.program, self.pc, self.sb, self.result = ctx.program, ctx.pc, ctx.sb, ctx.result
+	self.program, self.pc, self.sb, self.args, self.result = ctx.program, ctx.pc, ctx.sb, ctx.args, ctx.result
 }
 
 func (self *VM) pushCtx() {

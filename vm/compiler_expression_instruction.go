@@ -90,6 +90,8 @@ func (self *Compiler) handlingGetterExpression(expr CompiledExpression, putOnSta
 		self.handlingGetterCompiledAssignExpression(expr, putOnStack)
 	case *CompiledFunLiteralExpression:
 		self.handlingGetterCompiledFunLiteralExpression(expr, putOnStack)
+	case *CompiledCallExpression:
+		self.handlingGetterCompiledCallExpression(expr, putOnStack)
 	}
 }
 
@@ -218,6 +220,25 @@ func (self *Compiler) handlingGetterCompiledFunLiteralExpression(expr *CompiledF
 	newFun := &NewFun{expr.funDefinition, self.program.functionName, self.program}
 	self.program = originProgram
 	self.addProgramInstructions(newFun)
+
+	if !putOnStack {
+		self.addProgramInstructions(Pop)
+	}
+}
+
+func (self *Compiler) handlingGetterCompiledCallExpression(expr *CompiledCallExpression, putOnStack bool) {
+
+	switch callee := expr.callee.(type) {
+	case *CompiledIdentifierExpression:
+		callee.addSourceMap()
+		self.addProgramInstructions(LoadDynamicCallee(callee.name))
+	}
+
+	for _, argument := range expr.arguments {
+		self.chooseHandlingGetterExpression(argument, true)
+	}
+
+	self.addProgramInstructions(Call(len(expr.arguments)))
 
 	if !putOnStack {
 		self.addProgramInstructions(Pop)

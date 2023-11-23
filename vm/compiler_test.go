@@ -33,6 +33,7 @@ func TestCompiler(t *testing.T) {
 		fun a() {
 			var a = 1
 		}
+		a()
 	`)
 	program, err := parser.Parse()
 	if err != nil {
