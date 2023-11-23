@@ -14,6 +14,7 @@ type Value interface {
 	toFloat() float64
 	toString() string
 	toBool() bool
+	toObject() *Object
 
 	equals(Value) bool
 	sameAs(Value) bool
@@ -86,6 +87,10 @@ func (self IntValue) toBool() bool {
 	return self.toInt() > 0
 }
 
+func (self IntValue) toObject() *Object {
+	return nil
+}
+
 func (self IntValue) equals(value Value) bool {
 	if self.sameAs(value) {
 		return true
@@ -144,6 +149,10 @@ func (self FloatValue) toString() string {
 
 func (self FloatValue) toBool() bool {
 	return self.toFloat() > 0.0
+}
+
+func (self FloatValue) toObject() *Object {
+	return nil
 }
 
 func (self FloatValue) equals(value Value) bool {
@@ -206,6 +215,10 @@ func (self StringValue) toString() string {
 
 func (self StringValue) toBool() bool {
 	return len(self.toString()) > 0
+}
+
+func (self StringValue) toObject() *Object {
+	return nil
 }
 
 func (self StringValue) equals(value Value) bool {
@@ -274,6 +287,10 @@ func (self BoolValue) toBool() bool {
 	return bool(self)
 }
 
+func (self BoolValue) toObject() *Object {
+	return nil
+}
+
 func (self BoolValue) equals(value Value) bool {
 	if self.sameAs(value) {
 		return true
@@ -330,6 +347,10 @@ func (self NullValue) toBool() bool {
 	return false
 }
 
+func (self NullValue) toObject() *Object {
+	return nil
+}
+
 func (self NullValue) equals(value Value) bool {
 	return self.sameAs(value)
 }
@@ -379,7 +400,11 @@ func (self Object) toString() string {
 }
 
 func (self Object) toBool() bool {
-	return false
+	return self.self != nil
+}
+
+func (self Object) toObject() *Object {
+	return &self
 }
 
 func (self Object) equals(value Value) bool {

@@ -44,7 +44,16 @@ var (
 	Dup        _Dup
 	SaveResult _SaveResult
 	InitVar    _InitVar
+	LoadNull   _LoadNull
+	Ret        _Ret
 )
+
+type _LoadNull struct{}
+
+func (self _LoadNull) exec(vm *VM) {
+	vm.push(Const_Null_Value)
+	vm.pc++
+}
 
 type LoadVal int
 
@@ -442,5 +451,27 @@ func (self NewFun) exec(vm *VM) {
 	fun.funDefinition = self.funDefinition
 	fun.program = self.program
 	vm.push(Object{fun})
+	vm.pc++
+}
+
+type Call uint32
+
+func (self Call) exec(vm *VM) {
+	n := int(self)
+	value := vm.stack[vm.sp-1-n]
+	if !value.isObject() {
+		//wait adjust
+		panic("Value is not an object: " + value.toString())
+	}
+	object := value.toObject()
+	object.self.vmCall(vm, n)
+}
+
+type _Ret struct{}
+
+func (self _Ret) exec(vm *VM) {
+	vm.stack[vm.sb-1] = vm.stack[vm.sp-1]
+	vm.sp = vm.sb
+	vm.popCtx()
 	vm.pc++
 }

@@ -10,6 +10,7 @@ type ObjectImpl interface {
 	getProperty(string) Value
 	setProperty(string, Value)
 	equals(objectImpl ObjectImpl) bool
+	vmCall(vm *VM, n int)
 }
 
 type BaseObject struct {
@@ -35,4 +36,9 @@ func (self *BaseObject) setProperty(name string, value Value) {
 
 func (self *BaseObject) equals(objectImpl ObjectImpl) bool {
 	return self == objectImpl
+}
+
+func (self *BaseObject) vmCall(vm *VM, n int) {
+	//wait adjust
+	panic("Not a function: " + self.className)
 }

@@ -18,13 +18,28 @@ func (self *ValueStack) expand(index int) {
 	*self = newValueStack
 }
 
-type TryFrame struct {
-	exception      *Exception
-	callStackDepth int
-	sp             int
-	catchPos       int
-	finallyPos     int
-	finallyRet     int
+type Context struct {
+	program *Program
+	pc      int
+	sb      int
+	result  Value
+}
+
+type CallStack []Context
+
+func (self *CallStack) size() int {
+	return len(*self)
+}
+
+func (self *CallStack) add(ctx Context) {
+	*self = append(*self, ctx)
+}
+
+func (self *CallStack) pop() Context {
+	lastIndex := self.size() - 1
+	ctx := (*self)[lastIndex]
+	*self = (*self)[:lastIndex]
+	return ctx
 }
 
 type RefStack []Ref
@@ -48,21 +63,35 @@ func (self *RefStack) pop() Ref {
 	return ref
 }
 
-type TryFrameArray []TryFrame
+type TryFrame struct {
+	exception      *Exception
+	callStackDepth int
+	sp             int
+	catchPos       int
+	finallyPos     int
+	finallyRet     int
+}
 
-func (self *TryFrameArray) add(tryFrame TryFrame) {
+type TryStack []TryFrame
+
+func (self *TryStack) add(tryFrame TryFrame) {
 	*self = append(*self, tryFrame)
 }
 
 type VM struct {
 	runtime *Runtime
 	program *Program
-	stack   ValueStack
-	pc      int
-	sp      int
 
-	refStack RefStack
-	tryStack TryFrameArray
+	pc int
+	sp int
+	sb int
+
+	maxCallStackSize int
+
+	callStack CallStack
+	stack     ValueStack
+	refStack  RefStack
+	tryStack  TryStack
 
 	result Value
 }
@@ -115,6 +144,29 @@ func (self *VM) clearStack() {
 		stackTail[i] = nil
 	}
 	self.stack = self.stack[:sp]
+}
+
+func (self *VM) saveCtx(ctx Context) {
+	ctx.program, ctx.pc, ctx.sb, ctx.result = self.program, self.pc, self.sb, self.result
+}
+
+func (self *VM) restoreCtx(ctx Context) {
+	self.program, self.pc, self.sb, self.result = ctx.program, ctx.pc, ctx.sb, ctx.result
+}
+
+func (self *VM) pushCtx() {
+	if self.callStack.size() > self.maxCallStackSize {
+		//wait adjust
+		panic("StackOverflowError")
+	}
+	ctx := Context{}
+	self.callStack.add(ctx)
+	self.saveCtx(ctx)
+}
+
+func (self *VM) popCtx() {
+	ctx := self.callStack.pop()
+	self.restoreCtx(ctx)
 }
 
 func (self *VM) halted() bool {
