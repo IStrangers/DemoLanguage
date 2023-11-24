@@ -465,6 +465,9 @@ func (self BindDefining) exec(vm *VM) {
 		value := vm.stack[start+i]
 		globalObject.self.setProperty(fun, value)
 	}
+	for _, v := range self.vars {
+		globalObject.self.setProperty(v, nil)
+	}
 	vm.pc++
 }
 
