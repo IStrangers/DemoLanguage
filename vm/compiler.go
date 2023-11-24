@@ -35,7 +35,50 @@ type Compiler struct {
 
 func (self *Compiler) compile(in *ast.Program) {
 	body := in.Body
-	self.compileStatements(body, true)
+	remainingStatements := self.definingUpgrading(body)
+	self.compileStatements(remainingStatements, true)
+}
+
+func (self *Compiler) definingUpgrading(body []ast.Statement) (remainingStatements []ast.Statement) {
+	var funs []*ast.FunStatement
+	var funNames []string
+	var vars []*ast.VarStatement
+	var varNames []string
+	for _, statement := range body {
+		switch st := statement.(type) {
+		case *ast.FunStatement:
+			funs = append(funs, st)
+			funNames = append(funNames, st.FunLiteral.Name.Name)
+		case *ast.VarStatement:
+			vars = append(vars, st)
+			for _, binding := range st.List {
+				varNames = append(varNames, binding.Target.(*ast.Identifier).Name)
+			}
+		default:
+			remainingStatements = append(remainingStatements, st)
+		}
+	}
+	self.functionUpgrading(funs)
+	self.varUpgrading(vars)
+	if len(funs) > 0 || len(vars) > 0 {
+		self.addProgramInstructions(&BindDefining{
+			funNames,
+			varNames,
+		})
+	}
+	return
+}
+
+func (self *Compiler) functionUpgrading(funs []*ast.FunStatement) {
+	for _, fun := range funs {
+		self.compileFunStatement(fun)
+	}
+}
+
+func (self *Compiler) varUpgrading(vars []*ast.VarStatement) {
+	for _, v := range vars {
+		self.compileVarStatement(v)
+	}
 }
 
 func (self *Compiler) addProgramValue(value Value) int {

@@ -453,6 +453,21 @@ func (self LoadDynamicCallee) exec(vm *VM) {
 	vm.pc++
 }
 
+type BindDefining struct {
+	funs []string
+	vars []string
+}
+
+func (self BindDefining) exec(vm *VM) {
+	globalObject := vm.runtime.globalObject
+	start := vm.sp - len(self.funs)
+	for i, fun := range self.funs {
+		value := vm.stack[start+i]
+		globalObject.self.setProperty(fun, value)
+	}
+	vm.pc++
+}
+
 type NewFun struct {
 	funDefinition string
 	name          string

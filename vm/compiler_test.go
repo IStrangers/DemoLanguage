@@ -30,10 +30,10 @@ func TestCompiler(t *testing.T) {
 		//for ;i <= 5; {
 		//	i = 6
 		//}
+		a()
 		fun a() {
 			var a = 1
 		}
-		a()
 	`)
 	program, err := parser.Parse()
 	if err != nil {
