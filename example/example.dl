@@ -126,4 +126,5 @@ println(arrowFun(5))
 println(obj1.arrowFun1(500))
 var fs = -100
 println(fs)
-return +fs
+println(+fs)
+fs
