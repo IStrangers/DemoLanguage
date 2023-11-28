@@ -18,6 +18,13 @@ func (self *ValueStack) expand(index int) {
 	*self = newValueStack
 }
 
+type Stash struct {
+	outer       *Stash
+	values      ValueArray
+	extraArgs   ValueArray
+	nameMapping map[string]uint32
+}
+
 type Context struct {
 	program *Program
 	pc      int
@@ -90,6 +97,7 @@ type VM struct {
 
 	maxCallStackSize int
 
+	stash     *Stash
 	callStack CallStack
 	stack     ValueStack
 	refStack  RefStack
