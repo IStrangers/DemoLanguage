@@ -359,6 +359,18 @@ func (self Jeq) exec(vm *VM) {
 	}
 }
 
+type JeqNull int
+
+func (self JeqNull) exec(vm *VM) {
+	vm.sp--
+	value := vm.stack[vm.sp]
+	if value.isNull() {
+		vm.pc += int(self)
+	} else {
+		vm.pc++
+	}
+}
+
 type Jne int
 
 func (self Jne) exec(vm *VM) {
@@ -488,6 +500,17 @@ type EnterFun struct {
 
 func (self EnterFun) exec(vm *VM) {
 	vm.sb = vm.sp - 1 - self.args
+	d := self.args - vm.args
+	if d > 0 {
+		ss := vm.sp + d
+		vm.stack.expand(ss)
+		vs := vm.stack[vm.sp:ss]
+		for index := range vs {
+			vs[index] = Const_Null_Value
+		}
+		vm.args = self.args
+		vm.sp = ss
+	}
 	vm.pc++
 }
 

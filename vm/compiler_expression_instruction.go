@@ -195,6 +195,9 @@ func (self *Compiler) handlingGetterCompiledFunLiteralExpression(expr *CompiledF
 		sourceMaps:   SourceMapItemArray{{pos: expr.offset}},
 	}
 	self.openScope()
+
+	self.addProgramInstructions(EnterFun{len(expr.parameterList.List)})
+
 	if expr.name != nil {
 		self.program.functionName = expr.name.Name
 	}
@@ -208,9 +211,15 @@ func (self *Compiler) handlingGetterCompiledFunLiteralExpression(expr *CompiledF
 		default:
 			self.throwSyntaxError(int(target.StartIndex())-1, "Unsupported BindingElement type: %T", target)
 		}
+		if binding.Initializer == nil {
+			continue
+		}
+		index := self.program.getInstructionSize()
+		self.addProgramInstructions(nil)
+		self.chooseHandlingGetterExpression(self.compileExpression(binding.Initializer), true)
+		self.setProgramInstruction(index, JeqNull(self.program.getInstructionSize()-index))
 	}
 
-	self.addProgramInstructions(EnterFun{len(expr.parameterList.List)})
 	self.compileStatement(expr.body, false)
 	body := expr.body.(*ast.BlockStatement).Body
 	if _, ok := body[len(body)-1].(*ast.ReturnStatement); !ok {

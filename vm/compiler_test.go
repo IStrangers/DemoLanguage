@@ -2,6 +2,7 @@ package vm
 
 import (
 	"DemoLanguage/parser"
+	"fmt"
 	"testing"
 )
 
@@ -30,10 +31,10 @@ func TestCompiler(t *testing.T) {
 		//for ;i <= 5; {
 		//	i = 6
 		//}
-		a()
-		fun a() {
+		a(999)
+		fun a(b,c = 1) {
 			var a = 1
-			return a
+			return a + b + c
 		}
 	`)
 	program, err := parser.Parse()
@@ -53,11 +54,9 @@ func TestCompiler(t *testing.T) {
 		},
 	}
 	compiler.compile(program)
-	compiler.evalVM.program = compiler.program
-	compiler.evalVM.runTry()
-	result := compiler.evalVM.result
-	if result == nil {
-		return
-	}
-	println(result.toString())
+	evalVM := compiler.evalVM
+	evalVM.program = compiler.program
+	evalVM.runTry()
+	result := evalVM.result
+	fmt.Printf("%v\n", result)
 }
