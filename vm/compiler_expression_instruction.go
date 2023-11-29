@@ -210,6 +210,7 @@ func (self *Compiler) handlingGetterCompiledFunLiteralExpression(expr *CompiledF
 		}
 	}
 
+	self.addProgramInstructions(EnterFun{len(expr.parameterList.List)})
 	self.compileStatement(expr.body, false)
 	body := expr.body.(*ast.BlockStatement).Body
 	if _, ok := body[len(body)-1].(*ast.ReturnStatement); !ok {

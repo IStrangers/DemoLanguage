@@ -128,6 +128,31 @@ func (self *VM) execInstruction(pc int) {
 	instruction.exec(self)
 }
 
+func (self *VM) setDefining(name string, value Value) {
+	stash := self.stash
+	if stash != nil {
+		if _, exists := stash.nameMapping[name]; !exists {
+			index := uint32(stash.values.size())
+			stash.values = append(stash.values, value)
+			stash.nameMapping[name] = index
+		}
+		return
+	}
+	globalObject := self.runtime.globalObject
+	globalObject.self.setProperty(name, value)
+}
+
+func (self *VM) getDefining(name string) Value {
+	stash := self.stash
+	for ; stash != nil; stash = stash.outer {
+		if index, exists := stash.nameMapping[name]; exists {
+			return stash.values[index]
+		}
+	}
+	globalObject := self.runtime.globalObject
+	return globalObject.self.getProperty(name)
+}
+
 func (self *VM) getValue(index int) Value {
 	return self.program.values[index]
 }
@@ -156,7 +181,7 @@ func (self *VM) clearStack() {
 	self.stack = self.stack[:sp]
 }
 
-func (self *VM) saveCtx(ctx Context) {
+func (self *VM) saveCtx(ctx *Context) {
 	ctx.program, ctx.pc, ctx.sb, ctx.args, ctx.result = self.program, self.pc, self.sb, self.args, self.result
 }
 
@@ -170,8 +195,8 @@ func (self *VM) pushCtx() {
 		panic("StackOverflowError")
 	}
 	ctx := Context{}
+	self.saveCtx(&ctx)
 	self.callStack.add(ctx)
-	self.saveCtx(ctx)
 }
 
 func (self *VM) popCtx() {

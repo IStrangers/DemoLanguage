@@ -430,9 +430,8 @@ func (self PutVar) exec(vm *VM) {
 type LoadVar string
 
 func (self LoadVar) exec(vm *VM) {
-	globalObject := vm.runtime.globalObject
 	name := string(self)
-	value := globalObject.self.getProperty(name)
+	value := vm.getDefining(name)
 	if value == nil {
 		//wait adjust
 	}
@@ -443,9 +442,8 @@ func (self LoadVar) exec(vm *VM) {
 type LoadDynamicCallee string
 
 func (self LoadDynamicCallee) exec(vm *VM) {
-	globalObject := vm.runtime.globalObject
 	name := string(self)
-	value := globalObject.self.getProperty(name)
+	value := vm.getDefining(name)
 	if value == nil {
 		//wait adjust
 	}
@@ -459,14 +457,13 @@ type BindDefining struct {
 }
 
 func (self BindDefining) exec(vm *VM) {
-	globalObject := vm.runtime.globalObject
 	start := vm.sp - len(self.funs)
 	for i, fun := range self.funs {
 		value := vm.stack[start+i]
-		globalObject.self.setProperty(fun, value)
+		vm.setDefining(fun, value)
 	}
 	for _, v := range self.vars {
-		globalObject.self.setProperty(v, nil)
+		vm.setDefining(v, nil)
 	}
 	vm.pc++
 }
@@ -482,6 +479,15 @@ func (self NewFun) exec(vm *VM) {
 	fun.funDefinition = self.funDefinition
 	fun.program = self.program
 	vm.push(Object{fun})
+	vm.pc++
+}
+
+type EnterFun struct {
+	args int
+}
+
+func (self EnterFun) exec(vm *VM) {
+	vm.sb = vm.sp - 1 - self.args
 	vm.pc++
 }
 

@@ -20,6 +20,8 @@ func (self *Compiler) compileStatement(statement ast.Statement, needResult bool)
 		self.compileBlockStatement(st, needResult)
 	case *ast.VarStatement:
 		self.compileVarStatement(st)
+	case *ast.ReturnStatement:
+		self.compileReturnStatement(st)
 	case *ast.IfStatement:
 		self.compileIfStatement(st, needResult)
 	case *ast.SwitchStatement:
@@ -46,6 +48,17 @@ func (self *Compiler) compileVarStatement(st *ast.VarStatement) {
 			self.throwSyntaxError(int(target.StartIndex()-1), "unsupported variable binding target: %T", target)
 		}
 	}
+}
+
+func (self *Compiler) compileReturnStatement(st *ast.ReturnStatement) {
+	if st.Arguments != nil && len(st.Arguments) > 0 {
+		for _, argument := range st.Arguments {
+			self.chooseHandlingGetterExpression(self.compileExpression(argument), true)
+		}
+	} else {
+		self.addProgramInstructions(LoadNull)
+	}
+	self.addProgramInstructions(Ret)
 }
 
 func (self *Compiler) compileIfStatement(st *ast.IfStatement, needResult bool) {
