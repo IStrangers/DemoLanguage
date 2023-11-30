@@ -34,6 +34,7 @@ type Compiler struct {
 }
 
 func (self *Compiler) compile(in *ast.Program) {
+	self.openScope()
 	body := in.Body
 	remainingStatements := self.definingUpgrading(body)
 	self.compileStatements(remainingStatements, true)
@@ -58,9 +59,15 @@ func (self *Compiler) definingUpgrading(body []ast.Statement) (remainingStatemen
 			remainingStatements = append(remainingStatements, st)
 		}
 	}
+	for _, name := range funNames {
+		self.scope.bindName(name)
+	}
+	for _, name := range varNames {
+		self.scope.bindName(name)
+	}
 	self.functionUpgrading(funs)
 	self.varUpgrading(vars)
-	if len(funs) > 0 || len(vars) > 0 {
+	if len(funNames) > 0 || len(varNames) > 0 {
 		self.addProgramInstructions(&BindDefining{
 			funNames,
 			varNames,

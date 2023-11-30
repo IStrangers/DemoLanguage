@@ -451,6 +451,41 @@ func (self LoadVar) exec(vm *VM) {
 	vm.pc++
 }
 
+type InitStackVar int
+
+func (self InitStackVar) exec(vm *VM) {
+	index := int(self)
+	if index <= 0 {
+		vm.stack[vm.sb-index] = vm.stack[vm.sp-1]
+	} else {
+		vm.stack[vm.sb+vm.args+index] = vm.stack[vm.sp-1]
+	}
+	vm.sp--
+	vm.pc++
+}
+
+type LoadStackVar int
+
+func (self LoadStackVar) exec(vm *VM) {
+	index := int(self)
+	var value Value
+	if index <= 0 {
+		arg := -index
+		if arg > vm.args {
+			value = Const_Null_Value
+		} else {
+			value = vm.stack[vm.sb+arg]
+		}
+	} else {
+		value = vm.stack[vm.sb+vm.args+index]
+	}
+	if value == nil {
+		//wait adjust
+	}
+	vm.push(value)
+	vm.pc++
+}
+
 type LoadDynamicCallee string
 
 func (self LoadDynamicCallee) exec(vm *VM) {

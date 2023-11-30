@@ -55,12 +55,20 @@ func (self *Compiler) emitLoadValue(value Value, putOnStack bool) {
 }
 
 func (self *Compiler) emitVarAssign(name string, pos int, expr CompiledExpression) {
-	self.addProgramInstructions(ResolveVar(name))
 	if expr == nil {
 		return
 	}
+	_, exists := self.scope.lookupName(name)
+	var instruction Instruction
+	if exists {
+		instruction = InitStackVar(0)
+	} else {
+		self.addProgramInstructions(ResolveVar(name))
+		instruction = InitVar
+	}
 	self.chooseHandlingGetterExpression(expr, true)
-	self.addProgramInstructions(InitVar)
+	self.program.addSourceMap(pos)
+	self.addProgramInstructions(instruction)
 }
 
 func (self *Compiler) emitThrow(value Value) {
@@ -110,7 +118,12 @@ func (self *Compiler) handlingGetterCompiledLiteralExpression(expr *CompiledLite
 func (self *Compiler) handlingGetterCompiledIdentifierExpression(expr *CompiledIdentifierExpression, putOnStack bool) {
 	expr.addSourceMap()
 
-	self.addProgramInstructions(LoadVar(expr.name))
+	_, exists := self.scope.lookupName(expr.name)
+	if exists {
+		self.addProgramInstructions(LoadStackVar(0))
+	} else {
+		self.addProgramInstructions(LoadVar(expr.name))
+	}
 
 	if !putOnStack {
 		self.addProgramInstructions(Pop)
@@ -220,6 +233,12 @@ func (self *Compiler) handlingGetterCompiledFunLiteralExpression(expr *CompiledF
 		self.setProgramInstruction(index, JeqNull(self.program.getInstructionSize()-index))
 	}
 
+	for _, declaration := range expr.declarationList {
+		for _, binding := range declaration.List {
+			target := binding.Target
+			self.scope.bindName(target.(*ast.Identifier).Name)
+		}
+	}
 	self.compileStatement(expr.body, false)
 	body := expr.body.(*ast.BlockStatement).Body
 	if _, ok := body[len(body)-1].(*ast.ReturnStatement); !ok {
