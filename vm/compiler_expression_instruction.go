@@ -58,17 +58,18 @@ func (self *Compiler) emitVarAssign(name string, pos int, expr CompiledExpressio
 	if expr == nil {
 		return
 	}
-	_, exists := self.scope.lookupName(name)
-	var instruction Instruction
+	binding, exists := self.scope.lookupName(name)
 	if exists {
-		instruction = InitStackVar(0)
+		self.chooseHandlingGetterExpression(expr, true)
+		self.program.addSourceMap(pos)
+		binding.markAccessPoint(self.scope)
+		self.addProgramInstructions(InitStackVar(0))
 	} else {
 		self.addProgramInstructions(ResolveVar(name))
-		instruction = InitVar
+		self.chooseHandlingGetterExpression(expr, true)
+		self.program.addSourceMap(pos)
+		self.addProgramInstructions(InitVar)
 	}
-	self.chooseHandlingGetterExpression(expr, true)
-	self.program.addSourceMap(pos)
-	self.addProgramInstructions(instruction)
 }
 
 func (self *Compiler) emitThrow(value Value) {
@@ -118,8 +119,9 @@ func (self *Compiler) handlingGetterCompiledLiteralExpression(expr *CompiledLite
 func (self *Compiler) handlingGetterCompiledIdentifierExpression(expr *CompiledIdentifierExpression, putOnStack bool) {
 	expr.addSourceMap()
 
-	_, exists := self.scope.lookupName(expr.name)
+	binding, exists := self.scope.lookupName(expr.name)
 	if exists {
+		binding.markAccessPoint(self.scope)
 		self.addProgramInstructions(LoadStackVar(0))
 	} else {
 		self.addProgramInstructions(LoadVar(expr.name))
@@ -208,8 +210,8 @@ func (self *Compiler) handlingGetterCompiledFunLiteralExpression(expr *CompiledF
 		sourceMaps:   SourceMapItemArray{{pos: expr.offset}},
 	}
 	self.openScope()
-
-	self.addProgramInstructions(EnterFun{len(expr.parameterList.List)})
+	self.scope.args = len(expr.parameterList.List)
+	self.addProgramInstructions(EnterFun{self.scope.args})
 
 	if expr.name != nil {
 		self.program.functionName = expr.name.Name
@@ -233,6 +235,8 @@ func (self *Compiler) handlingGetterCompiledFunLiteralExpression(expr *CompiledF
 		self.setProgramInstruction(index, JeqNull(self.program.getInstructionSize()-index))
 	}
 
+	enterFunBodyIndex := self.program.getInstructionSize()
+	self.program.addInstructions(nil)
 	for _, declaration := range expr.declarationList {
 		for _, binding := range declaration.List {
 			target := binding.Target
@@ -244,6 +248,8 @@ func (self *Compiler) handlingGetterCompiledFunLiteralExpression(expr *CompiledF
 	if _, ok := body[len(body)-1].(*ast.ReturnStatement); !ok {
 		self.addProgramInstructions(LoadNull, Ret)
 	}
+	stackSize, stashSize := self.scope.finaliseVarAlloc(0)
+	self.program.setProgramInstruction(enterFunBodyIndex, EnterFunBody{EnterBlock{stackSize, stashSize}})
 	self.closeScope()
 
 	newFun := &NewFun{expr.funDefinition, self.program.functionName, self.program}

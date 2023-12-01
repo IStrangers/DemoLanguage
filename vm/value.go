@@ -388,11 +388,11 @@ func (self Object) isObject() bool {
 }
 
 func (self Object) toInt() int64 {
-	return 1
+	return 0
 }
 
 func (self Object) toFloat() float64 {
-	return 1.0
+	return 0.0
 }
 
 func (self Object) toString() string {

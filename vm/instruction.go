@@ -534,7 +534,7 @@ type EnterFun struct {
 }
 
 func (self EnterFun) exec(vm *VM) {
-	vm.sb = vm.sp - 1 - self.args
+	vm.sb = vm.sp - 1 - vm.args
 	d := self.args - vm.args
 	if d > 0 {
 		ss := vm.sp + d
@@ -546,6 +546,33 @@ func (self EnterFun) exec(vm *VM) {
 		vm.args = self.args
 		vm.sp = ss
 	}
+	vm.pc++
+}
+
+type EnterFunBody struct {
+	EnterBlock
+}
+
+func (self EnterFunBody) exec(vm *VM) {
+	nsp := vm.sp + self.stackSize
+	if self.stackSize > 0 {
+		vm.stack.expand(nsp - 1)
+		vs := vm.stack[vm.sp:nsp]
+		for index := range vs {
+			vs[index] = nil
+		}
+	}
+	vm.sp = nsp
+	vm.pc++
+}
+
+type EnterBlock struct {
+	stackSize int
+	stashSize int
+}
+
+func (self EnterBlock) exec(vm *VM) {
+
 	vm.pc++
 }
 
