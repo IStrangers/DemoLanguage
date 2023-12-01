@@ -31,11 +31,19 @@ func TestCompiler(t *testing.T) {
 		//for ;i <= 5; {
 		//	i = 6
 		//}
-		a(100)
-		fun a(b,c = 1) {
-			var a = 1
-			return a + b + c
+		//a(100)
+		//fun a(b,c = 1) {
+		//	var a = 1
+		//	return a + b + c
+		//}
+		fun getFebNum(n) {
+			if n <= 2 {
+				return 1
+			} else {
+				return getFebNum(n - 1) + getFebNum(n - 2)
+			}
 		}
+		getFebNum(20)
 	`)
 	program, err := parser.Parse()
 	if err != nil {
@@ -51,6 +59,7 @@ func TestCompiler(t *testing.T) {
 					valueMapping: make(map[string]Value),
 				}},
 			},
+			maxCallStackSize: 999,
 		},
 	}
 	compiler.compile(program)

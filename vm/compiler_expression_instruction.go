@@ -217,6 +217,7 @@ func (self *Compiler) handlingGetterCompiledFunLiteralExpression(expr *CompiledF
 	if expr.name != nil {
 		self.program.functionName = expr.name.Name
 	}
+	hasInit := false
 	for _, binding := range expr.parameterList.List {
 		switch target := binding.Target.(type) {
 		case *ast.Identifier:
@@ -235,14 +236,19 @@ func (self *Compiler) handlingGetterCompiledFunLiteralExpression(expr *CompiledF
 			self.setProgramInstruction(markIndex, LoadStackVar(0))
 			self.emitVarAssign(target.Name, int(target.StartIndex())-1, self.compileExpression(binding.Initializer))
 			self.setProgramInstruction(JeqNullIndex, JeqNull(self.program.getInstructionSize()-JeqNullIndex))
+			hasInit = true
 		default:
 			self.throwSyntaxError(int(target.StartIndex())-1, "Unsupported BindingElement type: %T", target)
 		}
 	}
 
-	self.openBlockScope()
-	enterFunBodyIndex := self.program.getInstructionSize()
-	self.addProgramInstructions(nil)
+	var enterFunBodyIndex int
+	if hasInit {
+		self.openBlockScope()
+		enterFunBodyIndex = self.program.getInstructionSize()
+		self.addProgramInstructions(nil)
+	}
+
 	self.compileDeclarationList(expr.declarationList)
 	self.compileStatement(expr.body, false)
 	body := expr.body.(*ast.BlockStatement).Body
@@ -251,8 +257,12 @@ func (self *Compiler) handlingGetterCompiledFunLiteralExpression(expr *CompiledF
 	}
 	stackSize, stashSize := funcScope.finaliseVarAlloc(0)
 	self.setProgramInstruction(enterFunIndex, EnterFun{stackSize, funcScope.args})
-	self.setProgramInstruction(enterFunBodyIndex, EnterFunBody{EnterBlock{stackSize, stashSize}})
-	self.closeScope()
+
+	if hasInit {
+		self.setProgramInstruction(enterFunBodyIndex, EnterFunBody{EnterBlock{stackSize, stashSize}})
+		self.closeScope()
+	}
+
 	self.closeScope()
 
 	newFun := &NewFun{expr.funDefinition, self.program.functionName, self.program}
