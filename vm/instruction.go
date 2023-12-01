@@ -365,9 +365,9 @@ func (self JeqNull) exec(vm *VM) {
 	vm.sp--
 	value := vm.stack[vm.sp]
 	if value.isNull() {
-		vm.pc += int(self)
-	} else {
 		vm.pc++
+	} else {
+		vm.pc += int(self)
 	}
 }
 
@@ -494,6 +494,7 @@ func (self LoadDynamicCallee) exec(vm *VM) {
 	if value == nil {
 		//wait adjust
 	}
+	vm.push(Const_Null_Value)
 	vm.push(value)
 	vm.pc++
 }
@@ -512,6 +513,7 @@ func (self BindDefining) exec(vm *VM) {
 	for _, v := range self.vars {
 		vm.setDefining(v, nil)
 	}
+	vm.sp = start
 	vm.pc++
 }
 
@@ -530,16 +532,17 @@ func (self NewFun) exec(vm *VM) {
 }
 
 type EnterFun struct {
-	args int
+	stackSize int
+	args      int
 }
 
 func (self EnterFun) exec(vm *VM) {
 	vm.sb = vm.sp - 1 - vm.args
 	d := self.args - vm.args
 	if d > 0 {
-		ss := vm.sp + d
+		ss := vm.sp + d + self.stackSize
 		vm.stack.expand(ss)
-		vs := vm.stack[vm.sp:ss]
+		vs := vm.stack[vm.sp : ss-self.stackSize]
 		for index := range vs {
 			vs[index] = Const_Null_Value
 		}

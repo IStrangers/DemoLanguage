@@ -88,6 +88,15 @@ func (self *Compiler) varUpgrading(vars []*ast.VarStatement) {
 	}
 }
 
+func (self *Compiler) compileDeclarationList(declarationList []*ast.VariableDeclaration) {
+	for _, declaration := range declarationList {
+		for _, binding := range declaration.List {
+			target := binding.Target
+			self.scope.bindName(target.(*ast.Identifier).Name)
+		}
+	}
+}
+
 func (self *Compiler) addProgramValue(value Value) int {
 	return self.program.addValue(value)
 }
@@ -100,12 +109,21 @@ func (self *Compiler) setProgramInstruction(index int, instruction Instruction) 
 	self.program.setProgramInstruction(index, instruction)
 }
 
-func (self *Compiler) openScope() {
+func (self *Compiler) openScope() *Scope {
 	self.scope = &Scope{
 		outer:          self.scope,
 		program:        self.program,
 		bindingMapping: make(map[string]*Binding),
 	}
+	return self.scope
+}
+
+func (self *Compiler) openBlockScope() {
+	self.openScope()
+	if outer := self.scope.outer; outer != nil {
+		outer.nested = append(outer.nested, self.scope)
+	}
+	self.scope.base = self.program.getInstructionSize()
 }
 
 func (self *Compiler) closeScope() {

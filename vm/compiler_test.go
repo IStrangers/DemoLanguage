@@ -31,7 +31,7 @@ func TestCompiler(t *testing.T) {
 		//for ;i <= 5; {
 		//	i = 6
 		//}
-		a(999)
+		a(100)
 		fun a(b,c = 1) {
 			var a = 1
 			return a + b + c

@@ -18,15 +18,22 @@ func (self Binding) getAccessPointsByScope(scope *Scope) *[]int {
 }
 
 func (self Binding) markAccessPoint(scope *Scope) {
+	self.markAccessPointAt(scope, scope.program.getInstructionSize())
+}
+
+func (self Binding) markAccessPointAt(scope *Scope, pos int) {
 	accessPoints := self.getAccessPointsByScope(scope)
-	*accessPoints = append(*accessPoints, scope.program.getInstructionSize())
+	*accessPoints = append(*accessPoints, pos-scope.base)
 }
 
 type Scope struct {
 	outer          *Scope
+	nested         []*Scope
 	program        *Program
 	bindingMapping map[string]*Binding
-	args           int
+
+	base int
+	args int
 }
 
 func (self *Scope) bindName(name string) (*Binding, bool) {
@@ -49,6 +56,10 @@ func (self *Scope) lookupName(name string) (*Binding, bool) {
 	return nil, false
 }
 
+func (self *Scope) getBinding(name string) *Binding {
+	return self.bindingMapping[name]
+}
+
 func (self *Scope) finaliseVarAlloc(stackOffset int) (int, int) {
 	stackIndex, stashIndex := 0, 0
 	i := 1
@@ -63,6 +74,7 @@ func (self *Scope) finaliseVarAlloc(stackOffset int) (int, int) {
 		for scope, aps := range binding.accessPoints {
 			program := scope.program
 			for _, pc := range *aps {
+				pc = pc + scope.base
 				instruction := program.getInstruction(pc)
 				switch instruction.(type) {
 				case InitStackVar:
@@ -73,6 +85,9 @@ func (self *Scope) finaliseVarAlloc(stackOffset int) (int, int) {
 			}
 		}
 		i++
+	}
+	for _, scope := range self.nested {
+		scope.finaliseVarAlloc(stackIndex + stackOffset)
 	}
 	return stackIndex, stashIndex
 }

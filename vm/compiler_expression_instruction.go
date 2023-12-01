@@ -209,9 +209,10 @@ func (self *Compiler) handlingGetterCompiledFunLiteralExpression(expr *CompiledF
 		instructions: InstructionArray{},
 		sourceMaps:   SourceMapItemArray{{pos: expr.offset}},
 	}
-	self.openScope()
-	self.scope.args = len(expr.parameterList.List)
-	self.addProgramInstructions(EnterFun{self.scope.args})
+	funcScope := self.openScope()
+	funcScope.args = len(expr.parameterList.List)
+	enterFunIndex := self.program.getInstructionSize()
+	self.addProgramInstructions(nil)
 
 	if expr.name != nil {
 		self.program.functionName = expr.name.Name
@@ -219,37 +220,39 @@ func (self *Compiler) handlingGetterCompiledFunLiteralExpression(expr *CompiledF
 	for _, binding := range expr.parameterList.List {
 		switch target := binding.Target.(type) {
 		case *ast.Identifier:
-			_, exists := self.scope.bindName(target.Name)
+			_, exists := funcScope.bindName(target.Name)
 			if exists {
 				self.throwSyntaxError(int(target.StartIndex())-1, "Duplicate parameter name not allowed in this context")
 			}
+			if binding.Initializer == nil {
+				continue
+			}
+			markIndex := self.program.getInstructionSize()
+			self.addProgramInstructions(nil)
+			JeqNullIndex := self.program.getInstructionSize()
+			self.addProgramInstructions(nil)
+			funcScope.getBinding(target.Name).markAccessPointAt(funcScope, markIndex)
+			self.setProgramInstruction(markIndex, LoadStackVar(0))
+			self.emitVarAssign(target.Name, int(target.StartIndex())-1, self.compileExpression(binding.Initializer))
+			self.setProgramInstruction(JeqNullIndex, JeqNull(self.program.getInstructionSize()-JeqNullIndex))
 		default:
 			self.throwSyntaxError(int(target.StartIndex())-1, "Unsupported BindingElement type: %T", target)
 		}
-		if binding.Initializer == nil {
-			continue
-		}
-		index := self.program.getInstructionSize()
-		self.addProgramInstructions(nil)
-		self.chooseHandlingGetterExpression(self.compileExpression(binding.Initializer), true)
-		self.setProgramInstruction(index, JeqNull(self.program.getInstructionSize()-index))
 	}
 
+	self.openBlockScope()
 	enterFunBodyIndex := self.program.getInstructionSize()
-	self.program.addInstructions(nil)
-	for _, declaration := range expr.declarationList {
-		for _, binding := range declaration.List {
-			target := binding.Target
-			self.scope.bindName(target.(*ast.Identifier).Name)
-		}
-	}
+	self.addProgramInstructions(nil)
+	self.compileDeclarationList(expr.declarationList)
 	self.compileStatement(expr.body, false)
 	body := expr.body.(*ast.BlockStatement).Body
 	if _, ok := body[len(body)-1].(*ast.ReturnStatement); !ok {
 		self.addProgramInstructions(LoadNull, Ret)
 	}
-	stackSize, stashSize := self.scope.finaliseVarAlloc(0)
-	self.program.setProgramInstruction(enterFunBodyIndex, EnterFunBody{EnterBlock{stackSize, stashSize}})
+	stackSize, stashSize := funcScope.finaliseVarAlloc(0)
+	self.setProgramInstruction(enterFunIndex, EnterFun{stackSize, funcScope.args})
+	self.setProgramInstruction(enterFunBodyIndex, EnterFunBody{EnterBlock{stackSize, stashSize}})
+	self.closeScope()
 	self.closeScope()
 
 	newFun := &NewFun{expr.funDefinition, self.program.functionName, self.program}
