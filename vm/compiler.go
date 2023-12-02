@@ -59,20 +59,20 @@ func (self *Compiler) definingUpgrading(body []ast.Statement) (remainingStatemen
 			remainingStatements = append(remainingStatements, st)
 		}
 	}
-	for _, name := range funNames {
-		self.scope.bindName(name)
-	}
-	for _, name := range varNames {
-		self.scope.bindName(name)
-	}
-	self.functionUpgrading(funs)
-	self.varUpgrading(vars)
 	if len(funNames) > 0 || len(varNames) > 0 {
+		for _, name := range funNames {
+			self.scope.bindName(name)
+		}
+		for _, name := range varNames {
+			self.scope.bindName(name)
+		}
 		self.addProgramInstructions(&BindDefining{
 			funNames,
 			varNames,
 		})
 	}
+	self.functionUpgrading(funs)
+	self.varUpgrading(vars)
 	return
 }
 

@@ -69,6 +69,20 @@ type CompiledBinaryExpression struct {
 }
 
 func (self CompiledBinaryExpression) isConstExpression() bool {
+	operator := self.operator
+	if operator == token.LOGICAL_OR || operator == token.LOGICAL_AND {
+		if !self.left.isConstExpression() {
+			return false
+		}
+		if v, ex := self.compile.evalConstExpr(self.left); ex == nil {
+			boolVal := v.toBool()
+			if (operator == token.LOGICAL_OR && boolVal) || (operator == token.LOGICAL_AND && !boolVal) {
+				return true
+			}
+			return self.right.isConstExpression()
+		}
+		return true
+	}
 	return self.left.isConstExpression() && self.right.isConstExpression()
 }
 

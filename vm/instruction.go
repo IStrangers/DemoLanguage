@@ -359,6 +359,18 @@ func (self Jeq) exec(vm *VM) {
 	}
 }
 
+type Jeq1 int
+
+func (self Jeq1) exec(vm *VM) {
+	value := vm.stack[vm.sp-1]
+	if value.toBool() {
+		vm.pc += int(self)
+	} else {
+		vm.sp--
+		vm.pc++
+	}
+}
+
 type JeqNull int
 
 func (self JeqNull) exec(vm *VM) {
@@ -379,6 +391,18 @@ func (self Jne) exec(vm *VM) {
 	if !value.toBool() {
 		vm.pc += int(self)
 	} else {
+		vm.pc++
+	}
+}
+
+type Jne1 int
+
+func (self Jne1) exec(vm *VM) {
+	value := vm.stack[vm.sp-1]
+	if !value.toBool() {
+		vm.pc += int(self)
+	} else {
+		vm.sp--
 		vm.pc++
 	}
 }

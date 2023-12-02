@@ -20,8 +20,8 @@ func (self *Compiler) evalConstExpr(expr CompiledExpression) (Value, *Exception)
 		isNewProgram = true
 	}
 	savedPC := self.program.getInstructionSize()
-	evalVM.pc = savedPC
 	self.handlingGetterExpression(expr, true)
+	evalVM.pc = savedPC
 	ex := evalVM.runTry()
 	if isNewProgram {
 		evalVM.program = nil
@@ -153,35 +153,70 @@ func (self *Compiler) handlingGetterCompiledUnaryExpression(expr *CompiledUnaryE
 }
 
 func (self *Compiler) handlingGetterCompiledBinaryExpression(expr *CompiledBinaryExpression, putOnStack bool) {
-	self.chooseHandlingGetterExpression(expr.left, true)
-	self.chooseHandlingGetterExpression(expr.right, true)
-	expr.addSourceMap()
+	operator := expr.operator
+	if operator == token.LOGICAL_OR || operator == token.LOGICAL_AND {
 
-	switch expr.operator {
-	case token.ADDITION:
-		self.addProgramInstructions(Add)
-	case token.SUBTRACT:
-		self.addProgramInstructions(Sub)
-	case token.MULTIPLY:
-		self.addProgramInstructions(Mul)
-	case token.DIVIDE:
-		self.addProgramInstructions(Div)
-	case token.REMAINDER:
-		self.addProgramInstructions(Mod)
-	case token.EQUAL:
-		self.addProgramInstructions(EQ)
-	case token.NOT_EQUAL:
-		self.addProgramInstructions(NE)
-	case token.LESS:
-		self.addProgramInstructions(LT)
-	case token.LESS_OR_EQUAL:
-		self.addProgramInstructions(LE)
-	case token.GREATER:
-		self.addProgramInstructions(GT)
-	case token.GREATER_OR_EQUAL:
-		self.addProgramInstructions(GE)
-	default:
-		self.throwSyntaxError(expr.offset, "Unknown operator: %s", expr.operator.String())
+		if expr.left.isConstExpression() {
+			if v, ex := self.evalConstExpr(expr.left); ex == nil {
+				boolVal := v.toBool()
+				if (operator == token.LOGICAL_OR && boolVal) || (operator == token.LOGICAL_AND && !boolVal) {
+					index := self.addProgramValue(v)
+					self.addProgramInstructions(LoadVal(index))
+				} else {
+					self.chooseHandlingGetterExpression(expr.right, putOnStack)
+				}
+			} else {
+				self.emitThrow(ex.value)
+			}
+		} else {
+			self.handlingGetterExpression(expr.left, true)
+			expr.addSourceMap()
+			index := self.program.getInstructionSize()
+			self.addProgramInstructions(nil)
+			self.handlingGetterExpression(expr.right, true)
+			var instruction Instruction
+			switch operator {
+			case token.LOGICAL_OR:
+				instruction = Jeq1(self.program.getInstructionSize() - index)
+			case token.LOGICAL_AND:
+				instruction = Jne1(self.program.getInstructionSize() - index)
+			}
+			self.setProgramInstruction(index, instruction)
+		}
+
+	} else {
+
+		self.chooseHandlingGetterExpression(expr.left, true)
+		self.chooseHandlingGetterExpression(expr.right, true)
+		expr.addSourceMap()
+
+		switch expr.operator {
+		case token.ADDITION:
+			self.addProgramInstructions(Add)
+		case token.SUBTRACT:
+			self.addProgramInstructions(Sub)
+		case token.MULTIPLY:
+			self.addProgramInstructions(Mul)
+		case token.DIVIDE:
+			self.addProgramInstructions(Div)
+		case token.REMAINDER:
+			self.addProgramInstructions(Mod)
+		case token.EQUAL:
+			self.addProgramInstructions(EQ)
+		case token.NOT_EQUAL:
+			self.addProgramInstructions(NE)
+		case token.LESS:
+			self.addProgramInstructions(LT)
+		case token.LESS_OR_EQUAL:
+			self.addProgramInstructions(LE)
+		case token.GREATER:
+			self.addProgramInstructions(GT)
+		case token.GREATER_OR_EQUAL:
+			self.addProgramInstructions(GE)
+		default:
+			self.throwSyntaxError(expr.offset, "Unknown operator: %s", expr.operator.String())
+		}
+
 	}
 
 	if !putOnStack {

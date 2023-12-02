@@ -36,14 +36,20 @@ func TestCompiler(t *testing.T) {
 		//	var a = 1
 		//	return a + b + c
 		//}
-		fun getFebNum(n) {
-			if n <= 2 {
-				return 1
-			} else {
-				return getFebNum(n - 1) + getFebNum(n - 2)
-			}
+		//fun getFebNum(n) {
+		//	if n <= 2 {
+		//		return 1
+		//	} else {
+		//		return getFebNum(n - 1) + getFebNum(n - 2)
+		//	}
+		//}
+		//getFebNum(20)
+		var a = 2
+		if a == 2 && a > 1 {
+			a = 1
+		} else {
+			a = 2
 		}
-		getFebNum(20)
 	`)
 	program, err := parser.Parse()
 	if err != nil {
