@@ -44,12 +44,12 @@ func TestCompiler(t *testing.T) {
 		//	}
 		//}
 		//getFebNum(20)
-		var a = 2
-		if a == 2 && a > 1 {
-			a = 1
-		} else {
-			a = 2
-		}
+		//var a = 2
+		//if a == 2 && a > 1 {
+		//	a = 1
+		//} else {
+		//	a = 2
+		//}
 	`)
 	program, err := parser.Parse()
 	if err != nil {

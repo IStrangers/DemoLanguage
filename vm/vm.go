@@ -222,11 +222,11 @@ func (self *VM) popTryFrame() {
 }
 
 func (self *VM) runTryInner() (ex *Exception) {
-	defer func() {
-		if err := recover(); err != nil {
-			ex = self.handlingThrow(err)
-		}
-	}()
+	//defer func() {
+	//	if err := recover(); err != nil {
+	//		ex = self.handlingThrow(err)
+	//	}
+	//}()
 	self.run()
 	return
 }

@@ -36,43 +36,34 @@ type Compiler struct {
 func (self *Compiler) compile(in *ast.Program) {
 	self.openScope()
 	body := in.Body
-	remainingStatements := self.definingUpgrading(body)
+	declarationList := in.DeclarationList
+	remainingStatements := self.definingUpgrading(body, declarationList)
 	self.compileStatements(remainingStatements, true)
 }
 
-func (self *Compiler) definingUpgrading(body []ast.Statement) (remainingStatements []ast.Statement) {
+func (self *Compiler) definingUpgrading(body []ast.Statement, declarationList []*ast.VariableDeclaration) (remainingStatements []ast.Statement) {
 	var funs []*ast.FunStatement
 	var funNames []string
-	var vars []*ast.VarStatement
-	var varNames []string
 	for _, statement := range body {
 		switch st := statement.(type) {
 		case *ast.FunStatement:
 			funs = append(funs, st)
 			funNames = append(funNames, st.FunLiteral.Name.Name)
-		case *ast.VarStatement:
-			vars = append(vars, st)
-			for _, binding := range st.List {
-				varNames = append(varNames, binding.Target.(*ast.Identifier).Name)
-			}
 		default:
 			remainingStatements = append(remainingStatements, st)
 		}
 	}
-	if len(funNames) > 0 || len(varNames) > 0 {
+	if len(funNames) > 0 {
 		for _, name := range funNames {
 			self.scope.bindName(name)
 		}
-		for _, name := range varNames {
-			self.scope.bindName(name)
-		}
-		self.addProgramInstructions(&BindDefining{
-			funNames,
-			varNames,
-		})
 	}
 	self.functionUpgrading(funs)
-	self.varUpgrading(vars)
+	varNames := self.compileDeclarationList(declarationList)
+	self.addProgramInstructions(&BindDefining{
+		funNames,
+		varNames,
+	})
 	return
 }
 
@@ -82,19 +73,18 @@ func (self *Compiler) functionUpgrading(funs []*ast.FunStatement) {
 	}
 }
 
-func (self *Compiler) varUpgrading(vars []*ast.VarStatement) {
-	for _, v := range vars {
-		self.compileVarStatement(v)
-	}
-}
-
-func (self *Compiler) compileDeclarationList(declarationList []*ast.VariableDeclaration) {
+func (self *Compiler) compileDeclarationList(declarationList []*ast.VariableDeclaration) []string {
+	var varNames []string
 	for _, declaration := range declarationList {
 		for _, binding := range declaration.List {
-			target := binding.Target
-			self.scope.bindName(target.(*ast.Identifier).Name)
+			switch t := binding.Target.(type) {
+			case *ast.Identifier:
+				self.scope.bindName(t.Name)
+				varNames = append(varNames, t.Name)
+			}
 		}
 	}
+	return varNames
 }
 
 func (self *Compiler) addProgramValue(value Value) int {
