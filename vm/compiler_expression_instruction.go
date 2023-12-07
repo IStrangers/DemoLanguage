@@ -89,6 +89,8 @@ func (self *Compiler) handlingGetterExpression(expr CompiledExpression, putOnSta
 	switch expr := expr.(type) {
 	case *CompiledLiteralExpression:
 		self.handlingGetterCompiledLiteralExpression(expr, putOnStack)
+	case *CompiledObjectLiteralExpression:
+		self.handlingGetterCompiledObjectLiteralExpression(expr, putOnStack)
 	case *CompiledIdentifierExpression:
 		self.handlingGetterCompiledIdentifierExpression(expr, putOnStack)
 	case *CompiledUnaryExpression:
@@ -101,6 +103,8 @@ func (self *Compiler) handlingGetterExpression(expr CompiledExpression, putOnSta
 		self.handlingGetterCompiledFunLiteralExpression(expr, putOnStack)
 	case *CompiledCallExpression:
 		self.handlingGetterCompiledCallExpression(expr, putOnStack)
+	case *CompiledDotExpression:
+		self.handlingGetterCompiledDotExpression(expr, putOnStack)
 	}
 }
 
@@ -114,6 +118,28 @@ func (self *Compiler) chooseHandlingGetterExpression(expr CompiledExpression, pu
 
 func (self *Compiler) handlingGetterCompiledLiteralExpression(expr *CompiledLiteralExpression, putOnStack bool) {
 	self.emitLoadValue(expr.value, putOnStack)
+}
+
+func (self *Compiler) handlingGetterCompiledObjectLiteralExpression(expr *CompiledObjectLiteralExpression, putOnStack bool) {
+	expr.addSourceMap()
+
+	self.addProgramInstructions(NewObject)
+	for _, property := range expr.properties {
+		switch prop := property.(type) {
+		case *ast.PropertyKeyValue:
+			name := prop.Name.Name
+			valueExpr := self.compileExpression(prop.Value)
+			self.chooseHandlingGetterExpression(valueExpr, true)
+			self.addProgramInstructions(AddProp(name))
+		default:
+			//wait adjust
+			self.throwSyntaxError(expr.offset, "unknown Property type: %T", prop)
+		}
+	}
+
+	if !putOnStack {
+		self.addProgramInstructions(Pop)
+	}
 }
 
 func (self *Compiler) handlingGetterCompiledIdentifierExpression(expr *CompiledIdentifierExpression, putOnStack bool) {
@@ -310,7 +336,6 @@ func (self *Compiler) handlingGetterCompiledFunLiteralExpression(expr *CompiledF
 }
 
 func (self *Compiler) handlingGetterCompiledCallExpression(expr *CompiledCallExpression, putOnStack bool) {
-
 	switch callee := expr.callee.(type) {
 	case *CompiledIdentifierExpression:
 		callee.addSourceMap()
@@ -322,6 +347,16 @@ func (self *Compiler) handlingGetterCompiledCallExpression(expr *CompiledCallExp
 	}
 
 	self.addProgramInstructions(Call(len(expr.arguments)))
+
+	if !putOnStack {
+		self.addProgramInstructions(Pop)
+	}
+}
+
+func (self *Compiler) handlingGetterCompiledDotExpression(expr *CompiledDotExpression, putOnStack bool) {
+	self.handlingGetterExpression(expr.left, true)
+	expr.addSourceMap()
+	self.addProgramInstructions(GetProp(expr.name))
 
 	if !putOnStack {
 		self.addProgramInstructions(Pop)

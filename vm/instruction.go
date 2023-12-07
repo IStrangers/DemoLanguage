@@ -1,6 +1,7 @@
 package vm
 
 import (
+	"fmt"
 	"math"
 	"strings"
 )
@@ -45,6 +46,7 @@ var (
 	SaveResult _SaveResult
 	InitVar    _InitVar
 	LoadNull   _LoadNull
+	NewObject  _NewObject
 	Ret        _Ret
 )
 
@@ -538,6 +540,37 @@ func (self BindDefining) exec(vm *VM) {
 		vm.setDefining(v, nil)
 	}
 	vm.sp = start
+	vm.pc++
+}
+
+type _NewObject struct{}
+
+func (self _NewObject) exec(vm *VM) {
+	obj := vm.runtime.newObject()
+	vm.push(obj)
+	vm.pc++
+}
+
+type AddProp string
+
+func (self AddProp) exec(vm *VM) {
+	obj := vm.stack[vm.sp-2]
+	value := vm.stack[vm.sp-1]
+	obj.toObject().self.setProperty(string(self), value)
+	vm.sp--
+	vm.pc++
+}
+
+type GetProp string
+
+func (self GetProp) exec(vm *VM) {
+	obj := vm.stack[vm.sp-1]
+	if obj == nil {
+		//wait adjust
+		panic(fmt.Sprintf("Cannot read property '%s' of undefined", self))
+	}
+	value := obj.toObject().self.getPropertyOrDefault(string(self), Const_Null_Value)
+	vm.stack[vm.sp-1] = value
 	vm.pc++
 }
 

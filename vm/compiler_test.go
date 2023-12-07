@@ -50,6 +50,14 @@ func TestCompiler(t *testing.T) {
 		//} else {
 		//	a = 2
 		//}
+		var obj = {
+			a: 1,
+			b: "123",
+			c: {
+				a: 2
+			}
+		}
+		obj.c.a
 	`)
 	program, err := parser.Parse()
 	if err != nil {

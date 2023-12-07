@@ -8,6 +8,7 @@ const (
 type ObjectImpl interface {
 	getClassName() string
 	getProperty(string) Value
+	getPropertyOrDefault(string, Value) Value
 	setProperty(string, Value)
 	equals(objectImpl ObjectImpl) bool
 	vmCall(vm *VM, n int)
@@ -28,6 +29,14 @@ func (self *BaseObject) getClassName() string {
 
 func (self *BaseObject) getProperty(name string) Value {
 	return self.valueMapping[name]
+}
+
+func (self *BaseObject) getPropertyOrDefault(name string, defaultValue Value) Value {
+	value := self.getProperty(name)
+	if value == nil {
+		return defaultValue
+	}
+	return value
 }
 
 func (self *BaseObject) setProperty(name string, value Value) {

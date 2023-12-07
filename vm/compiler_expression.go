@@ -41,6 +41,15 @@ func (self CompiledLiteralExpression) isConstExpression() bool {
 	return true
 }
 
+type CompiledObjectLiteralExpression struct {
+	CompiledBaseExpression
+	properties []ast.Property
+}
+
+func (self CompiledObjectLiteralExpression) isConstExpression() bool {
+	return false
+}
+
 type CompiledIdentifierExpression struct {
 	CompiledBaseExpression
 	name string
@@ -120,6 +129,16 @@ func (self CompiledCallExpression) isConstExpression() bool {
 	return false
 }
 
+type CompiledDotExpression struct {
+	CompiledBaseExpression
+	left CompiledExpression
+	name string
+}
+
+func (self CompiledDotExpression) isConstExpression() bool {
+	return false
+}
+
 func (self *Compiler) createCompiledBaseExpression(index file.Index) CompiledBaseExpression {
 	return CompiledBaseExpression{self, int(index) - 1}
 }
@@ -134,6 +153,8 @@ func (self *Compiler) compileExpression(expression ast.Expression) CompiledExpre
 		return self.compileNumberLiteral(expr)
 	case *ast.StringLiteral:
 		return self.compileStringLiteral(expr)
+	case *ast.ObjectLiteral:
+		return self.compileObjectLiteral(expr)
 	case *ast.Identifier:
 		return self.compileIdentifier(expr)
 	case *ast.UnaryExpression:
@@ -146,6 +167,8 @@ func (self *Compiler) compileExpression(expression ast.Expression) CompiledExpre
 		return self.compileFunLiteral(expr)
 	case *ast.CallExpression:
 		return self.compileCallExpression(expr)
+	case *ast.DotExpression:
+		return self.compileDotExpression(expr)
 	default:
 		return self.throwSyntaxError(int(expression.StartIndex())-1, "Unknown expression type: %T", expression)
 	}
@@ -178,6 +201,13 @@ func (self *Compiler) compileStringLiteral(expr *ast.StringLiteral) CompiledExpr
 	return &CompiledLiteralExpression{
 		self.createCompiledBaseExpression(expr.StartIndex()),
 		ToStringValue(expr.Value),
+	}
+}
+
+func (self *Compiler) compileObjectLiteral(expr *ast.ObjectLiteral) CompiledExpression {
+	return &CompiledObjectLiteralExpression{
+		self.createCompiledBaseExpression(expr.StartIndex()),
+		expr.Properties,
 	}
 }
 
@@ -235,5 +265,13 @@ func (self *Compiler) compileCallExpression(expr *ast.CallExpression) CompiledEx
 		self.createCompiledBaseExpression(expr.StartIndex()),
 		self.compileExpression(expr.Callee),
 		arguments,
+	}
+}
+
+func (self *Compiler) compileDotExpression(expr *ast.DotExpression) CompiledExpression {
+	return &CompiledDotExpression{
+		self.createCompiledBaseExpression(expr.StartIndex()),
+		self.compileExpression(expr.Left),
+		expr.Identifier.Name,
 	}
 }
