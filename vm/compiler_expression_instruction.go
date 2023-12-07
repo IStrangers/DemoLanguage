@@ -366,6 +366,13 @@ func (self *Compiler) handlingGetterCompiledCallExpression(expr *CompiledCallExp
 	case *CompiledIdentifierExpression:
 		callee.addSourceMap()
 		self.addProgramInstructions(LoadDynamicCallee(callee.name))
+	case *CompiledDotExpression:
+		self.handlingGetterExpression(callee.left, true)
+		self.addProgramInstructions(GetPropCallee(callee.name))
+	case *CompiledBracketExpression:
+		self.handlingGetterExpression(callee.left, true)
+		self.handlingGetterExpression(callee.indexOrName, true)
+		self.addProgramInstructions(GetPropOrElemCallee)
 	}
 
 	for _, argument := range expr.arguments {

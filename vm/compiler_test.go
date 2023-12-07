@@ -55,10 +55,14 @@ func TestCompiler(t *testing.T) {
 			b: "123",
 			c: {
 				a: 2
+			},
+			d: fun(a) {
+				return  a + 100
 			}
 		}
-		var arr = [1, obj.c.a, obj["c"]['a']]
-		arr[2]
+		var arr = [1, obj.c.a, obj["c"]['a'],obj.d]
+		obj.d(66)
+		arr[3](99)
 	`)
 	program, err := parser.Parse()
 	if err != nil {

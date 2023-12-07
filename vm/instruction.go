@@ -41,15 +41,16 @@ var (
 	GT _GT
 	GE _GE
 
-	Pop            _Pop
-	Dup            _Dup
-	SaveResult     _SaveResult
-	InitVar        _InitVar
-	LoadNull       _LoadNull
-	NewObject      _NewObject
-	PushArrayValue _PushArrayValue
-	GetPropOrElem  _GetPropOrElem
-	Ret            _Ret
+	Pop                 _Pop
+	Dup                 _Dup
+	SaveResult          _SaveResult
+	InitVar             _InitVar
+	LoadNull            _LoadNull
+	NewObject           _NewObject
+	PushArrayValue      _PushArrayValue
+	GetPropOrElem       _GetPropOrElem
+	GetPropOrElemCallee _GetPropOrElemCallee
+	Ret                 _Ret
 )
 
 type _LoadNull struct{}
@@ -576,18 +577,45 @@ func (self GetProp) exec(vm *VM) {
 	vm.pc++
 }
 
-type _GetPropOrElem struct{}
+type GetPropCallee string
 
-func (self _GetPropOrElem) exec(vm *VM) {
-	obj := vm.stack[vm.sp-2]
-	indexOrName := vm.stack[vm.sp-1]
+func (self GetPropCallee) exec(vm *VM) {
+	obj := vm.stack[vm.sp-1]
 	if obj == nil {
 		//wait adjust
 		panic(fmt.Sprintf("Cannot read property '%s' of undefined", self))
 	}
-	value := obj.toObject().getOrDefault(indexOrName, Const_Null_Value)
+	value := obj.toObject().self.getPropertyOrDefault(string(self), Const_Null_Value)
+	vm.push(value)
+	vm.pc++
+}
+
+type _GetPropOrElem struct{}
+
+func (self _GetPropOrElem) exec(vm *VM) {
+	obj := vm.stack[vm.sp-2]
+	prop := vm.stack[vm.sp-1]
+	if obj == nil {
+		//wait adjust
+		panic(fmt.Sprintf("Cannot read property '%s' of undefined", self))
+	}
+	value := obj.toObject().getOrDefault(prop, Const_Null_Value)
 	vm.stack[vm.sp-2] = value
 	vm.sp--
+	vm.pc++
+}
+
+type _GetPropOrElemCallee struct{}
+
+func (self _GetPropOrElemCallee) exec(vm *VM) {
+	obj := vm.stack[vm.sp-2]
+	prop := vm.stack[vm.sp-1]
+	if obj == nil {
+		//wait adjust
+		panic(fmt.Sprintf("Cannot read property '%s' of undefined", self))
+	}
+	value := obj.toObject().getOrDefault(prop, Const_Null_Value)
+	vm.stack[vm.sp-1] = value
 	vm.pc++
 }
 
