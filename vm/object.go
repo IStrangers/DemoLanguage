@@ -2,11 +2,13 @@ package vm
 
 const (
 	classObject   = "Object"
+	classArray    = "Array"
 	classFunction = "Function"
 )
 
 type ObjectImpl interface {
 	getClassName() string
+	getValueByIndex(IntValue, Value) Value
 	getProperty(string) Value
 	getPropertyOrDefault(string, Value) Value
 	setProperty(string, Value)
@@ -25,6 +27,10 @@ func (self *BaseObject) init() {
 
 func (self *BaseObject) getClassName() string {
 	return self.className
+}
+
+func (self *BaseObject) getValueByIndex(prop IntValue, defaultValue Value) Value {
+	return self.getPropertyOrDefault(prop.toString(), defaultValue)
 }
 
 func (self *BaseObject) getProperty(name string) Value {

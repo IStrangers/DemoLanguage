@@ -41,13 +41,15 @@ var (
 	GT _GT
 	GE _GE
 
-	Pop        _Pop
-	Dup        _Dup
-	SaveResult _SaveResult
-	InitVar    _InitVar
-	LoadNull   _LoadNull
-	NewObject  _NewObject
-	Ret        _Ret
+	Pop            _Pop
+	Dup            _Dup
+	SaveResult     _SaveResult
+	InitVar        _InitVar
+	LoadNull       _LoadNull
+	NewObject      _NewObject
+	PushArrayValue _PushArrayValue
+	GetPropOrElem  _GetPropOrElem
+	Ret            _Ret
 )
 
 type _LoadNull struct{}
@@ -571,6 +573,41 @@ func (self GetProp) exec(vm *VM) {
 	}
 	value := obj.toObject().self.getPropertyOrDefault(string(self), Const_Null_Value)
 	vm.stack[vm.sp-1] = value
+	vm.pc++
+}
+
+type _GetPropOrElem struct{}
+
+func (self _GetPropOrElem) exec(vm *VM) {
+	obj := vm.stack[vm.sp-2]
+	indexOrName := vm.stack[vm.sp-1]
+	if obj == nil {
+		//wait adjust
+		panic(fmt.Sprintf("Cannot read property '%s' of undefined", self))
+	}
+	value := obj.toObject().getOrDefault(indexOrName, Const_Null_Value)
+	vm.stack[vm.sp-2] = value
+	vm.sp--
+	vm.pc++
+}
+
+type NewArray uint32
+
+func (self NewArray) exec(vm *VM) {
+	arr := vm.runtime.newArray(make(ValueArray, 0, self))
+	vm.push(arr)
+	vm.pc++
+}
+
+type _PushArrayValue struct{}
+
+func (self _PushArrayValue) exec(vm *VM) {
+	obj := vm.stack[vm.sp-2]
+	value := vm.stack[vm.sp-1]
+	arrayObj := obj.toObject().self.(*ArrayObject)
+	arrayObj.values = append(arrayObj.values, value)
+	arrayObj.length++
+	vm.sp--
 	vm.pc++
 }
 

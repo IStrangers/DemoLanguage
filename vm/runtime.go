@@ -24,10 +24,19 @@ func (self *Runtime) newObject() *Object {
 	return &Object{baseObject}
 }
 
+func (self *Runtime) newArray(values ValueArray) *Object {
+	arrayObject := &ArrayObject{}
+	arrayObject.className = classArray
+	arrayObject.values = values
+	arrayObject.length = uint32(values.size())
+	arrayObject.init()
+	return &Object{arrayObject}
+}
+
 func (self *Runtime) newFun(name string) *FunObject {
 	funObject := &FunObject{}
 	funObject.className = classFunction
-	funObject.BaseObject.init()
+	funObject.init()
 	funObject.BaseObject.setProperty("name", StringValue(name))
 	return funObject
 }

@@ -417,3 +417,12 @@ func (self Object) sameAs(value Value) bool {
 	}
 	return false
 }
+
+func (self *Object) getOrDefault(prop Value, defaultValue Value) Value {
+	switch prop := prop.(type) {
+	case IntValue:
+		return self.self.getValueByIndex(prop, defaultValue)
+	default:
+		return self.self.getPropertyOrDefault(prop.toString(), defaultValue)
+	}
+}

@@ -91,6 +91,8 @@ func (self *Compiler) handlingGetterExpression(expr CompiledExpression, putOnSta
 		self.handlingGetterCompiledLiteralExpression(expr, putOnStack)
 	case *CompiledObjectLiteralExpression:
 		self.handlingGetterCompiledObjectLiteralExpression(expr, putOnStack)
+	case *CompiledArrayLiteralExpression:
+		self.handlingGetterCompiledArrayLiteralExpression(expr, putOnStack)
 	case *CompiledIdentifierExpression:
 		self.handlingGetterCompiledIdentifierExpression(expr, putOnStack)
 	case *CompiledUnaryExpression:
@@ -105,6 +107,8 @@ func (self *Compiler) handlingGetterExpression(expr CompiledExpression, putOnSta
 		self.handlingGetterCompiledCallExpression(expr, putOnStack)
 	case *CompiledDotExpression:
 		self.handlingGetterCompiledDotExpression(expr, putOnStack)
+	case *CompiledBracketExpression:
+		self.handlingGetterCompiledBracketExpression(expr, putOnStack)
 	}
 }
 
@@ -142,6 +146,23 @@ func (self *Compiler) handlingGetterCompiledObjectLiteralExpression(expr *Compil
 	}
 }
 
+func (self *Compiler) handlingGetterCompiledArrayLiteralExpression(expr *CompiledArrayLiteralExpression, putOnStack bool) {
+	expr.addSourceMap()
+	self.addProgramInstructions(NewArray(len(expr.values)))
+	for _, value := range expr.values {
+		if value == nil {
+			self.addProgramInstructions(LoadNull)
+		} else {
+			self.chooseHandlingGetterExpression(self.compileExpression(value), true)
+		}
+		self.addProgramInstructions(PushArrayValue)
+	}
+
+	if !putOnStack {
+		self.addProgramInstructions(Pop)
+	}
+}
+
 func (self *Compiler) handlingGetterCompiledIdentifierExpression(expr *CompiledIdentifierExpression, putOnStack bool) {
 	expr.addSourceMap()
 
@@ -161,8 +182,13 @@ func (self *Compiler) handlingGetterCompiledIdentifierExpression(expr *CompiledI
 func (self *Compiler) handlingGetterCompiledUnaryExpression(expr *CompiledUnaryExpression, putOnStack bool) {
 	switch expr.operator {
 	case token.NOT:
-		self.chooseHandlingGetterExpression(expr.operand, putOnStack)
+		self.chooseHandlingGetterExpression(expr.operand, true)
 		self.addProgramInstructions(Not)
+	case token.SUBTRACT:
+		self.chooseHandlingGetterExpression(expr.operand, true)
+		self.addProgramInstructions(Neg)
+	case token.ADDITION:
+		self.chooseHandlingGetterExpression(expr.operand, true)
 	case token.INCREMENT:
 		self.handlingUnaryExpression(expr.operand, func() {
 			self.addProgramInstructions(Inc)
@@ -357,6 +383,17 @@ func (self *Compiler) handlingGetterCompiledDotExpression(expr *CompiledDotExpre
 	self.handlingGetterExpression(expr.left, true)
 	expr.addSourceMap()
 	self.addProgramInstructions(GetProp(expr.name))
+
+	if !putOnStack {
+		self.addProgramInstructions(Pop)
+	}
+}
+
+func (self *Compiler) handlingGetterCompiledBracketExpression(expr *CompiledBracketExpression, putOnStack bool) {
+	self.handlingGetterExpression(expr.left, true)
+	self.handlingGetterExpression(expr.indexOrName, true)
+	expr.addSourceMap()
+	self.addProgramInstructions(GetPropOrElem)
 
 	if !putOnStack {
 		self.addProgramInstructions(Pop)

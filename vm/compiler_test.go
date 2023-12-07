@@ -57,7 +57,8 @@ func TestCompiler(t *testing.T) {
 				a: 2
 			}
 		}
-		obj.c.a
+		var arr = [1, obj.c.a, obj["c"]['a']]
+		arr[2]
 	`)
 	program, err := parser.Parse()
 	if err != nil {
