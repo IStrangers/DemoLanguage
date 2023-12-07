@@ -61,8 +61,9 @@ func TestCompiler(t *testing.T) {
 			}
 		}
 		var arr = [1, obj.c.a, obj["c"]['a'],obj.d]
-		obj.d(66)
-		arr[3](99)
+		obj.d(10)
+		obj["d"](20)
+		arr[3](30)
 	`)
 	program, err := parser.Parse()
 	if err != nil {
