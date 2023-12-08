@@ -2,8 +2,8 @@ package interpreter
 
 import (
 	"math"
+	"regexp"
 	"strconv"
-	"strings"
 )
 
 type ValueType int
@@ -289,7 +289,8 @@ func (self *Value) ofLiteral() string {
 	} else if self.isObject() {
 		return self.objectd().ofLiteral()
 	} else if self.isFunction() {
-		return strings.ReplaceAll(strings.ReplaceAll(self.functiond().getFunDefinition(), "\n", ""), "\r", "")
+		pattern := regexp.MustCompile(`\s+`)
+		return pattern.ReplaceAllString(self.functiond().getFunDefinition(), " ")
 	}
 	return ""
 }

@@ -1,9 +1,19 @@
 package vm
 
+import (
+	"regexp"
+)
+
 type BaseFunObject struct {
 	BaseObject
 	funDefinition string
 	program       *Program
+}
+
+func (self *BaseFunObject) toLiteral() string {
+	pattern := regexp.MustCompile(`\s+`)
+	literal := pattern.ReplaceAllString(self.funDefinition, " ")
+	return literal
 }
 
 type FunObject struct {
@@ -16,4 +26,32 @@ func (self FunObject) vmCall(vm *VM, n int) {
 	vm.program = self.program
 	vm.stack[vm.sp-1-n], vm.stack[vm.sp-2-n] = vm.stack[vm.sp-2-n], vm.stack[vm.sp-1-n]
 	vm.pc = 0
+}
+
+type NativeFunCall struct {
+	this Value
+	args []Value
+}
+
+type NativeFunObject struct {
+	BaseFunObject
+
+	fun func(NativeFunCall) Value
+}
+
+func (self NativeFunObject) vmCall(vm *VM, n int) {
+	vm.pushCtx()
+	vm.program = nil
+	vm.sb = vm.sp - n
+	value := self.fun(NativeFunCall{
+		this: vm.stack[vm.sp-2],
+		args: vm.stack[vm.sp-n : vm.sp],
+	})
+	if value == nil {
+		value = Const_Null_Value
+	}
+	vm.stack[vm.sp-n-2] = value
+	vm.popCtx()
+	vm.sp -= n + 1
+	vm.pc++
 }

@@ -65,6 +65,8 @@ func TestCompiler(t *testing.T) {
 			f: p1 -> p1 / 2
 		}
 		var arr = [1, obj.c.a, obj["c"]['a'],obj.d]
+		println(obj)
+		println(arr)
 		obj.d(10)
 		obj["d"](20)
 		arr[3](30)

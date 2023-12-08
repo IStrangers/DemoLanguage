@@ -1,6 +1,8 @@
 package vm
 
-import "strconv"
+import (
+	"strconv"
+)
 
 type Value interface {
 	isInt() bool
@@ -15,6 +17,7 @@ type Value interface {
 	toString() string
 	toBool() bool
 	toObject() *Object
+	toLiteral() string
 
 	equals(Value) bool
 	sameAs(Value) bool
@@ -105,6 +108,10 @@ func (self IntValue) sameAs(value Value) bool {
 	return false
 }
 
+func (self IntValue) toLiteral() string {
+	return self.toString()
+}
+
 func ToIntValue(value int64) IntValue {
 	return IntValue(value)
 }
@@ -167,6 +174,10 @@ func (self FloatValue) sameAs(value Value) bool {
 		return self == value
 	}
 	return false
+}
+
+func (self FloatValue) toLiteral() string {
+	return self.toString()
 }
 
 func ToFloatValue(value float64) FloatValue {
@@ -233,6 +244,10 @@ func (self StringValue) sameAs(value Value) bool {
 		return self == value
 	}
 	return false
+}
+
+func (self StringValue) toLiteral() string {
+	return string(self)
 }
 
 func ToStringValue(value string) StringValue {
@@ -305,6 +320,10 @@ func (self BoolValue) sameAs(value Value) bool {
 	return false
 }
 
+func (self BoolValue) toLiteral() string {
+	return self.toString()
+}
+
 func ToBooleanValue(value bool) BoolValue {
 	if value {
 		return Const_Bool_True_Value
@@ -347,7 +366,7 @@ func (self NullValue) toFloat() float64 {
 }
 
 func (self NullValue) toString() string {
-	return "null"
+	return self.toLiteral()
 }
 
 func (self NullValue) toBool() bool {
@@ -364,6 +383,10 @@ func (self NullValue) equals(value Value) bool {
 
 func (self NullValue) sameAs(value Value) bool {
 	return value.isNull()
+}
+
+func (self NullValue) toLiteral() string {
+	return "null"
 }
 
 type Object struct {
@@ -423,6 +446,10 @@ func (self Object) sameAs(value Value) bool {
 		return self == value || self.self.equals(value.(Object).self)
 	}
 	return false
+}
+
+func (self Object) toLiteral() string {
+	return self.self.toLiteral()
 }
 
 func (self *Object) getOrDefault(prop Value, defaultValue Value) Value {

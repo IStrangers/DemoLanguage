@@ -1,5 +1,10 @@
 package vm
 
+import (
+	"fmt"
+	"strings"
+)
+
 const (
 	thisBindingName = "this"
 
@@ -10,6 +15,7 @@ const (
 
 type ObjectImpl interface {
 	getClassName() string
+	toLiteral() string
 	getValueByIndex(IntValue, Value) Value
 	getProperty(string) Value
 	getPropertyOrDefault(string, Value) Value
@@ -29,6 +35,22 @@ func (self *BaseObject) init() {
 
 func (self *BaseObject) getClassName() string {
 	return self.className
+}
+
+func (self *BaseObject) toLiteral() string {
+	className := self.getClassName()
+	if className != classObject {
+		return fmt.Sprintf("[Object %s]", className)
+	}
+	var literals []string
+	for name, value := range self.valueMapping {
+		valueFormat := "%s"
+		if value.isString() {
+			valueFormat = "\"%s\""
+		}
+		literals = append(literals, fmt.Sprintf("%s: %s", name, fmt.Sprintf(valueFormat, value.toLiteral())))
+	}
+	return fmt.Sprintf("{%s}", strings.Join(literals, ","))
 }
 
 func (self *BaseObject) getValueByIndex(prop IntValue, defaultValue Value) Value {

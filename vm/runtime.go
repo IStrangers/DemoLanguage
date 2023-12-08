@@ -1,5 +1,10 @@
 package vm
 
+import (
+	"fmt"
+	"os"
+)
+
 type StackFrame struct {
 	program      *Program
 	functionName string
@@ -20,7 +25,16 @@ type Runtime struct {
 func CreateRuntime() *Runtime {
 	runtime := &Runtime{
 		globalObject: &Object{self: &BaseObject{
-			valueMapping: map[string]Value{},
+			valueMapping: map[string]Value{
+				"println": Object{&NativeFunObject{fun: func(call NativeFunCall) Value {
+					var literals []any
+					for _, arg := range call.args {
+						literals = append(literals, arg.toLiteral())
+					}
+					fmt.Fprintln(os.Stdout, literals...)
+					return nil
+				}}},
+			},
 		}},
 	}
 	return runtime
