@@ -186,6 +186,8 @@ func (self *Compiler) compileExpression(expression ast.Expression) CompiledExpre
 		return self.compileAssignExpression(expr)
 	case *ast.FunLiteral:
 		return self.compileFunLiteral(expr)
+	case *ast.ArrowFunctionLiteral:
+		return self.compileArrowFunctionLiteral(expr)
 	case *ast.CallExpression:
 		return self.compileCallExpression(expr)
 	case *ast.DotExpression:
@@ -280,6 +282,27 @@ func (self *Compiler) compileFunLiteral(expr *ast.FunLiteral) CompiledExpression
 		self.createCompiledBaseExpression(expr.StartIndex()),
 		expr.FunDefinition,
 		expr.Name,
+		expr.ParameterList,
+		expr.Body,
+		expr.DeclarationList,
+	}
+}
+
+func (self *Compiler) compileArrowFunctionLiteral(expr *ast.ArrowFunctionLiteral) CompiledExpression {
+	body := expr.Body.(*ast.BlockStatement).Body
+	lastStatementIndex := len(body) - 1
+	if lastStatementIndex >= 0 {
+		if st, ok := body[lastStatementIndex].(*ast.ExpressionStatement); ok {
+			body[lastStatementIndex] = &ast.ReturnStatement{
+				Return:    st.StartIndex(),
+				Arguments: []ast.Expression{st.Expression},
+			}
+		}
+	}
+	return &CompiledFunLiteralExpression{
+		self.createCompiledBaseExpression(expr.StartIndex()),
+		expr.FunDefinition,
+		nil,
 		expr.ParameterList,
 		expr.Body,
 		expr.DeclarationList,

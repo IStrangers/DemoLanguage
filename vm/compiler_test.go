@@ -58,12 +58,18 @@ func TestCompiler(t *testing.T) {
 			},
 			d: fun(a) {
 				return  a + 100
-			}
+			},
+			e: (p1) -> {
+				
+			},
+			f: p1 -> p1 / 2
 		}
 		var arr = [1, obj.c.a, obj["c"]['a'],obj.d]
 		obj.d(10)
 		obj["d"](20)
 		arr[3](30)
+		obj.e(999)
+		obj.f(1000)
 	`)
 	program, err := parser.Parse()
 	if err != nil {

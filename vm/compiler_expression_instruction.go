@@ -339,7 +339,12 @@ func (self *Compiler) handlingGetterCompiledFunLiteralExpression(expr *CompiledF
 	self.compileDeclarationList(expr.declarationList)
 	self.compileStatement(expr.body, false)
 	body := expr.body.(*ast.BlockStatement).Body
-	if _, ok := body[len(body)-1].(*ast.ReturnStatement); !ok {
+	lastStatementIndex := len(body) - 1
+	var lastStatement ast.Statement
+	if lastStatementIndex >= 0 {
+		lastStatement = body[lastStatementIndex]
+	}
+	if _, ok := lastStatement.(*ast.ReturnStatement); !ok {
 		self.addProgramInstructions(LoadNull, Ret)
 	}
 	stackSize, stashSize := funcScope.finaliseVarAlloc(0)
