@@ -65,7 +65,9 @@ func (self *Scope) finaliseVarAlloc(stackOffset int) (int, int) {
 	i := 1
 	for _, binding := range self.bindingMapping {
 		var index int
-		if i <= self.args {
+		if binding.name == thisBindingName {
+			index = 0
+		} else if i <= self.args {
 			index = -i
 		} else {
 			stackIndex++

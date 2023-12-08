@@ -1,6 +1,8 @@
 package vm
 
 const (
+	thisBindingName = "this"
+
 	classObject   = "Object"
 	classArray    = "Array"
 	classFunction = "Function"

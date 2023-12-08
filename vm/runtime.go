@@ -17,6 +17,15 @@ type Runtime struct {
 	globalObject *Object
 }
 
+func CreateRuntime() *Runtime {
+	runtime := &Runtime{
+		globalObject: &Object{self: &BaseObject{
+			valueMapping: map[string]Value{},
+		}},
+	}
+	return runtime
+}
+
 func (self *Runtime) newObject() *Object {
 	baseObject := &BaseObject{}
 	baseObject.className = classObject

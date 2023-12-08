@@ -68,6 +68,14 @@ func (self CompiledIdentifierExpression) isConstExpression() bool {
 	return false
 }
 
+type CompiledThisExpression struct {
+	CompiledBaseExpression
+}
+
+func (self CompiledThisExpression) isConstExpression() bool {
+	return false
+}
+
 type CompiledUnaryExpression struct {
 	CompiledBaseExpression
 	operator token.Token
@@ -180,6 +188,8 @@ func (self *Compiler) compileExpression(expression ast.Expression) CompiledExpre
 		return self.compileArrayLiteral(expr)
 	case *ast.Identifier:
 		return self.compileIdentifier(expr)
+	case *ast.ThisExpression:
+		return self.compileThisExpression(expr)
 	case *ast.UnaryExpression:
 		return self.compileUnaryExpression(expr)
 	case *ast.BinaryExpression:
@@ -256,6 +266,12 @@ func (self *Compiler) compileIdentifier(expr *ast.Identifier) CompiledExpression
 	return &CompiledIdentifierExpression{
 		self.createCompiledBaseExpression(expr.StartIndex()),
 		expr.Name,
+	}
+}
+
+func (self *Compiler) compileThisExpression(expr *ast.ThisExpression) CompiledExpression {
+	return &CompiledThisExpression{
+		self.createCompiledBaseExpression(expr.StartIndex()),
 	}
 }
 

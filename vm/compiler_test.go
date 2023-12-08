@@ -57,10 +57,10 @@ func TestCompiler(t *testing.T) {
 				a: 2
 			},
 			d: fun(a) {
-				return  a + 100
+				return this.a + 100 + a
 			},
 			e: (p1) -> {
-				
+				return p1 * 2 * this.c.a
 			},
 			f: p1 -> p1 / 2
 		}
@@ -75,19 +75,7 @@ func TestCompiler(t *testing.T) {
 	if err != nil {
 		panic(err.Error())
 	}
-	compiler := &Compiler{
-		program: &Program{
-			source: program.File,
-		},
-		evalVM: &VM{
-			runtime: &Runtime{
-				globalObject: &Object{self: &BaseObject{
-					valueMapping: make(map[string]Value),
-				}},
-			},
-			maxCallStackSize: 999,
-		},
-	}
+	compiler := CreateCompiler()
 	compiler.compile(program)
 	evalVM := compiler.evalVM
 	evalVM.program = compiler.program

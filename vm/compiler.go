@@ -33,7 +33,18 @@ type Compiler struct {
 	evalVM  *VM
 }
 
+func CreateCompiler() *Compiler {
+	evalVM := CreateVM()
+	compiler := &Compiler{
+		program: &Program{},
+		evalVM:  evalVM,
+	}
+	return compiler
+}
+
 func (self *Compiler) compile(in *ast.Program) {
+	self.program.source = in.File
+
 	self.openScope()
 	body := in.Body
 	declarationList := in.DeclarationList

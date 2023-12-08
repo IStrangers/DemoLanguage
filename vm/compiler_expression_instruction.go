@@ -95,6 +95,8 @@ func (self *Compiler) handlingGetterExpression(expr CompiledExpression, putOnSta
 		self.handlingGetterCompiledArrayLiteralExpression(expr, putOnStack)
 	case *CompiledIdentifierExpression:
 		self.handlingGetterCompiledIdentifierExpression(expr, putOnStack)
+	case *CompiledThisExpression:
+		self.handlingGetterCompiledThisExpression(expr, putOnStack)
 	case *CompiledUnaryExpression:
 		self.handlingGetterCompiledUnaryExpression(expr, putOnStack)
 	case *CompiledBinaryExpression:
@@ -172,6 +174,22 @@ func (self *Compiler) handlingGetterCompiledIdentifierExpression(expr *CompiledI
 		self.addProgramInstructions(LoadStackVar(0))
 	} else {
 		self.addProgramInstructions(LoadVar(expr.name))
+	}
+
+	if !putOnStack {
+		self.addProgramInstructions(Pop)
+	}
+}
+
+func (self *Compiler) handlingGetterCompiledThisExpression(expr *CompiledThisExpression, putOnStack bool) {
+	expr.addSourceMap()
+
+	binding, exists := self.scope.lookupName(thisBindingName)
+	if exists {
+		binding.markAccessPoint(self.scope)
+		self.addProgramInstructions(LoadStackVar(0))
+	} else {
+		self.addProgramInstructions(LoadDynamicThis)
 	}
 
 	if !putOnStack {
@@ -328,6 +346,8 @@ func (self *Compiler) handlingGetterCompiledFunLiteralExpression(expr *CompiledF
 			self.throwSyntaxError(int(target.StartIndex())-1, "Unsupported BindingElement type: %T", target)
 		}
 	}
+
+	self.scope.bindName(thisBindingName)
 
 	var enterFunBodyIndex int
 	if hasInit {

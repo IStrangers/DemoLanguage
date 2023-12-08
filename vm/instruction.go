@@ -50,6 +50,7 @@ var (
 	PushArrayValue      _PushArrayValue
 	GetPropOrElem       _GetPropOrElem
 	GetPropOrElemCallee _GetPropOrElemCallee
+	LoadDynamicThis     _LoadDynamicThis
 	Ret                 _Ret
 )
 
@@ -698,6 +699,13 @@ type EnterBlock struct {
 
 func (self EnterBlock) exec(vm *VM) {
 
+	vm.pc++
+}
+
+type _LoadDynamicThis struct{}
+
+func (self _LoadDynamicThis) exec(vm *VM) {
+	vm.push(vm.runtime.globalObject)
 	vm.pc++
 }
 

@@ -106,6 +106,15 @@ type VM struct {
 	result Value
 }
 
+func CreateVM() *VM {
+	runtime := CreateRuntime()
+	vm := &VM{
+		runtime:          runtime,
+		maxCallStackSize: 999,
+	}
+	return vm
+}
+
 func (self *VM) run() {
 	for {
 		if self.pc >= self.getInstructionSize() {
