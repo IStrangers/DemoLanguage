@@ -305,6 +305,13 @@ func (self BoolValue) sameAs(value Value) bool {
 	return false
 }
 
+func ToBooleanValue(value bool) BoolValue {
+	if value {
+		return Const_Bool_True_Value
+	}
+	return Const_Bool_False_Value
+}
+
 type NullValue struct{}
 
 func (self NullValue) isInt() bool {

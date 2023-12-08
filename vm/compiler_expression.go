@@ -172,6 +172,8 @@ func (self *Compiler) compileExpression(expression ast.Expression) CompiledExpre
 		return self.compileNumberLiteral(expr)
 	case *ast.StringLiteral:
 		return self.compileStringLiteral(expr)
+	case *ast.BooleanLiteral:
+		return self.compileBooleanLiteral(expr)
 	case *ast.ObjectLiteral:
 		return self.compileObjectLiteral(expr)
 	case *ast.ArrayLiteral:
@@ -226,6 +228,13 @@ func (self *Compiler) compileStringLiteral(expr *ast.StringLiteral) CompiledExpr
 	return &CompiledLiteralExpression{
 		self.createCompiledBaseExpression(expr.StartIndex()),
 		ToStringValue(expr.Value),
+	}
+}
+
+func (self *Compiler) compileBooleanLiteral(expr *ast.BooleanLiteral) CompiledExpression {
+	return &CompiledLiteralExpression{
+		self.createCompiledBaseExpression(expr.StartIndex()),
+		ToBooleanValue(expr.Value),
 	}
 }
 
