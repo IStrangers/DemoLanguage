@@ -1,6 +1,9 @@
 package vm
 
-import "DemoLanguage/file"
+import (
+	"DemoLanguage/file"
+	"fmt"
+)
 
 type SourceMapItem struct {
 	pc  int
@@ -55,4 +58,38 @@ func (self *Program) addSourceMap(pos int) {
 		return
 	}
 	self.sourceMaps.add(SourceMapItem{int(self.instructions.size()), pos})
+}
+
+func (self *Program) dumpInstructions(logger func(format string, args ...interface{})) {
+	self.dumpInstructionsByIndent("", logger)
+}
+
+const (
+	colorGreen = "\033[32m"
+	colorReset = "\033[0m"
+)
+
+func colorize(color, message string) string {
+	return fmt.Sprintf("%s%s%s", color, message, colorReset)
+}
+
+func (self *Program) dumpInstructionsByIndent(indent string, logger func(format string, args ...interface{})) {
+	logger(colorize(colorGreen, "values: %+v"), self.values)
+	//dumpInitFields := func(initFields *Program) {
+	//	i := indent + ">"
+	//	logger("%s ---- init_fields:", i)
+	//	initFields.dumpInstructionsByIndent(i, logger)
+	//	logger("%s ----", i)
+	//}
+	for pc, ins := range self.instructions {
+		logger(colorize(colorGreen, "%s %d: %T(%v)"), indent, pc, ins, ins)
+		var prg *Program
+		switch f := ins.(type) {
+		case *NewFun:
+			prg = f.program
+		}
+		if prg != nil {
+			prg.dumpInstructionsByIndent(indent+">", logger)
+		}
+	}
 }

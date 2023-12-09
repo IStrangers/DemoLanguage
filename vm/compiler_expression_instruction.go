@@ -323,7 +323,7 @@ func (self *Compiler) handlingGetterCompiledFunLiteralExpression(expr *CompiledF
 		self.program.functionName = expr.name.Name
 	}
 	hasInit := false
-	for _, binding := range expr.parameterList.List {
+	for i, binding := range expr.parameterList.List {
 		switch target := binding.Target.(type) {
 		case *ast.Identifier:
 			_, exists := funcScope.bindName(target.Name)
@@ -337,7 +337,7 @@ func (self *Compiler) handlingGetterCompiledFunLiteralExpression(expr *CompiledF
 			self.addProgramInstructions(nil)
 			JeqNullIndex := self.program.getInstructionSize()
 			self.addProgramInstructions(nil)
-			funcScope.getBinding(target.Name).markAccessPointAt(funcScope, markIndex)
+			funcScope.bindings[i].markAccessPointAt(funcScope, markIndex)
 			self.setProgramInstruction(markIndex, LoadStackVar(0))
 			self.emitVarAssign(target.Name, int(target.StartIndex())-1, self.compileExpression(binding.Initializer))
 			self.setProgramInstruction(JeqNullIndex, JeqNull(self.program.getInstructionSize()-JeqNullIndex))
@@ -377,7 +377,7 @@ func (self *Compiler) handlingGetterCompiledFunLiteralExpression(expr *CompiledF
 
 	self.closeScope()
 
-	newFun := &NewFun{expr.funDefinition, self.program.functionName, self.program}
+	newFun := &NewFun{TrimWhitespace(expr.funDefinition), self.program.functionName, self.program}
 	self.program = originProgram
 	self.addProgramInstructions(newFun)
 

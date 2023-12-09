@@ -81,6 +81,7 @@ func TestCompiler(t *testing.T) {
 	compiler.compile(program)
 	evalVM := compiler.evalVM
 	evalVM.program = compiler.program
+	evalVM.program.dumpInstructions(t.Logf)
 	evalVM.runTry()
 	result := evalVM.result
 	fmt.Printf("%v\n", result)

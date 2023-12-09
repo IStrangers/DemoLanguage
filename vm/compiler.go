@@ -4,6 +4,7 @@ import (
 	"DemoLanguage/ast"
 	"DemoLanguage/file"
 	"fmt"
+	"regexp"
 )
 
 type CompilerError struct {
@@ -152,4 +153,9 @@ func (self *Compiler) throwSyntaxError(offset int, format string, args ...any) C
 		},
 	})
 	return nil
+}
+
+func TrimWhitespace(content string) string {
+	pattern := regexp.MustCompile(`\s+`)
+	return pattern.ReplaceAllString(content, " ")
 }

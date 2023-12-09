@@ -31,6 +31,7 @@ type Scope struct {
 	nested         []*Scope
 	program        *Program
 	bindingMapping map[string]*Binding
+	bindings       []*Binding
 
 	base int
 	args int
@@ -43,6 +44,7 @@ func (self *Scope) bindName(name string) (*Binding, bool) {
 		name,
 		make(map[*Scope]*[]int),
 	}
+	self.bindings = append(self.bindings, binding)
 	self.bindingMapping[name] = binding
 	return binding, exists
 }
@@ -62,16 +64,15 @@ func (self *Scope) getBinding(name string) *Binding {
 
 func (self *Scope) finaliseVarAlloc(stackOffset int) (int, int) {
 	stackIndex, stashIndex := 0, 0
-	i := 1
-	for _, binding := range self.bindingMapping {
+	for i, binding := range self.bindings {
 		var index int
-		if binding.name == thisBindingName {
-			index = 0
-		} else if i <= self.args {
-			index = -i
-		} else {
-			stackIndex++
-			index = stackIndex + stackOffset
+		if binding.name != thisBindingName {
+			if i <= self.args {
+				index = -(i + 1)
+			} else {
+				stackIndex++
+				index = stackIndex + stackOffset
+			}
 		}
 		for scope, aps := range binding.accessPoints {
 			program := scope.program
@@ -86,7 +87,6 @@ func (self *Scope) finaliseVarAlloc(stackOffset int) (int, int) {
 				}
 			}
 		}
-		i++
 	}
 	for _, scope := range self.nested {
 		scope.finaliseVarAlloc(stackIndex + stackOffset)

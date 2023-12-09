@@ -1,9 +1,5 @@
 package vm
 
-import (
-	"regexp"
-)
-
 type BaseFunObject struct {
 	BaseObject
 	funDefinition string
@@ -11,9 +7,7 @@ type BaseFunObject struct {
 }
 
 func (self *BaseFunObject) toLiteral() string {
-	pattern := regexp.MustCompile(`\s+`)
-	literal := pattern.ReplaceAllString(self.funDefinition, " ")
-	return literal
+	return self.funDefinition
 }
 
 type FunObject struct {
