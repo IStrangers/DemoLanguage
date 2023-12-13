@@ -9,7 +9,7 @@ type ArrayObject struct {
 }
 
 func (self *ArrayObject) init() {
-	self.BaseObject.init()
+	self.BaseObject.valueMapping = arrayProps
 }
 
 func (self *ArrayObject) getValueByIndex(prop IntValue, defaultValue Value) Value {

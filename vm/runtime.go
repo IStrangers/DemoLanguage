@@ -25,6 +25,7 @@ type Runtime struct {
 func CreateRuntime() *Runtime {
 	runtime := &Runtime{
 		globalObject: &Object{self: &BaseObject{
+			className: classGlobal,
 			valueMapping: map[string]Value{
 				"println": Object{&NativeFunObject{fun: func(call NativeFunCall) Value {
 					var literals []any

@@ -42,6 +42,12 @@ func (self *ValueArray) size() int {
 	return len(*self)
 }
 
+func (self *ValueArray) remove(index int) Value {
+	removeValue := (*self)[index]
+	*self = append((*self)[:index], (*self)[index+1:]...)
+	return removeValue
+}
+
 var (
 	Const_Bool_True_Value  = BoolValue(true)
 	Const_Bool_False_Value = BoolValue(false)

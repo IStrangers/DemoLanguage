@@ -9,6 +9,7 @@ const (
 	thisBindingName = "this"
 
 	classObject   = "Object"
+	classGlobal   = "Global"
 	classArray    = "Array"
 	classFunction = "Function"
 )

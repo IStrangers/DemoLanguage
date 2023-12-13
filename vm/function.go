@@ -38,7 +38,7 @@ func (self NativeFunObject) vmCall(vm *VM, n int) {
 	vm.program = nil
 	vm.sb = vm.sp - n
 	value := self.fun(NativeFunCall{
-		this: vm.stack[vm.sp-2],
+		this: vm.stack[vm.sp-n-2],
 		args: vm.stack[vm.sp-n : vm.sp],
 	})
 	if value == nil {

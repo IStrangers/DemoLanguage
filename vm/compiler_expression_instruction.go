@@ -19,7 +19,7 @@ func (self *Compiler) evalConstExpr(expr CompiledExpression) (Value, *Exception)
 		self.program = evalVM.program
 		isNewProgram = true
 	}
-	savedPC := self.program.getInstructionSize()
+	savedPC := self.getInstructionSize()
 	self.handlingGetterExpression(expr, true)
 	evalVM.pc = savedPC
 	ex := evalVM.runTry()
@@ -241,15 +241,15 @@ func (self *Compiler) handlingGetterCompiledBinaryExpression(expr *CompiledBinar
 		} else {
 			self.handlingGetterExpression(expr.left, true)
 			expr.addSourceMap()
-			index := self.program.getInstructionSize()
+			index := self.getInstructionSize()
 			self.addProgramInstructions(nil)
 			self.handlingGetterExpression(expr.right, true)
 			var instruction Instruction
 			switch operator {
 			case token.LOGICAL_OR:
-				instruction = Jeq1(self.program.getInstructionSize() - index)
+				instruction = Jeq1(self.getInstructionSize() - index)
 			case token.LOGICAL_AND:
-				instruction = Jne1(self.program.getInstructionSize() - index)
+				instruction = Jne1(self.getInstructionSize() - index)
 			}
 			self.setProgramInstruction(index, instruction)
 		}
@@ -298,12 +298,43 @@ func (self *Compiler) handlingGetterCompiledAssignExpression(expr *CompiledAssig
 	switch expr.operator {
 	case token.ASSIGN:
 		self.handlingSetterExpression(expr.left, expr.right, putOnStack)
+	case token.ADDITION:
+		self.handlingUnaryExpression(expr.left, func() {
+			self.handlingGetterExpression(expr.right, true)
+			self.addProgramInstructions(Add)
+		}, false, putOnStack)
+	case token.SUBTRACT:
+		self.handlingUnaryExpression(expr.left, func() {
+			self.handlingGetterExpression(expr.right, true)
+			self.addProgramInstructions(Sub)
+		}, false, putOnStack)
+	case token.MULTIPLY:
+		self.handlingUnaryExpression(expr.left, func() {
+			self.handlingGetterExpression(expr.right, true)
+			self.addProgramInstructions(Mul)
+		}, false, putOnStack)
+	case token.DIVIDE:
+		self.handlingUnaryExpression(expr.left, func() {
+			self.handlingGetterExpression(expr.right, true)
+			self.addProgramInstructions(Div)
+		}, false, putOnStack)
+	case token.REMAINDER:
+		self.handlingUnaryExpression(expr.left, func() {
+			self.handlingGetterExpression(expr.right, true)
+			self.addProgramInstructions(Mod)
+		}, false, putOnStack)
+	case token.AND_ARITHMETIC:
+		self.handlingUnaryExpression(expr.left, func() {
+			self.handlingGetterExpression(expr.right, true)
+			self.addProgramInstructions(AND)
+		}, false, putOnStack)
+	case token.OR_ARITHMETIC:
+		self.handlingUnaryExpression(expr.left, func() {
+			self.handlingGetterExpression(expr.right, true)
+			self.addProgramInstructions(OR)
+		}, false, putOnStack)
 	default:
 		self.throwSyntaxError(expr.offset, "Unknown assign operator: %s", expr.operator.String())
-	}
-
-	if !putOnStack {
-		self.addProgramInstructions(Pop)
 	}
 }
 
@@ -316,7 +347,7 @@ func (self *Compiler) handlingGetterCompiledFunLiteralExpression(expr *CompiledF
 	}
 	funcScope := self.openScope()
 	funcScope.args = len(expr.parameterList.List)
-	enterFunIndex := self.program.getInstructionSize()
+	enterFunIndex := self.getInstructionSize()
 	self.addProgramInstructions(nil)
 
 	if expr.name != nil {
@@ -333,14 +364,14 @@ func (self *Compiler) handlingGetterCompiledFunLiteralExpression(expr *CompiledF
 			if binding.Initializer == nil {
 				continue
 			}
-			markIndex := self.program.getInstructionSize()
+			markIndex := self.getInstructionSize()
 			self.addProgramInstructions(nil)
-			JeqNullIndex := self.program.getInstructionSize()
+			JeqNullIndex := self.getInstructionSize()
 			self.addProgramInstructions(nil)
 			funcScope.bindings[i].markAccessPointAt(funcScope, markIndex)
 			self.setProgramInstruction(markIndex, LoadStackVar(0))
 			self.emitVarAssign(target.Name, int(target.StartIndex())-1, self.compileExpression(binding.Initializer))
-			self.setProgramInstruction(JeqNullIndex, JeqNull(self.program.getInstructionSize()-JeqNullIndex))
+			self.setProgramInstruction(JeqNullIndex, JeqNull(self.getInstructionSize()-JeqNullIndex))
 			hasInit = true
 		default:
 			self.throwSyntaxError(int(target.StartIndex())-1, "Unsupported BindingElement type: %T", target)
@@ -351,8 +382,8 @@ func (self *Compiler) handlingGetterCompiledFunLiteralExpression(expr *CompiledF
 
 	var enterFunBodyIndex int
 	if hasInit {
-		self.openBlockScope()
-		enterFunBodyIndex = self.program.getInstructionSize()
+		self.openScopeNested()
+		enterFunBodyIndex = self.getInstructionSize()
 		self.addProgramInstructions(nil)
 	}
 
@@ -442,7 +473,13 @@ func (self *Compiler) handlingSetterExpression(expr CompiledExpression, valueExp
 func (self *Compiler) handlingSetterCompiledIdentifierExpression(expr *CompiledIdentifierExpression, valueExpr CompiledExpression, putOnStack bool) {
 	self.addProgramInstructions(ResolveVar(expr.name))
 	self.chooseHandlingGetterExpression(valueExpr, putOnStack)
-	self.addProgramInstructions(PutVar(0))
+	binding, exists := self.scope.lookupName(expr.name)
+	if exists {
+		binding.markAccessPoint(self.scope)
+		self.addProgramInstructions(PutStackVar(0))
+	} else {
+		self.addProgramInstructions(PutVar(0))
+	}
 }
 
 func (self *Compiler) handlingUnaryExpression(expr CompiledExpression, instructionBody func(), postfix bool, putOnStack bool) {
@@ -454,7 +491,13 @@ func (self *Compiler) handlingUnaryExpression(expr CompiledExpression, instructi
 
 func (self *Compiler) handlingUnaryCompiledIdentifierExpression(expr *CompiledIdentifierExpression, instructionBody func(), postfix bool, putOnStack bool) {
 	self.addProgramInstructions(ResolveVar(expr.name))
-	self.chooseHandlingGetterExpression(expr, putOnStack)
+	self.chooseHandlingGetterExpression(expr, true)
 	instructionBody()
-	self.addProgramInstructions(PutVar(-1))
+	binding, exists := self.scope.lookupName(expr.name)
+	if exists {
+		binding.markAccessPoint(self.scope)
+		self.addProgramInstructions(PutStackVar(0))
+	} else {
+		self.addProgramInstructions(PutVar(-1))
+	}
 }

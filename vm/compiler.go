@@ -31,6 +31,7 @@ type CompilerReferenceError struct {
 type Compiler struct {
 	program *Program
 	scope   *Scope
+	block   *Block
 	evalVM  *VM
 }
 
@@ -107,6 +108,10 @@ func (self *Compiler) addProgramInstructions(instructions ...Instruction) {
 	self.program.addInstructions(instructions...)
 }
 
+func (self *Compiler) getInstructionSize() int {
+	return self.program.getInstructionSize()
+}
+
 func (self *Compiler) setProgramInstruction(index int, instruction Instruction) {
 	self.program.setProgramInstruction(index, instruction)
 }
@@ -120,26 +125,62 @@ func (self *Compiler) openScope() *Scope {
 	return self.scope
 }
 
-func (self *Compiler) openBlockScope() {
+func (self *Compiler) openScopeNested() {
 	self.openScope()
 	if outer := self.scope.outer; outer != nil {
 		outer.nested = append(outer.nested, self.scope)
 	}
-	self.scope.base = self.program.getInstructionSize()
+	self.scope.base = self.getInstructionSize()
 }
 
 func (self *Compiler) closeScope() {
 	self.scope = self.scope.outer
 }
 
+func (self *Compiler) openBlockScope() {
+	self.openBlock(BlockScope)
+}
+
+func (self *Compiler) openBlockLoop() {
+	self.openBlock(BlockLoop)
+}
+
+func (self *Compiler) openBlockSwitch() {
+	self.openBlock(BlockSwitch)
+}
+
+func (self *Compiler) openBlock(blockType BlockType) {
+	self.block = &Block{
+		outer:     self.block,
+		blockType: blockType,
+	}
+}
+
+func (self *Compiler) closeBlock() {
+	index := self.getInstructionSize()
+	for _, i := range self.block.breaks {
+		self.setProgramInstruction(i, Jump(index-i))
+	}
+	for _, i := range self.block.continues {
+		self.setProgramInstruction(i, Jump(self.block.continueBase-i))
+	}
+	self.block = self.block.outer
+}
+
 func (self *Compiler) enterVirtualMode() func() {
-	originProgram := self.program
+	originBlock, originProgram := self.block, self.program
+	if originBlock != nil {
+		self.block = &Block{
+			outer:     originBlock.outer,
+			blockType: originBlock.blockType,
+		}
+	}
 	self.program = &Program{
 		source: self.program.source,
 	}
 	self.openScope()
 	return func() {
-		self.program = originProgram
+		self.block, self.program = originBlock, originProgram
 		self.closeScope()
 	}
 }

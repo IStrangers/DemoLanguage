@@ -82,6 +82,8 @@ func (self *Scope) finaliseVarAlloc(stackOffset int) (int, int) {
 				switch instruction.(type) {
 				case InitStackVar:
 					program.setProgramInstruction(pc, InitStackVar(index))
+				case PutStackVar:
+					program.setProgramInstruction(pc, PutStackVar(index))
 				case LoadStackVar:
 					program.setProgramInstruction(pc, LoadStackVar(index))
 				}

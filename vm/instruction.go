@@ -130,14 +130,7 @@ func (self _Div) exec(vm *VM) {
 	left := vm.stack[vm.sp-2]
 	right := vm.stack[vm.sp-1]
 
-	var value Value
-	if left.isFloat() || right.isFloat() {
-		value = ToFloatValue(left.toFloat() / right.toFloat())
-	} else {
-		value = ToIntValue(left.toInt() / right.toInt())
-	}
-
-	vm.stack[vm.sp-2] = value
+	vm.stack[vm.sp-2] = ToFloatValue(left.toFloat() / right.toFloat())
 	vm.sp--
 	vm.pc++
 }
@@ -494,6 +487,20 @@ func (self InitStackVar) exec(vm *VM) {
 	vm.pc++
 }
 
+type PutStackVar int
+
+func (self PutStackVar) exec(vm *VM) {
+	index := int(self)
+	if index > 0 {
+		vm.stack[vm.sb+vm.args+index] = vm.stack[vm.sp-1]
+	} else {
+		//wait adjust
+		panic("Illegal stack var index")
+	}
+	vm.sp--
+	vm.pc++
+}
+
 type LoadStackVar int
 
 func (self LoadStackVar) exec(vm *VM) {
@@ -670,6 +677,14 @@ func (self EnterFun) exec(vm *VM) {
 			vs[index] = Const_Null_Value
 		}
 		vm.args = self.args
+		vm.sp = ss
+	} else if self.stackSize > 0 {
+		ss := vm.sp + self.stackSize
+		vm.stack.expand(ss)
+		vs := vm.stack[vm.sp:ss]
+		for index := range vs {
+			vs[index] = nil
+		}
 		vm.sp = ss
 	}
 	vm.pc++

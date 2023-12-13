@@ -8,9 +8,42 @@ func (self *Compiler) checkStatementSyntax(st ast.Statement) {
 	self.compileStatement(st, false)
 }
 
+func (self *Compiler) isEmptyResultStatement(st ast.Statement) bool {
+	switch st := st.(type) {
+	case *ast.VarStatement, *ast.BreakStatement, *ast.ContinueStatement, *ast.FunStatement:
+		return true
+	case *ast.BlockStatement:
+		for _, s := range st.Body {
+			if _, ok := s.(*ast.BreakStatement); ok {
+				return true
+			}
+			if _, ok := s.(*ast.ContinueStatement); ok {
+				return true
+			}
+			if self.isEmptyResultStatement(s) {
+				continue
+			}
+			return false
+		}
+		return true
+	}
+	return false
+}
+
 func (self *Compiler) compileStatements(statements []ast.Statement, needResult bool) {
-	for _, statement := range statements {
-		self.compileStatement(statement, needResult)
+	lastNeedResultIndex := -1
+	for i, statement := range statements {
+		if self.isEmptyResultStatement(statement) {
+			continue
+		}
+		lastNeedResultIndex = i
+	}
+	for i, statement := range statements {
+		if lastNeedResultIndex == i {
+			self.compileStatement(statement, needResult)
+		} else {
+			self.compileStatement(statement, false)
+		}
 	}
 }
 
@@ -20,6 +53,10 @@ func (self *Compiler) compileStatement(statement ast.Statement, needResult bool)
 		self.compileBlockStatement(st, needResult)
 	case *ast.VarStatement:
 		self.compileVarStatement(st)
+	case *ast.BreakStatement:
+		self.compileBreakStatement(st)
+	case *ast.ContinueStatement:
+		self.compileContinueStatement(st)
 	case *ast.ReturnStatement:
 		self.compileReturnStatement(st)
 	case *ast.IfStatement:
@@ -50,6 +87,18 @@ func (self *Compiler) compileVarStatement(st *ast.VarStatement) {
 	}
 }
 
+func (self *Compiler) compileBreakStatement(st *ast.BreakStatement) {
+	index := self.getInstructionSize()
+	self.addProgramInstructions(nil)
+	self.block.breaks = append(self.block.breaks, index)
+}
+
+func (self *Compiler) compileContinueStatement(st *ast.ContinueStatement) {
+	index := self.getInstructionSize()
+	self.addProgramInstructions(nil)
+	self.block.continues = append(self.block.continues, index)
+}
+
 func (self *Compiler) compileReturnStatement(st *ast.ReturnStatement) {
 	if st.Arguments != nil && len(st.Arguments) > 0 {
 		for _, argument := range st.Arguments {
@@ -74,18 +123,17 @@ func (self *Compiler) compileIfStatement(st *ast.IfStatement, needResult bool) {
 		}
 	} else {
 		self.handlingGetterExpression(conditionExpr, true)
-		program := self.program
-		consequentJmp := program.getInstructionSize()
+		consequentJmp := self.getInstructionSize()
 		self.addProgramInstructions(nil)
 		self.compileStatement(st.Consequent, needResult)
 		if st.Alternate != nil {
-			alternateJmp := program.getInstructionSize()
+			alternateJmp := self.getInstructionSize()
 			self.addProgramInstructions(nil)
-			self.setProgramInstruction(consequentJmp, Jne(program.getInstructionSize()-consequentJmp))
+			self.setProgramInstruction(consequentJmp, Jne(self.getInstructionSize()-consequentJmp))
 			self.compileStatement(st.Alternate, needResult)
-			self.setProgramInstruction(alternateJmp, Jump(program.getInstructionSize()-alternateJmp))
+			self.setProgramInstruction(alternateJmp, Jump(self.getInstructionSize()-alternateJmp))
 		} else {
-			self.setProgramInstruction(consequentJmp, Jne(program.getInstructionSize()-consequentJmp))
+			self.setProgramInstruction(consequentJmp, Jne(self.getInstructionSize()-consequentJmp))
 		}
 	}
 }
@@ -117,8 +165,7 @@ func (self *Compiler) compileSwitchStatement(st *ast.SwitchStatement, needResult
 		self.compileStatement(consequent, needResult)
 	} else {
 		var jumpInstructionIndexs []int
-		program := self.program
-		self.handlingGetterExpression(discriminantExpr, needResult)
+		self.handlingGetterExpression(discriminantExpr, true)
 		var defaultCaseStatement *ast.CaseStatement
 		for index, caseStatement := range st.Body {
 			if index == st.Default {
@@ -128,22 +175,22 @@ func (self *Compiler) compileSwitchStatement(st *ast.SwitchStatement, needResult
 			conditionExpr := self.compileExpression(caseStatement.Condition)
 			if conditionExpr.isConstExpression() {
 				self.addProgramInstructions(Dup)
-				self.chooseHandlingGetterExpression(conditionExpr, needResult)
+				self.chooseHandlingGetterExpression(conditionExpr, true)
 				self.addProgramInstructions(EQ)
 			} else {
-				self.chooseHandlingGetterExpression(conditionExpr, needResult)
+				self.chooseHandlingGetterExpression(conditionExpr, true)
 			}
-			caseJmp := self.program.getInstructionSize()
+			caseJmp := self.getInstructionSize()
 			self.addProgramInstructions(nil)
 			self.compileStatement(caseStatement.Consequent, needResult)
-			jumpInstructionIndexs = append(jumpInstructionIndexs, program.getInstructionSize())
+			jumpInstructionIndexs = append(jumpInstructionIndexs, self.getInstructionSize())
 			self.addProgramInstructions(nil)
-			self.setProgramInstruction(caseJmp, Jne(program.getInstructionSize()-caseJmp))
+			self.setProgramInstruction(caseJmp, Jne(self.getInstructionSize()-caseJmp))
 		}
 		if defaultCaseStatement != nil {
 			self.compileStatement(defaultCaseStatement.Consequent, needResult)
 		}
-		jump := program.getInstructionSize()
+		jump := self.getInstructionSize()
 		for _, jumpInstructionIndex := range jumpInstructionIndexs {
 			self.setProgramInstruction(jumpInstructionIndex, Jump(jump-jumpInstructionIndex))
 		}
@@ -151,27 +198,29 @@ func (self *Compiler) compileSwitchStatement(st *ast.SwitchStatement, needResult
 }
 
 func (self *Compiler) compileForStatement(st *ast.ForStatement, needResult bool) {
-	program := self.program
+	self.openBlockLoop()
 	if st.Initializer != nil {
-		self.compileStatement(st.Initializer, needResult)
+		self.compileStatement(st.Initializer, true)
 	}
-	jumpIndex := program.getInstructionSize()
+	jumpIndex := self.getInstructionSize()
 	conditionJumpIndex := -1
 	if st.Condition != nil {
 		conditionExpr := self.compileExpression(st.Condition)
-		self.chooseHandlingGetterExpression(conditionExpr, needResult)
-		conditionJumpIndex = program.getInstructionSize()
+		self.chooseHandlingGetterExpression(conditionExpr, true)
+		conditionJumpIndex = self.getInstructionSize()
 		self.addProgramInstructions(nil)
 	}
 	self.compileStatement(st.Body, needResult)
+	self.block.continueBase = self.getInstructionSize()
 	if st.Update != nil {
 		updateExpr := self.compileExpression(st.Update)
-		self.handlingGetterExpression(updateExpr, needResult)
+		self.handlingGetterExpression(updateExpr, true)
 	}
-	self.addProgramInstructions(Jump(jumpIndex - program.getInstructionSize()))
+	self.addProgramInstructions(Jump(jumpIndex - self.getInstructionSize()))
 	if conditionJumpIndex != -1 {
-		self.setProgramInstruction(conditionJumpIndex, Jne(program.getInstructionSize()-conditionJumpIndex))
+		self.setProgramInstruction(conditionJumpIndex, Jne(self.getInstructionSize()-conditionJumpIndex))
 	}
+	self.closeBlock()
 }
 
 func (self *Compiler) compileFunStatement(st *ast.FunStatement) {
