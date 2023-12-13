@@ -472,7 +472,7 @@ func (self *Compiler) handlingSetterExpression(expr CompiledExpression, valueExp
 
 func (self *Compiler) handlingSetterCompiledIdentifierExpression(expr *CompiledIdentifierExpression, valueExpr CompiledExpression, putOnStack bool) {
 	self.addProgramInstructions(ResolveVar(expr.name))
-	self.chooseHandlingGetterExpression(valueExpr, putOnStack)
+	self.chooseHandlingGetterExpression(valueExpr, true)
 	binding, exists := self.scope.lookupName(expr.name)
 	if exists {
 		binding.markAccessPoint(self.scope)
