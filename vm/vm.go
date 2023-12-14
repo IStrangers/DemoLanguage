@@ -109,7 +109,12 @@ type VM struct {
 func CreateVM() *VM {
 	runtime := CreateRuntime()
 	vm := &VM{
-		runtime:          runtime,
+		runtime: runtime,
+		stash: &Stash{
+			values:      ValueArray{},
+			extraArgs:   ValueArray{},
+			nameMapping: make(map[string]uint32),
+		},
 		maxCallStackSize: 999,
 	}
 	return vm

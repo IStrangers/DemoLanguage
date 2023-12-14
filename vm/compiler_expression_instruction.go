@@ -346,6 +346,7 @@ func (self *Compiler) handlingGetterCompiledFunLiteralExpression(expr *CompiledF
 		sourceMaps:   SourceMapItemArray{{pos: expr.offset}},
 	}
 	funcScope := self.openScope()
+	funcScope.scopeType = ScopeFunction
 	funcScope.args = len(expr.parameterList.List)
 	enterFunIndex := self.getInstructionSize()
 	self.addProgramInstructions(nil)
@@ -357,10 +358,11 @@ func (self *Compiler) handlingGetterCompiledFunLiteralExpression(expr *CompiledF
 	for i, binding := range expr.parameterList.List {
 		switch target := binding.Target.(type) {
 		case *ast.Identifier:
-			_, exists := funcScope.bindName(target.Name)
+			b, exists := funcScope.bindName(target.Name)
 			if exists {
 				self.throwSyntaxError(int(target.StartIndex())-1, "Duplicate parameter name not allowed in this context")
 			}
+			b.isArg = true
 			if binding.Initializer == nil {
 				continue
 			}
@@ -429,6 +431,9 @@ func (self *Compiler) handlingGetterCompiledCallExpression(expr *CompiledCallExp
 		self.handlingGetterExpression(callee.left, true)
 		self.handlingGetterExpression(callee.indexOrName, true)
 		self.addProgramInstructions(GetPropOrElemCallee)
+	default:
+		self.addProgramInstructions(LoadNull)
+		self.handlingGetterExpression(callee, true)
 	}
 
 	for _, argument := range expr.arguments {

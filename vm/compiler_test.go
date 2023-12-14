@@ -3,13 +3,20 @@ package vm
 import (
 	"DemoLanguage/parser"
 	"fmt"
-	"os"
 	"testing"
 )
 
 func TestCompiler(t *testing.T) {
-	content, _ := os.ReadFile("../example/example.dl")
-	parser := parser.CreateParser(1, "example.dl", string(content))
+	//content, _ := os.ReadFile("../example/example.dl")
+	parser := parser.CreateParser(1, "example.dl", `
+		fun a() {
+			var df = "东风"
+			return fun() {
+				return df
+			}	
+		}
+		println(a()())
+	`)
 	program, err := parser.Parse()
 	if err != nil {
 		panic(err.Error())

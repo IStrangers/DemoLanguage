@@ -523,6 +523,41 @@ func (self LoadStackVar) exec(vm *VM) {
 	vm.pc++
 }
 
+type InitStashVar int
+
+func (self InitStashVar) exec(vm *VM) {
+	value := vm.stack[vm.sp-1]
+	deepLevel := int(self) >> 24
+	index := int(self) & 0x00FFFFFF
+	stash := vm.stash
+	for i := 0; i < deepLevel; i++ {
+		stash = stash.outer
+	}
+	stash.values[index] = value
+	vm.sp--
+	vm.pc++
+}
+
+type LoadStashVar int
+
+func (self LoadStashVar) exec(vm *VM) {
+	deepLevel := int(self) >> 24
+	index := int(self) & 0x00FFFFFF
+	stash := vm.stash
+	for i := 0; i < deepLevel; i++ {
+		stash = stash.outer
+	}
+	value := stash.values[index]
+	vm.push(value)
+	vm.pc++
+}
+
+type PutStashVar int
+
+func (self PutStashVar) exec(vm *VM) {
+	InitStashVar(self).exec(vm)
+}
+
 type LoadDynamicCallee string
 
 func (self LoadDynamicCallee) exec(vm *VM) {
