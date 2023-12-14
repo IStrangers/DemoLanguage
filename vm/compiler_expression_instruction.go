@@ -400,8 +400,13 @@ func (self *Compiler) handlingGetterCompiledFunLiteralExpression(expr *CompiledF
 	if _, ok := lastStatement.(*ast.ReturnStatement); !ok {
 		self.addProgramInstructions(LoadNull, Ret)
 	}
+
 	stackSize, stashSize := funcScope.finaliseVarAlloc(0)
-	self.setProgramInstruction(enterFunIndex, EnterFun{stackSize, funcScope.args})
+	if stashSize > 0 {
+		self.setProgramInstruction(enterFunIndex, EnterFunStash{stackSize, stashSize, funcScope.args})
+	} else {
+		self.setProgramInstruction(enterFunIndex, EnterFun{stackSize, funcScope.args})
+	}
 
 	if hasInit {
 		self.setProgramInstruction(enterFunBodyIndex, EnterFunBody{EnterBlock{stackSize, stashSize}})

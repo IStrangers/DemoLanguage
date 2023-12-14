@@ -4,6 +4,7 @@ type BaseFunObject struct {
 	BaseObject
 	funDefinition string
 	program       *Program
+	stash         *Stash
 }
 
 func (self *BaseFunObject) toLiteral() string {
@@ -18,6 +19,7 @@ func (self FunObject) vmCall(vm *VM, n int) {
 	vm.pushCtx()
 	vm.args = n
 	vm.program = self.program
+	vm.stash = self.stash
 	vm.stack[vm.sp-1-n], vm.stack[vm.sp-2-n] = vm.stack[vm.sp-2-n], vm.stack[vm.sp-1-n]
 	vm.pc = 0
 }

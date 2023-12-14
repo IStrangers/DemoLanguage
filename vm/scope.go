@@ -133,6 +133,7 @@ func (self *Scope) finaliseVarAlloc(stackOffset int) (int, int) {
 					}
 				}
 			}
+			stashIndex++
 		} else {
 			var index int
 			if !isThis {

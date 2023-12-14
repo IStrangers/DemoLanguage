@@ -127,4 +127,12 @@ println(obj1.arrowFun1(500))
 var fs = -100
 println(fs)
 println(+fs)
-fs
+fun testClosure() {
+    var df = "东风"
+    return fun() {
+        return fun() {
+            return df
+        }
+    }
+}
+println(testClosure()()())

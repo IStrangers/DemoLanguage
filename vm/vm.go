@@ -109,12 +109,7 @@ type VM struct {
 func CreateVM() *VM {
 	runtime := CreateRuntime()
 	vm := &VM{
-		runtime: runtime,
-		stash: &Stash{
-			values:      ValueArray{},
-			extraArgs:   ValueArray{},
-			nameMapping: make(map[string]uint32),
-		},
+		runtime:          runtime,
 		maxCallStackSize: 999,
 	}
 	return vm
@@ -193,6 +188,13 @@ func (self *VM) clearStack() {
 		stackTail[i] = nil
 	}
 	self.stack = self.stack[:sp]
+}
+
+func (self *VM) newStash() *Stash {
+	self.stash = &Stash{
+		outer: self.stash,
+	}
+	return self.stash
 }
 
 func (self *VM) saveCtx(ctx *Context) {

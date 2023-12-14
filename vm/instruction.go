@@ -692,6 +692,7 @@ func (self NewFun) exec(vm *VM) {
 	fun := vm.runtime.newFun(self.name)
 	fun.funDefinition = TrimWhitespace(self.funDefinition)
 	fun.program = self.program
+	fun.stash = vm.stash
 	vm.push(Object{fun})
 	vm.pc++
 }
@@ -702,6 +703,39 @@ type EnterFun struct {
 }
 
 func (self EnterFun) exec(vm *VM) {
+	vm.sb = vm.sp - 1 - vm.args
+	d := self.args - vm.args
+	if d > 0 {
+		ss := vm.sp + d + self.stackSize
+		vm.stack.expand(ss)
+		vs := vm.stack[vm.sp : ss-self.stackSize]
+		for index := range vs {
+			vs[index] = Const_Null_Value
+		}
+		vm.args = self.args
+		vm.sp = ss
+	} else if self.stackSize > 0 {
+		ss := vm.sp + self.stackSize
+		vm.stack.expand(ss)
+		vs := vm.stack[vm.sp:ss]
+		for index := range vs {
+			vs[index] = nil
+		}
+		vm.sp = ss
+	}
+	vm.pc++
+}
+
+type EnterFunStash struct {
+	stackSize int
+	stashSize int
+	args      int
+}
+
+func (self EnterFunStash) exec(vm *VM) {
+	stash := vm.newStash()
+	stash.values = make(ValueArray, self.stashSize)
+
 	vm.sb = vm.sp - 1 - vm.args
 	d := self.args - vm.args
 	if d > 0 {
