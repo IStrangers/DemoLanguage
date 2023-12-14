@@ -66,11 +66,10 @@ func (self *Program) dumpInstructions(logger func(format string, args ...interfa
 
 const (
 	colorGreen = "\033[32m"
-	colorReset = "\033[0m"
 )
 
 func colorize(color, message string) string {
-	return fmt.Sprintf("%s%s%s", color, message, colorReset)
+	return fmt.Sprintf("%s%s", color, message)
 }
 
 func (self *Program) dumpInstructionsByIndent(indent string, logger func(format string, args ...interface{})) {

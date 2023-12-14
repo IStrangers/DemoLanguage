@@ -12,10 +12,12 @@ func TestCompiler(t *testing.T) {
 		fun a() {
 			var df = "东风"
 			return fun() {
-				return df
+				return fun() {
+					return df
+				}
 			}	
 		}
-		println(a()())
+		println(a()()())
 	`)
 	program, err := parser.Parse()
 	if err != nil {
