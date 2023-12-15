@@ -727,35 +727,53 @@ func (self EnterFun) exec(vm *VM) {
 }
 
 type EnterFunStash struct {
-	stackSize int
-	stashSize int
-	args      int
+	argsToStash bool
+	stackSize   int
+	stashSize   int
+	args        int
 }
 
 func (self EnterFunStash) exec(vm *VM) {
 	stash := vm.newStash()
 	stash.values = make(ValueArray, self.stashSize)
 
-	vm.sb = vm.sp - 1 - vm.args
-	d := self.args - vm.args
-	if d > 0 {
-		ss := vm.sp + d + self.stackSize
-		vm.stack.expand(ss)
-		vs := vm.stack[vm.sp : ss-self.stackSize]
-		for index := range vs {
-			vs[index] = Const_Null_Value
+	sp := vm.sp
+	vm.sb = sp - vm.args - 1
+	ss := self.stackSize
+	ea := 0
+	if self.argsToStash {
+		offset := vm.args - self.args
+		copy(stash.values, vm.stack[sp-vm.args:sp])
+		if offset > 0 {
+			stash.extraArgs = make(ValueArray, offset)
+			copy(stash.extraArgs, vm.stack[sp-offset:])
+		} else {
+			vs := stash.values[vm.args:self.args]
+			for i := range vs {
+				vs[i] = Const_Null_Value
+			}
 		}
-		vm.args = self.args
-		vm.sp = ss
-	} else if self.stackSize > 0 {
-		ss := vm.sp + self.stackSize
-		vm.stack.expand(ss)
-		vs := vm.stack[vm.sp:ss]
-		for index := range vs {
-			vs[index] = nil
+		sp -= vm.args
+	} else {
+		d := self.args - vm.args
+		if d > 0 {
+			ss += d
+			ea = d
+			vm.args = self.args
 		}
-		vm.sp = ss
 	}
+	vm.stack.expand(sp + ss - 1)
+	if ea > 0 {
+		vs := vm.stack[sp : vm.sp+ea]
+		for i := range vs {
+			vs[i] = Const_Null_Value
+		}
+	}
+	vs := vm.stack[sp+ea : sp+ss]
+	for i := range vs {
+		vs[i] = nil
+	}
+	vm.sp = sp + ss
 	vm.pc++
 }
 
@@ -764,6 +782,11 @@ type EnterFunBody struct {
 }
 
 func (self EnterFunBody) exec(vm *VM) {
+	if self.stashSize > 0 {
+		stash := vm.newStash()
+		stash.values = make(ValueArray, self.stashSize)
+	}
+
 	nsp := vm.sp + self.stackSize
 	if self.stackSize > 0 {
 		vm.stack.expand(nsp - 1)

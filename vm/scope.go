@@ -53,9 +53,10 @@ type Scope struct {
 	bindingMapping map[string]*Binding
 	bindings       []*Binding
 
-	base      int
-	args      int
-	needStash bool
+	base        int
+	args        int
+	argsInStash bool
+	needStash   bool
 }
 
 func (self *Scope) bindName(name string) (*Binding, bool) {
@@ -83,6 +84,7 @@ func (self *Scope) moveArgsToStash() {
 		}
 		binding.inStash = true
 	}
+	self.argsInStash = true
 	self.needStash = true
 }
 
@@ -102,18 +104,32 @@ func (self *Scope) lookupName(name string) (*Binding, bool) {
 	return nil, false
 }
 
+func (self *Scope) nearestFunctionScope() *Scope {
+	for s := self; s != nil; s = s.outer {
+		if s.scopeType == ScopeFunction {
+			return s
+		}
+	}
+	return nil
+}
+
+func (self *Scope) needStashDeepLevel(scope *Scope) int {
+	deepLevel := 0
+	for s := self; s != nil && s != scope; s = s.outer {
+		if s.needStash {
+			deepLevel++
+		}
+	}
+	return deepLevel
+}
+
 func (self *Scope) finaliseVarAlloc(stackOffset int) (int, int) {
 	stackIndex, stashIndex := 0, 0
 	for i, binding := range self.bindings {
 		isThis := binding.name == thisBindingName
 		if binding.inStash {
 			for scope, aps := range binding.accessPoints {
-				deepLevel := 0
-				for s := scope; s != nil && s != self; s = s.outer {
-					if s.needStash {
-						deepLevel++
-					}
-				}
+				deepLevel := scope.needStashDeepLevel(self)
 				index := (deepLevel << 24) | stackIndex
 				program := scope.program
 				if isThis {
@@ -135,6 +151,10 @@ func (self *Scope) finaliseVarAlloc(stackOffset int) (int, int) {
 			}
 			stashIndex++
 		} else {
+			argsInStash := false
+			if scope := self.nearestFunctionScope(); scope != nil {
+				argsInStash = scope.argsInStash
+			}
 			var index int
 			if !isThis {
 				if i <= self.args {
@@ -144,18 +164,38 @@ func (self *Scope) finaliseVarAlloc(stackOffset int) (int, int) {
 					index = stackIndex + stackOffset
 				}
 			}
-			for scope, aps := range binding.accessPoints {
-				program := scope.program
-				for _, pc := range *aps {
-					pc = pc + scope.base
-					instruction := program.getInstruction(pc)
-					switch instruction.(type) {
-					case InitStackVar:
-						program.setProgramInstruction(pc, InitStackVar(index))
-					case LoadStackVar:
-						program.setProgramInstruction(pc, LoadStackVar(index))
-					case PutStackVar:
-						program.setProgramInstruction(pc, PutStackVar(index))
+			if isThis {
+
+			} else if argsInStash {
+				for scope, aps := range binding.accessPoints {
+					program := scope.program
+					for _, pc := range *aps {
+						pc = pc + scope.base
+						instruction := program.getInstruction(pc)
+						switch instruction.(type) {
+						case InitStackVar:
+							program.setProgramInstruction(pc, InitStackVar(index))
+						case LoadStackVar:
+							program.setProgramInstruction(pc, LoadStackVar(index))
+						case PutStackVar:
+							program.setProgramInstruction(pc, PutStackVar(index))
+						}
+					}
+				}
+			} else {
+				for scope, aps := range binding.accessPoints {
+					program := scope.program
+					for _, pc := range *aps {
+						pc = pc + scope.base
+						instruction := program.getInstruction(pc)
+						switch instruction.(type) {
+						case InitStackVar:
+							program.setProgramInstruction(pc, InitStackVar(index))
+						case LoadStackVar:
+							program.setProgramInstruction(pc, LoadStackVar(index))
+						case PutStackVar:
+							program.setProgramInstruction(pc, PutStackVar(index))
+						}
 					}
 				}
 			}

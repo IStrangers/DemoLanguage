@@ -402,13 +402,21 @@ func (self *Compiler) handlingGetterCompiledFunLiteralExpression(expr *CompiledF
 	}
 
 	stackSize, stashSize := funcScope.finaliseVarAlloc(0)
-	if stashSize > 0 {
-		self.setProgramInstruction(enterFunIndex, EnterFunStash{stackSize, stashSize, funcScope.args})
+	if stashSize > 0 || funcScope.argsInStash {
+		self.setProgramInstruction(enterFunIndex, EnterFunStash{funcScope.argsInStash, stackSize, stashSize, funcScope.args})
 	} else {
 		self.setProgramInstruction(enterFunIndex, EnterFun{stackSize, funcScope.args})
 	}
 
 	if hasInit {
+		stackSize, stashSize = 0, 0
+		for _, b := range self.scope.bindings {
+			if b.inStash {
+				stashSize++
+			} else {
+				stackSize++
+			}
+		}
 		self.setProgramInstruction(enterFunBodyIndex, EnterFunBody{EnterBlock{stackSize, stashSize}})
 		self.closeScope()
 	}
