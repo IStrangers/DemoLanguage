@@ -487,16 +487,12 @@ func (self InitStackVar) exec(vm *VM) {
 	vm.pc++
 }
 
-type PutStackVar int
+type InitStackVar1 int
 
-func (self PutStackVar) exec(vm *VM) {
+func (self InitStackVar1) exec(vm *VM) {
 	index := int(self)
-	if index > 0 {
-		vm.stack[vm.sb+vm.args+index] = vm.stack[vm.sp-1]
-	} else {
-		//wait adjust
-		panic("Illegal stack var index")
-	}
+	vm.stack[vm.sb+index] = vm.stack[vm.sp-1]
+
 	vm.sp--
 	vm.pc++
 }
@@ -520,6 +516,51 @@ func (self LoadStackVar) exec(vm *VM) {
 		//wait adjust
 	}
 	vm.push(value)
+	vm.pc++
+}
+
+type LoadStackVar1 int
+
+func (self LoadStackVar1) exec(vm *VM) {
+	index := int(self)
+	var value Value
+	if index > 0 {
+		value = vm.stack[vm.sb+index]
+	} else {
+		value = vm.stack[vm.sb]
+	}
+	if value == nil {
+		value = Const_Null_Value
+	}
+	vm.push(value)
+	vm.pc++
+}
+
+type PutStackVar int
+
+func (self PutStackVar) exec(vm *VM) {
+	index := int(self)
+	if index > 0 {
+		vm.stack[vm.sb+vm.args+index] = vm.stack[vm.sp-1]
+	} else {
+		//wait adjust
+		panic("Illegal stack var index")
+	}
+	vm.sp--
+	vm.pc++
+}
+
+type PutStackVar1 int
+
+func (self PutStackVar1) exec(vm *VM) {
+	index := int(self)
+	if index > 0 {
+		vm.stack[vm.sb+index] = vm.stack[vm.sp-1]
+	} else {
+		//wait adjust
+		panic("Illegal stack var index")
+	}
+	vm.sp--
 	vm.pc++
 }
 

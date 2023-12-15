@@ -30,7 +30,7 @@ func (self *Binding) markAccessPointAt(scope *Scope, pos int) {
 }
 
 func (self *Binding) moveToStash() {
-	if self.isArg {
+	if self.isArg && !self.scope.argsInStash {
 		self.scope.moveArgsToStash()
 	} else {
 		self.inStash = true
@@ -157,7 +157,7 @@ func (self *Scope) finaliseVarAlloc(stackOffset int) (int, int) {
 			}
 			var index int
 			if !isThis {
-				if i <= self.args {
+				if i < self.args {
 					index = -(i + 1)
 				} else {
 					stackIndex++
@@ -174,11 +174,11 @@ func (self *Scope) finaliseVarAlloc(stackOffset int) (int, int) {
 						instruction := program.getInstruction(pc)
 						switch instruction.(type) {
 						case InitStackVar:
-							program.setProgramInstruction(pc, InitStackVar(index))
+							program.setProgramInstruction(pc, InitStackVar1(index))
 						case LoadStackVar:
-							program.setProgramInstruction(pc, LoadStackVar(index))
+							program.setProgramInstruction(pc, LoadStackVar1(index))
 						case PutStackVar:
-							program.setProgramInstruction(pc, PutStackVar(index))
+							program.setProgramInstruction(pc, PutStackVar1(index))
 						}
 					}
 				}

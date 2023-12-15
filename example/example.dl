@@ -136,3 +136,10 @@ fun testClosure(a = "1") {
     }
 }
 println(testClosure()()())
+fun testClosure1(a = "1") {
+    var s = fun(b = "2") {
+        return a + b
+    }
+    return s()
+}
+println(testClosure1())

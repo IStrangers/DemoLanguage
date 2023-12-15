@@ -436,7 +436,13 @@ func (self *Compiler) handlingGetterCompiledCallExpression(expr *CompiledCallExp
 	switch callee := expr.callee.(type) {
 	case *CompiledIdentifierExpression:
 		callee.addSourceMap()
-		self.addProgramInstructions(LoadDynamicCallee(callee.name))
+		binding, exists := self.scope.lookupName(callee.name)
+		if exists {
+			binding.markAccessPoint(self.scope)
+			self.addProgramInstructions(LoadStackVar(0))
+		} else {
+			self.addProgramInstructions(LoadDynamicCallee(callee.name))
+		}
 	case *CompiledDotExpression:
 		self.handlingGetterExpression(callee.left, true)
 		self.addProgramInstructions(GetPropCallee(callee.name))
