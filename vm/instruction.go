@@ -469,6 +469,7 @@ func (self LoadVar) exec(vm *VM) {
 	value := vm.getDefining(name)
 	if value == nil {
 		//wait adjust
+		panic(fmt.Sprintf("ReferenceError: '%s' is not defined", name))
 	}
 	vm.push(value)
 	vm.pc++
