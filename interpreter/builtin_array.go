@@ -1,6 +1,9 @@
 package interpreter
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
 
 const (
 	BuiltinArray_Get_Method    = "get"
@@ -16,7 +19,11 @@ type BuiltinArray struct {
 func (self BuiltinArray) ofLiteral(object Objectd) string {
 	var literals []string
 	for _, value := range self.values {
-		literals = append(literals, value.ofLiteral())
+		valueFormat := "%s"
+		if value.isString() {
+			valueFormat = "\"%s\""
+		}
+		literals = append(literals, fmt.Sprintf(valueFormat, value.ofLiteral()))
 	}
 	return "[" + strings.Join(literals, ",") + "]"
 }

@@ -1,6 +1,9 @@
 package vm
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
 
 type ArrayObject struct {
 	BaseObject
@@ -23,7 +26,11 @@ func (self *ArrayObject) getValueByIndex(prop IntValue, defaultValue Value) Valu
 func (self *ArrayObject) toLiteral() string {
 	var literals []string
 	for _, value := range self.values {
-		literals = append(literals, value.toLiteral())
+		valueFormat := "%s"
+		if value.isString() {
+			valueFormat = "\"%s\""
+		}
+		literals = append(literals, fmt.Sprintf(valueFormat, value.toLiteral()))
 	}
 	return "[" + strings.Join(literals, ",") + "]"
 }
