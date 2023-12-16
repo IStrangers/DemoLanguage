@@ -87,12 +87,16 @@ func (self *Compiler) functionUpgrading(funs []*ast.FunStatement) {
 }
 
 func (self *Compiler) compileDeclarationList(declarationList []*ast.VariableDeclaration) []string {
+	return self.compileScopeDeclarationList(self.scope, declarationList)
+}
+
+func (self *Compiler) compileScopeDeclarationList(scope *Scope, declarationList []*ast.VariableDeclaration) []string {
 	var varNames []string
 	for _, declaration := range declarationList {
 		for _, binding := range declaration.List {
 			switch t := binding.Target.(type) {
 			case *ast.Identifier:
-				self.scope.bindName(t.Name)
+				self.checkScopeVarConflict(scope, t.Name, int(t.StartIndex()-1))
 				varNames = append(varNames, t.Name)
 			}
 		}
@@ -194,6 +198,16 @@ func (self *Compiler) throwSyntaxError(offset int, format string, args ...any) C
 		},
 	})
 	return nil
+}
+
+func (self *Compiler) checkVarConflict(name string, pos int) {
+	self.checkScopeVarConflict(self.scope, name, pos)
+}
+
+func (self *Compiler) checkScopeVarConflict(scope *Scope, name string, pos int) {
+	if _, exists := scope.bindName(name); exists {
+		self.throwSyntaxError(pos, "Identifier '%s' has already been declared", name)
+	}
 }
 
 func TrimWhitespace(content string) string {

@@ -60,7 +60,10 @@ type Scope struct {
 }
 
 func (self *Scope) bindName(name string) (*Binding, bool) {
-	_, exists := self.bindingMapping[name]
+	b, exists := self.bindingMapping[name]
+	if exists {
+		return b, true
+	}
 	binding := &Binding{
 		self,
 		name,
@@ -70,7 +73,7 @@ func (self *Scope) bindName(name string) (*Binding, bool) {
 	}
 	self.bindings = append(self.bindings, binding)
 	self.bindingMapping[name] = binding
-	return binding, exists
+	return binding, false
 }
 
 func (self *Scope) getBinding(name string) *Binding {

@@ -864,7 +864,7 @@ func (self Call) exec(vm *VM) {
 	value := vm.stack[vm.sp-1-n]
 	if !value.isObject() {
 		//wait adjust
-		panic("Value is not an object: " + value.toString())
+		panic("Value is not a function: " + value.toString())
 	}
 	object := value.toObject()
 	object.self.vmCall(vm, n)

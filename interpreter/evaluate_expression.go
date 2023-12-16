@@ -286,7 +286,14 @@ func (self *Interpreter) evaluateUnaryExpression(unaryExpression *ast.UnaryExpre
 
 func (self *Interpreter) evaluateCallExpression(callExpression *ast.CallExpression) Value {
 	calleeValue := self.evaluateExpression(callExpression.Callee)
-	calleeRef := calleeValue.referenced()
+	var calleeRef Referenced
+	if calleeValue.getValueType() == Function {
+		calleeRef = AnonymousReferenced{
+			calleeValue,
+		}
+	} else {
+		calleeRef = calleeValue.referenced()
+	}
 	calleeValue = calleeValue.flatResolve()
 	if !calleeValue.isFunction() {
 		self.panic(fmt.Sprintf("%s is not a function", calleeRef.getName()), callExpression.StartIndex())

@@ -64,6 +64,10 @@ func ReferenceValue(value any) Value {
 	return Value{Reference, value}
 }
 
+func (self *Value) getValueType() ValueType {
+	return self.valueType
+}
+
 func (self *Value) isResult() bool {
 	return !self.isSkip() && !self.isBreak() && !self.isContinue()
 }
@@ -358,6 +362,7 @@ const (
 	_ ReferencedType = iota
 	StashReferencedType
 	PropertyReferencedType
+	AnonymousReferencedType
 )
 
 type Referenced interface {
@@ -421,4 +426,29 @@ func (self PropertyReferenced) getValue() Value {
 
 func (self PropertyReferenced) setValue(value Value) {
 	self.object.setValue(self.property, value)
+}
+
+type AnonymousReferenced struct {
+	value Value
+}
+
+func (self AnonymousReferenced) getType() ReferencedType {
+	return AnonymousReferencedType
+}
+
+func (self AnonymousReferenced) getName() string {
+	return "(anonymous)"
+}
+
+func (self AnonymousReferenced) getVal() any {
+	value := self.getValue()
+	return value.getVal()
+}
+
+func (self AnonymousReferenced) getValue() Value {
+	return self.value
+}
+
+func (self AnonymousReferenced) setValue(value Value) {
+	self.value = value
 }

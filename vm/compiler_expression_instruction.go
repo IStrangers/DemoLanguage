@@ -370,9 +370,12 @@ func (self *Compiler) handlingGetterCompiledFunLiteralExpression(expr *CompiledF
 			self.addProgramInstructions(nil)
 			JeqNullIndex := self.getInstructionSize()
 			self.addProgramInstructions(nil)
-			funcScope.bindings[i].markAccessPointAt(funcScope, markIndex)
 			self.setProgramInstruction(markIndex, LoadStackVar(0))
-			self.emitVarAssign(target.Name, int(target.StartIndex())-1, self.compileExpression(binding.Initializer))
+
+			self.chooseHandlingGetterExpression(self.compileExpression(binding.Initializer), true)
+			funcScope.bindings[i].markAccessPointAt(funcScope, markIndex)
+			funcScope.bindings[i].markAccessPoint(funcScope)
+			self.addProgramInstructions(InitStackVar(0))
 			self.setProgramInstruction(JeqNullIndex, JeqNull(self.getInstructionSize()-JeqNullIndex))
 			hasInit = true
 		default:
@@ -387,6 +390,7 @@ func (self *Compiler) handlingGetterCompiledFunLiteralExpression(expr *CompiledF
 		self.openScopeNested()
 		enterFunBodyIndex = self.getInstructionSize()
 		self.addProgramInstructions(nil)
+		self.compileScopeDeclarationList(funcScope, expr.declarationList)
 	}
 
 	self.compileDeclarationList(expr.declarationList)
