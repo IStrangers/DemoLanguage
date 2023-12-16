@@ -166,23 +166,24 @@ func (self *Compiler) closeScope() {
 	self.scope = self.scope.outer
 }
 
-func (self *Compiler) openBlockScope() {
-	self.openBlock(BlockScope)
+func (self *Compiler) openBlockScope() *Block {
+	return self.openBlock(BlockScope)
 }
 
-func (self *Compiler) openBlockLoop() {
-	self.openBlock(BlockLoop)
+func (self *Compiler) openBlockLoop() *Block {
+	return self.openBlock(BlockLoop)
 }
 
-func (self *Compiler) openBlockSwitch() {
-	self.openBlock(BlockSwitch)
+func (self *Compiler) openBlockSwitch() *Block {
+	return self.openBlock(BlockSwitch)
 }
 
-func (self *Compiler) openBlock(blockType BlockType) {
+func (self *Compiler) openBlock(blockType BlockType) *Block {
 	self.block = &Block{
 		outer:     self.block,
 		blockType: blockType,
 	}
+	return self.block
 }
 
 func (self *Compiler) closeBlock() {
@@ -194,6 +195,15 @@ func (self *Compiler) closeBlock() {
 		self.setProgramInstruction(i, Jump(self.block.continueBase-i))
 	}
 	self.block = self.block.outer
+}
+
+func (self *Compiler) findBlockByType(blockType BlockType) *Block {
+	for block := self.block; block != nil; block = self.block.outer {
+		if block.blockType == blockType {
+			return block
+		}
+	}
+	return nil
 }
 
 func (self *Compiler) updateEnterBlock(enterBlock *EnterBlock) {

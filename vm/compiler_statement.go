@@ -112,13 +112,15 @@ func (self *Compiler) compileVarStatement(st *ast.VarStatement) {
 func (self *Compiler) compileBreakStatement(st *ast.BreakStatement) {
 	index := self.getInstructionSize()
 	self.addProgramInstructions(nil)
-	self.block.breaks = append(self.block.breaks, index)
+	block := self.findBlockByType(BlockLoop)
+	block.breaks = append(self.block.breaks, index)
 }
 
 func (self *Compiler) compileContinueStatement(st *ast.ContinueStatement) {
 	index := self.getInstructionSize()
 	self.addProgramInstructions(nil)
-	self.block.continues = append(self.block.continues, index)
+	block := self.findBlockByType(BlockLoop)
+	block.continues = append(self.block.continues, index)
 }
 
 func (self *Compiler) compileReturnStatement(st *ast.ReturnStatement) {
@@ -220,7 +222,7 @@ func (self *Compiler) compileSwitchStatement(st *ast.SwitchStatement, needResult
 }
 
 func (self *Compiler) compileForStatement(st *ast.ForStatement, needResult bool) {
-	self.openBlockLoop()
+	blockLoop := self.openBlockLoop()
 
 	self.compileEnterBlockStatements([]ast.Statement{st.Initializer}, BlockIterator, func() {
 		if st.Initializer != nil {
@@ -235,7 +237,7 @@ func (self *Compiler) compileForStatement(st *ast.ForStatement, needResult bool)
 			self.addProgramInstructions(nil)
 		}
 		self.compileStatement(st.Body, needResult)
-		self.block.continueBase = self.getInstructionSize()
+		blockLoop.continueBase = self.getInstructionSize()
 		if st.Update != nil {
 			updateExpr := self.compileExpression(st.Update)
 			self.handlingGetterExpression(updateExpr, true)
