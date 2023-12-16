@@ -125,6 +125,8 @@ func (parser *Parser) parseIfStatement() ast.Statement {
 }
 
 func (parser *Parser) parseForStatement() ast.Statement {
+	parser.openScope()
+	defer parser.closeScope()
 	forStatement := &ast.ForStatement{
 		For: parser.expect(token.FOR),
 	}
@@ -183,6 +185,8 @@ func (parser *Parser) parseCaseStatementList() ([]*ast.CaseStatement, int) {
 }
 
 func (parser *Parser) parseCaseStatement() *ast.CaseStatement {
+	parser.openScope()
+	defer parser.closeScope()
 	tkn := parser.token
 	caseStatement := &ast.CaseStatement{
 		Case:      parser.expect(parser.token),

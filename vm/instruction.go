@@ -847,7 +847,31 @@ type EnterBlock struct {
 }
 
 func (self EnterBlock) exec(vm *VM) {
+	if self.stashSize > 0 {
+		stash := vm.newStash()
+		stash.values = make(ValueArray, self.stashSize)
+	}
+	vm.stack.expand(vm.sp + self.stackSize - 1)
+	vs := vm.stack[vm.sp : vm.sp+self.stackSize]
+	for i := range vs {
+		vs[i] = nil
+	}
+	vm.sp += self.stackSize
+	vm.pc++
+}
 
+type LeaveBlock struct {
+	stackSize int
+	popStash  bool
+}
+
+func (self LeaveBlock) exec(vm *VM) {
+	if self.popStash {
+		vm.stash = vm.stash.outer
+	}
+	if self.stackSize > 0 {
+		vm.sp -= self.stackSize
+	}
 	vm.pc++
 }
 

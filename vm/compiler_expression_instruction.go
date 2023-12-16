@@ -394,8 +394,8 @@ func (self *Compiler) handlingGetterCompiledFunLiteralExpression(expr *CompiledF
 	}
 
 	self.compileDeclarationList(expr.declarationList)
-	self.compileStatement(expr.body, false)
 	body := expr.body.(*ast.BlockStatement).Body
+	self.compileStatements(body, false)
 	lastStatementIndex := len(body) - 1
 	var lastStatement ast.Statement
 	if lastStatementIndex >= 0 {
@@ -413,15 +413,9 @@ func (self *Compiler) handlingGetterCompiledFunLiteralExpression(expr *CompiledF
 	}
 
 	if hasInit {
-		stackSize, stashSize = 0, 0
-		for _, b := range self.scope.bindings {
-			if b.inStash {
-				stashSize++
-			} else {
-				stackSize++
-			}
-		}
-		self.setProgramInstruction(enterFunBodyIndex, EnterFunBody{EnterBlock{stackSize, stashSize}})
+		enterBlock := EnterBlock{}
+		self.updateEnterBlock(&enterBlock)
+		self.setProgramInstruction(enterFunBodyIndex, EnterFunBody{EnterBlock: enterBlock})
 		self.closeScope()
 	}
 
@@ -518,14 +512,16 @@ func (self *Compiler) handlingUnaryExpression(expr CompiledExpression, instructi
 }
 
 func (self *Compiler) handlingUnaryCompiledIdentifierExpression(expr *CompiledIdentifierExpression, instructionBody func(), postfix bool, putOnStack bool) {
-	self.addProgramInstructions(ResolveVar(expr.name))
-	self.chooseHandlingGetterExpression(expr, true)
-	instructionBody()
 	binding, exists := self.scope.lookupName(expr.name)
 	if exists {
+		self.chooseHandlingGetterExpression(expr, true)
+		instructionBody()
 		binding.markAccessPoint(self.scope)
 		self.addProgramInstructions(PutStackVar(0))
 	} else {
+		self.addProgramInstructions(ResolveVar(expr.name))
+		self.chooseHandlingGetterExpression(expr, true)
+		instructionBody()
 		self.addProgramInstructions(PutVar(-1))
 	}
 }

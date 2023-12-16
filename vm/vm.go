@@ -110,6 +110,7 @@ func CreateVM() *VM {
 	runtime := CreateRuntime()
 	vm := &VM{
 		runtime:          runtime,
+		sb:               -1,
 		maxCallStackSize: 999,
 	}
 	return vm

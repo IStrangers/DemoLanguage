@@ -7,6 +7,7 @@ const (
 	BlockScope
 	BlockLoop
 	BlockSwitch
+	BlockIterator
 )
 
 type Block struct {

@@ -47,11 +47,14 @@ func CreateCompiler() *Compiler {
 func (self *Compiler) compile(in *ast.Program) {
 	self.program.source = in.File
 
-	self.openScope()
+	scope := self.openScope()
+	scope.isDynamic = true
 	body := in.Body
 	declarationList := in.DeclarationList
 	remainingStatements := self.definingUpgrading(body, declarationList)
 	self.compileStatements(remainingStatements, true)
+
+	scope.finaliseVarAlloc(0)
 }
 
 func (self *Compiler) definingUpgrading(body []ast.Statement, declarationList []*ast.VariableDeclaration) (remainingStatements []ast.Statement) {
@@ -102,6 +105,28 @@ func (self *Compiler) compileScopeDeclarationList(scope *Scope, declarationList 
 		}
 	}
 	return varNames
+}
+
+func (self *Compiler) isScopeDeclared(body []ast.Statement) bool {
+	for _, st := range body {
+		if _, ok := st.(*ast.VarStatement); ok {
+			return true
+		}
+	}
+	return false
+}
+
+func (self *Compiler) compileScopeDeclared(body []ast.Statement) bool {
+	scopeDeclared := false
+	var declarationList []*ast.VariableDeclaration
+	for _, st := range body {
+		if varSt, ok := st.(*ast.VarStatement); ok {
+			declarationList = append(declarationList, &ast.VariableDeclaration{Var: varSt.Var, List: varSt.List})
+			scopeDeclared = true
+		}
+	}
+	self.compileDeclarationList(declarationList)
+	return scopeDeclared
 }
 
 func (self *Compiler) addProgramValue(value Value) int {
@@ -169,6 +194,32 @@ func (self *Compiler) closeBlock() {
 		self.setProgramInstruction(i, Jump(self.block.continueBase-i))
 	}
 	self.block = self.block.outer
+}
+
+func (self *Compiler) updateEnterBlock(enterBlock *EnterBlock) {
+	stackSize, stashSize := 0, 0
+	for _, b := range self.scope.bindings {
+		if b.inStash {
+			stashSize++
+		} else {
+			stackSize++
+		}
+	}
+	enterBlock.stackSize, enterBlock.stashSize = stackSize, stashSize
+}
+
+func (self *Compiler) leaveBlockScope(enterBlock *EnterBlock) {
+	self.updateEnterBlock(enterBlock)
+	leaveBlock := &LeaveBlock{
+		stackSize: enterBlock.stackSize,
+		popStash:  enterBlock.stashSize > 0,
+	}
+	self.addProgramInstructions(leaveBlock)
+	for _, pc := range self.block.breaks {
+		self.setProgramInstruction(pc, leaveBlock)
+	}
+	self.block.breaks = nil
+	self.closeBlock()
 }
 
 func (self *Compiler) enterVirtualMode() func() {

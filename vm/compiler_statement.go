@@ -72,8 +72,30 @@ func (self *Compiler) compileStatement(statement ast.Statement, needResult bool)
 	}
 }
 
+func (self *Compiler) compileEnterBlockStatements(sts []ast.Statement, blockType BlockType, callback func()) {
+	scopeDeclared := self.isScopeDeclared(sts)
+
+	var enter *EnterBlock
+	if scopeDeclared {
+		self.openScopeNested()
+		self.openBlock(blockType)
+		self.compileScopeDeclared(sts)
+		enter = &EnterBlock{}
+		self.addProgramInstructions(enter)
+	}
+
+	callback()
+
+	if scopeDeclared {
+		self.leaveBlockScope(enter)
+		self.closeScope()
+	}
+}
+
 func (self *Compiler) compileBlockStatement(st *ast.BlockStatement, needResult bool) {
-	self.compileStatements(st.Body, needResult)
+	self.compileEnterBlockStatements(st.Body, BlockScope, func() {
+		self.compileStatements(st.Body, needResult)
+	})
 }
 
 func (self *Compiler) compileVarStatement(st *ast.VarStatement) {
@@ -199,27 +221,31 @@ func (self *Compiler) compileSwitchStatement(st *ast.SwitchStatement, needResult
 
 func (self *Compiler) compileForStatement(st *ast.ForStatement, needResult bool) {
 	self.openBlockLoop()
-	if st.Initializer != nil {
-		self.compileStatement(st.Initializer, true)
-	}
-	jumpIndex := self.getInstructionSize()
-	conditionJumpIndex := -1
-	if st.Condition != nil {
-		conditionExpr := self.compileExpression(st.Condition)
-		self.chooseHandlingGetterExpression(conditionExpr, true)
-		conditionJumpIndex = self.getInstructionSize()
-		self.addProgramInstructions(nil)
-	}
-	self.compileStatement(st.Body, needResult)
-	self.block.continueBase = self.getInstructionSize()
-	if st.Update != nil {
-		updateExpr := self.compileExpression(st.Update)
-		self.handlingGetterExpression(updateExpr, true)
-	}
-	self.addProgramInstructions(Jump(jumpIndex - self.getInstructionSize()))
-	if conditionJumpIndex != -1 {
-		self.setProgramInstruction(conditionJumpIndex, Jne(self.getInstructionSize()-conditionJumpIndex))
-	}
+
+	self.compileEnterBlockStatements([]ast.Statement{st.Initializer}, BlockIterator, func() {
+		if st.Initializer != nil {
+			self.compileStatement(st.Initializer, true)
+		}
+		jumpIndex := self.getInstructionSize()
+		conditionJumpIndex := -1
+		if st.Condition != nil {
+			conditionExpr := self.compileExpression(st.Condition)
+			self.chooseHandlingGetterExpression(conditionExpr, true)
+			conditionJumpIndex = self.getInstructionSize()
+			self.addProgramInstructions(nil)
+		}
+		self.compileStatement(st.Body, needResult)
+		self.block.continueBase = self.getInstructionSize()
+		if st.Update != nil {
+			updateExpr := self.compileExpression(st.Update)
+			self.handlingGetterExpression(updateExpr, true)
+		}
+		self.addProgramInstructions(Jump(jumpIndex - self.getInstructionSize()))
+		if conditionJumpIndex != -1 {
+			self.setProgramInstruction(conditionJumpIndex, Jne(self.getInstructionSize()-conditionJumpIndex))
+		}
+	})
+
 	self.closeBlock()
 }
 

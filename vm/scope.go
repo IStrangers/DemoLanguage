@@ -57,6 +57,7 @@ type Scope struct {
 	args        int
 	argsInStash bool
 	needStash   bool
+	isDynamic   bool
 }
 
 func (self *Scope) bindName(name string) (*Binding, bool) {
@@ -130,7 +131,7 @@ func (self *Scope) finaliseVarAlloc(stackOffset int) (int, int) {
 	stackIndex, stashIndex := 0, 0
 	for i, binding := range self.bindings {
 		isThis := binding.name == thisBindingName
-		if binding.inStash {
+		if self.isDynamic || binding.inStash {
 			for scope, aps := range binding.accessPoints {
 				deepLevel := scope.needStashDeepLevel(self)
 				index := (deepLevel << 24) | stackIndex
