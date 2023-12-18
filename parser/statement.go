@@ -112,6 +112,8 @@ func (parser *Parser) parseReturnStatement() ast.Statement {
 }
 
 func (parser *Parser) parseIfStatement() ast.Statement {
+	parser.openScope()
+	defer parser.closeScope()
 	ifStatement := &ast.IfStatement{
 		If:        parser.expect(token.IF),
 		Condition: parser.parseExpression(),

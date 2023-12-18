@@ -20,6 +20,11 @@ func (parser *Parser) openScope() {
 	parser.scope = &Scope{
 		outer: parser.scope,
 	}
+	scope := parser.scope
+	outer := parser.scope.outer
+	if outer != nil {
+		scope.inSwitch, scope.inIteration, scope.inFunction = outer.inSwitch, outer.inIteration, outer.inFunction
+	}
 }
 
 func (parser *Parser) closeScope() {
