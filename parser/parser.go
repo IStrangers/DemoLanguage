@@ -36,6 +36,17 @@ func CreateParser(baseOffset int, fileName string, content string) *Parser {
 	}
 }
 
+func (parser *Parser) Parse() (*ast.Program, error) {
+	parser.openScope()
+	defer parser.closeScope()
+	program := parser.parseProgram()
+	return program, parser.errors.Errors()
+}
+
+func (parser *Parser) ScanNextToken() (token.Token, string, file.Index) {
+	return parser.scan()
+}
+
 func (parser *Parser) parseProgram() *ast.Program {
 	parser.next()
 	return &ast.Program{
@@ -43,13 +54,6 @@ func (parser *Parser) parseProgram() *ast.Program {
 		DeclarationList: parser.scope.declarationList,
 		File:            parser.file,
 	}
-}
-
-func (parser *Parser) Parse() (*ast.Program, error) {
-	parser.openScope()
-	defer parser.closeScope()
-	program := parser.parseProgram()
-	return program, parser.errors.Errors()
 }
 
 func (parser *Parser) next() {
