@@ -1,9 +1,9 @@
 package interpreter
 
 import (
-	"DemoLanguage/ast"
-	"DemoLanguage/token"
 	"fmt"
+	"github.com/istrangers/demolanguage/ast"
+	"github.com/istrangers/demolanguage/token"
 )
 
 func (self *Interpreter) evaluateExpression(expression ast.Expression) Value {

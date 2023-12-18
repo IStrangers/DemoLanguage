@@ -1,8 +1,8 @@
 package interpreter
 
 import (
-	"DemoLanguage/ast"
-	"DemoLanguage/token"
+	"github.com/istrangers/demolanguage/ast"
+	"github.com/istrangers/demolanguage/token"
 )
 
 func (self *Interpreter) evaluateProgramBody(listStatement []ast.Statement) Value {

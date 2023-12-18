@@ -1,9 +1,9 @@
 package vm
 
 import (
-	"DemoLanguage/ast"
-	"DemoLanguage/file"
-	"DemoLanguage/token"
+	"github.com/istrangers/demolanguage/ast"
+	"github.com/istrangers/demolanguage/file"
+	"github.com/istrangers/demolanguage/token"
 )
 
 type CompiledExpression interface {

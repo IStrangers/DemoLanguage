@@ -1,8 +1,8 @@
 package vm
 
 import (
-	"DemoLanguage/ast"
-	"DemoLanguage/token"
+	"github.com/istrangers/demolanguage/ast"
+	"github.com/istrangers/demolanguage/token"
 )
 
 func (self *Compiler) evalConstExpr(expr CompiledExpression) (Value, *Exception) {

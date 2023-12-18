@@ -1,6 +1,6 @@
 package vm
 
-import "DemoLanguage/ast"
+import "github.com/istrangers/demolanguage/ast"
 
 func (self *Compiler) checkStatementSyntax(st ast.Statement) {
 	exitVirtualMode := self.enterVirtualMode()

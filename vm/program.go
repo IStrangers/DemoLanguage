@@ -1,8 +1,8 @@
 package vm
 
 import (
-	"DemoLanguage/file"
 	"fmt"
+	"github.com/istrangers/demolanguage/file"
 )
 
 type SourceMapItem struct {

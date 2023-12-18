@@ -1,9 +1,9 @@
 package parser
 
 import (
-	"DemoLanguage/ast"
-	"DemoLanguage/file"
-	"DemoLanguage/token"
+	"github.com/istrangers/demolanguage/ast"
+	"github.com/istrangers/demolanguage/file"
+	"github.com/istrangers/demolanguage/token"
 )
 
 func (parser *Parser) parseStatementList() []ast.Statement {

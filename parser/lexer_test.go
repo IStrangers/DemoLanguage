@@ -1,8 +1,8 @@
 package parser
 
 import (
-	"DemoLanguage/token"
 	"fmt"
+	"github.com/istrangers/demolanguage/token"
 	"os"
 	"testing"
 )

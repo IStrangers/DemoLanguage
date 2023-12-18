@@ -1,8 +1,8 @@
 package vm
 
 import (
-	"DemoLanguage/parser"
 	"fmt"
+	"github.com/istrangers/demolanguage/parser"
 	"os"
 	"testing"
 )

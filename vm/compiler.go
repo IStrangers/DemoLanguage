@@ -1,9 +1,9 @@
 package vm
 
 import (
-	"DemoLanguage/ast"
-	"DemoLanguage/file"
 	"fmt"
+	"github.com/istrangers/demolanguage/ast"
+	"github.com/istrangers/demolanguage/file"
 	"regexp"
 )
 

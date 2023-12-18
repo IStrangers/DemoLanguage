@@ -1,6 +1,6 @@
 package parser
 
-import "DemoLanguage/ast"
+import "github.com/istrangers/demolanguage/ast"
 
 type Scope struct {
 	outer           *Scope

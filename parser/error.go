@@ -1,9 +1,9 @@
 package parser
 
 import (
-	"DemoLanguage/file"
-	"DemoLanguage/token"
 	"fmt"
+	"github.com/istrangers/demolanguage/file"
+	"github.com/istrangers/demolanguage/token"
 )
 
 const (

@@ -1,10 +1,10 @@
 package interpreter
 
 import (
-	"DemoLanguage/ast"
-	"DemoLanguage/file"
-	"DemoLanguage/parser"
 	"fmt"
+	"github.com/istrangers/demolanguage/ast"
+	"github.com/istrangers/demolanguage/file"
+	"github.com/istrangers/demolanguage/parser"
 )
 
 type Interpreter struct {
