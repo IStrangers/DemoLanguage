@@ -1,3 +1,3 @@
-module github.com/IStrangers/DemoLanguage
+module github.com/istrangers/demoLanguage
 
 go 1.21
