@@ -38,15 +38,19 @@ func (parser *Parser) scan() (tkn token.Token, literal string, index file.Index)
 				break
 			case '+':
 				tkn = parser.switchToken("+,=", token.INCREMENT, token.ADDITION_ASSIGN, token.ADDITION)
+				literal = tkn.String()
 				break
 			case '-':
 				tkn = parser.switchToken(">,-,=", token.ARROW, token.DECREMENT, token.SUBTRACT_ASSIGN, token.SUBTRACT)
+				literal = tkn.String()
 				break
 			case '*':
 				tkn = parser.switchToken("=", token.MULTIPLY_ASSIGN, token.MULTIPLY)
+				literal = tkn.String()
 				break
 			case '/':
 				tkn = parser.switchToken("/,*,=", token.COMMENT, token.MULTI_COMMENT, token.DIVIDE_ASSIGN, token.DIVIDE)
+				literal = tkn.String()
 				if tkn == token.COMMENT || tkn == token.MULTI_COMMENT {
 					comment := parser.scanComment(tkn)
 					if parser.skipComment {
@@ -58,54 +62,61 @@ func (parser *Parser) scan() (tkn token.Token, literal string, index file.Index)
 				break
 			case '%':
 				tkn = parser.switchToken("=", token.REMAINDER_ASSIGN, token.REMAINDER)
+				literal = tkn.String()
 				break
 			case '(':
-				tkn = token.LEFT_PARENTHESIS
+				tkn, literal = token.LEFT_PARENTHESIS, string(chr)
 				break
 			case ')':
-				tkn = token.RIGHT_PARENTHESIS
+				tkn, literal = token.RIGHT_PARENTHESIS, string(chr)
 				break
 			case '{':
-				tkn = token.LEFT_BRACE
+				tkn, literal = token.LEFT_BRACE, string(chr)
 				break
 			case '}':
-				tkn = token.RIGHT_BRACE
+				tkn, literal = token.RIGHT_BRACE, string(chr)
 				break
 			case '[':
-				tkn = token.LEFT_BRACKET
+				tkn, literal = token.LEFT_BRACKET, string(chr)
 				break
 			case ']':
-				tkn = token.RIGHT_BRACKET
+				tkn, literal = token.RIGHT_BRACKET, string(chr)
 				break
 			case '.':
-				tkn = token.DOT
+				tkn, literal = token.DOT, string(chr)
 				break
 			case ',':
-				tkn = token.COMMA
+				tkn, literal = token.COMMA, string(chr)
 				break
 			case ':':
-				tkn = token.COLON
+				tkn, literal = token.COLON, string(chr)
 				break
 			case ';':
-				tkn = token.SEMICOLON
+				tkn, literal = token.SEMICOLON, string(chr)
 				break
 			case '!':
 				tkn = parser.switchToken("=", token.NOT_EQUAL, token.NOT)
+				literal = tkn.String()
 				break
 			case '=':
 				tkn = parser.switchToken("=", token.EQUAL, token.ASSIGN)
+				literal = tkn.String()
 				break
 			case '<':
 				tkn = parser.switchToken("=", token.LESS_OR_EQUAL, token.LESS)
+				literal = tkn.String()
 				break
 			case '>':
 				tkn = parser.switchToken("=", token.GREATER_OR_EQUAL, token.GREATER)
+				literal = tkn.String()
 				break
 			case '&':
 				tkn = parser.switchToken("&,=", token.LOGICAL_AND, token.AND_ARITHMETIC_ASSIGN, token.AND_ARITHMETIC)
+				literal = tkn.String()
 				break
 			case '|':
 				tkn = parser.switchToken("|,=", token.LOGICAL_OR, token.OR_ARITHMETIC_ASSIGN, token.OR_ARITHMETIC)
+				literal = tkn.String()
 				break
 			default:
 				tkn = token.ILLEGAL
