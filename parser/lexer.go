@@ -67,16 +67,17 @@ func (parser *Parser) scan() (tkn token.Token, literal string, value string, ind
 				value = tkn.String()
 				if tkn == token.COMMENT || tkn == token.MULTI_COMMENT {
 					comment := parser.scanComment(tkn)
-					if parser.skipComment {
-						parser.readChr()
-						continue
-					}
+					value = comment
 					if tkn == token.COMMENT {
 						comment = "//" + comment
 					} else {
 						comment = "/*" + comment + "*/"
+						parser.readChr()
 					}
 					literal = comment
+					if parser.skipComment {
+						continue
+					}
 				}
 				break
 			case '%':
