@@ -203,7 +203,7 @@ func (parser *Parser) scanComment(tkn token.Token) string {
 			if chr == '*' && parser.readChr() == '/' {
 				multiCommentCount--
 			}
-			return multiCommentCount > 0 || chr != -1
+			return multiCommentCount > 0 && chr != -1
 		})
 		return multiComment[:len(multiComment)-1]
 	} else {
