@@ -8,9 +8,16 @@ import (
 
 func (parser *Parser) scan() (tkn token.Token, literal string, index file.Index) {
 	for {
-		parser.skipWhiteSpace()
+		skipWhiteSpace := parser.skipWhiteSpace
+		if skipWhiteSpace {
+			parser.skipWhiteSpaceChr()
+		}
 		index = parser.IndexOf(parser.chrOffset)
 		switch chr := parser.chr; {
+		case !skipWhiteSpace && isWhiteSpaceChr(chr):
+			tkn, literal = token.WHITE_SPACE, string(chr)
+			parser.readChr()
+			break
 		case isIdentifierStart(chr):
 			literal = parser.scanIdentifier()
 			keywordToken, exists := token.IsKeyword(literal)
@@ -128,8 +135,8 @@ func (parser *Parser) scan() (tkn token.Token, literal string, index file.Index)
 	}
 }
 
-func (parser *Parser) skipWhiteSpace() {
-	for parser.chr == ' ' || parser.chr == '\t' || parser.chr == '\r' || parser.chr == '\n' || parser.chr == '\f' {
+func (parser *Parser) skipWhiteSpaceChr() {
+	for isWhiteSpaceChr(parser.chr) {
 		parser.readChr()
 	}
 }
@@ -193,6 +200,10 @@ func (parser *Parser) switchToken(keysStr string, tkns ...token.Token) token.Tok
 		}
 	}
 	return tkns[len(tkns)-1]
+}
+
+func isWhiteSpaceChr(chr rune) bool {
+	return chr == ' ' || chr == '\t' || chr == '\r' || chr == '\n' || chr == '\f'
 }
 
 func isIdentifierStart(chr rune) bool {

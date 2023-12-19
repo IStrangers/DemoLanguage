@@ -19,7 +19,7 @@ func CreateInterpreter() *Interpreter {
 }
 
 func (self *Interpreter) run(fileName string, content string) Value {
-	parser := parser.CreateParser(1, fileName, content)
+	parser := parser.CreateParser(1, fileName, content, true, true)
 	program, err := parser.Parse()
 	if err != nil {
 		panic(err.Error())

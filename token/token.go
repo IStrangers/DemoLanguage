@@ -12,6 +12,7 @@ const (
 	EOF
 	COMMENT
 	MULTI_COMMENT
+	WHITE_SPACE
 	IDENTIFIER
 
 	LEFT_PARENTHESIS  // (
@@ -80,6 +81,7 @@ var tokenStringMap = [...]string{
 	EOF:           "EOF",
 	COMMENT:       "COMMENT",
 	MULTI_COMMENT: "MULTI_COMMENT",
+	WHITE_SPACE:   "WHITE_SPACE",
 	IDENTIFIER:    "IDENTIFIER",
 
 	LEFT_PARENTHESIS:  "(",

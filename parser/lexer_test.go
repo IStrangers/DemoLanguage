@@ -9,7 +9,7 @@ import (
 
 func TestLexer(t *testing.T) {
 	content, _ := os.ReadFile("../example/example.dl")
-	parser := CreateParser(1, "", string(content))
+	parser := CreateParser(1, "", string(content), false, false)
 	for parser.token != token.EOF {
 		parser.next()
 		fmt.Printf(`

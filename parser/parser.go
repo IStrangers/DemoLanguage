@@ -7,9 +7,10 @@ import (
 )
 
 type Parser struct {
-	baseOffset  int
-	file        *file.File
-	skipComment bool
+	baseOffset     int
+	file           *file.File
+	skipComment    bool
+	skipWhiteSpace bool
 
 	content   string
 	length    int
@@ -25,14 +26,15 @@ type Parser struct {
 	scope *Scope
 }
 
-func CreateParser(baseOffset int, fileName string, content string) *Parser {
+func CreateParser(baseOffset int, fileName string, content string, skipComment bool, skipWhiteSpace bool) *Parser {
 	return &Parser{
-		baseOffset:  baseOffset,
-		file:        file.CreateFile(baseOffset, fileName, content),
-		skipComment: true,
-		content:     content,
-		length:      len(content),
-		chr:         ' ',
+		baseOffset:     baseOffset,
+		file:           file.CreateFile(baseOffset, fileName, content),
+		skipComment:    skipComment,
+		skipWhiteSpace: skipWhiteSpace,
+		content:        content,
+		length:         len(content),
+		chr:            ' ',
 	}
 }
 

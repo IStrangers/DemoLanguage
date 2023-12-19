@@ -9,7 +9,7 @@ import (
 
 func TestCompiler(t *testing.T) {
 	content, _ := os.ReadFile("../example/example.dl")
-	parser := parser.CreateParser(1, "example.dl", string(content))
+	parser := parser.CreateParser(1, "example.dl", string(content), true, true)
 	program, err := parser.Parse()
 	if err != nil {
 		panic(err.Error())
