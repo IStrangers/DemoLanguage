@@ -19,6 +19,7 @@ type Parser struct {
 	offset    int
 	token     token.Token
 	literal   string
+	value     string
 	index     file.Index
 
 	errors ErrorList
@@ -45,7 +46,7 @@ func (parser *Parser) Parse() (*ast.Program, error) {
 	return program, parser.errors.Errors()
 }
 
-func (parser *Parser) ScanNextToken() (token.Token, string, file.Index) {
+func (parser *Parser) ScanNextToken() (token.Token, string, string, file.Index) {
 	return parser.scan()
 }
 
@@ -59,7 +60,7 @@ func (parser *Parser) parseProgram() *ast.Program {
 }
 
 func (parser *Parser) next() {
-	parser.token, parser.literal, parser.index = parser.scan()
+	parser.token, parser.literal, parser.value, parser.index = parser.scan()
 }
 
 func (parser *Parser) expect(tkn token.Token) file.Index {
@@ -102,6 +103,7 @@ type ParseState struct {
 	offset     int
 	token      token.Token
 	literal    string
+	value      string
 	index      file.Index
 	errorIndex int
 }
@@ -113,6 +115,7 @@ func (parser *Parser) markParseState() *ParseState {
 		offset:     parser.offset,
 		token:      parser.token,
 		literal:    parser.literal,
+		value:      parser.value,
 		index:      parser.index,
 		errorIndex: parser.errors.Length(),
 	}
@@ -124,6 +127,7 @@ func (parser *Parser) restoreParseState(parseState *ParseState) {
 	parser.offset = parseState.offset
 	parser.token = parseState.token
 	parser.literal = parseState.literal
+	parser.value = parseState.value
 	parser.index = parseState.index
 	parser.errors = parser.errors[:parseState.errorIndex]
 }

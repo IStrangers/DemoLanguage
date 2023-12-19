@@ -49,7 +49,7 @@ func (parser *Parser) parseIdentifier() *ast.Identifier {
 	defer parser.expect(token.IDENTIFIER)
 	return &ast.Identifier{
 		Index: parser.index,
-		Name:  parser.literal,
+		Name:  parser.value,
 	}
 }
 
@@ -435,7 +435,7 @@ func (parser *Parser) parseNumberLiteral() ast.Expression {
 	return &ast.NumberLiteral{
 		Index:   parser.index,
 		Literal: parser.literal,
-		Value:   parser.parseNumberLiteralValue(parser.literal),
+		Value:   parser.parseNumberLiteralValue(parser.value),
 	}
 }
 
@@ -464,7 +464,7 @@ func (parser *Parser) parseStringLiteral() ast.Expression {
 	return &ast.StringLiteral{
 		Index:   parser.index,
 		Literal: parser.literal,
-		Value:   parser.literal,
+		Value:   parser.value,
 	}
 }
 
@@ -472,7 +472,7 @@ func (parser *Parser) parseBooleanLiteral() ast.Expression {
 	defer parser.expect(token.BOOLEAN)
 	return &ast.BooleanLiteral{
 		Index: parser.index,
-		Value: parser.literal == "true",
+		Value: parser.value == "true",
 	}
 }
 
