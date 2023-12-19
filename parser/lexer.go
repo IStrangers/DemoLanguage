@@ -29,11 +29,11 @@ func (parser *Parser) scan() (tkn token.Token, literal string, value string, ind
 			}
 			break
 		case isStringSymbol(chr):
-			left := parser.readChr()
+			parser.readChr()
 			value = parser.scanString()
+			literal = string(chr) + value + string(parser.chr)
 			tkn = token.STRING
-			right := parser.readChr()
-			literal = string(left) + value + string(right)
+			parser.readChr()
 			break
 		case isNumeric(chr):
 			literal = parser.scanNumericLiteral()
