@@ -249,7 +249,7 @@ func isNotStringSymbol(chr rune) bool {
 
 func isLineTerminator(chr rune) bool {
 	switch chr {
-	case '\u000a', '\u000d', '\u2028', '\u2029':
+	case '\u000a', '\u000d', '\u2028', '\u2029', -1:
 		return true
 	}
 	return false
