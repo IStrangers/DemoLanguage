@@ -118,17 +118,17 @@ func CreateVM() *VM {
 	return vm
 }
 
-func (self *VM) RunScript(script string) Value {
+func (self *VM) RunScript(script string) (Value, error) {
 	parser := parser.CreateParser(1, "", script, true, true)
 	program, err := parser.Parse()
 	if err != nil {
-		panic(err.Error())
+		return nil, err
 	}
 	compiler := CreateCompiler()
 	compiler.compile(program)
 	self.program = compiler.program
 	self.runTry()
-	return self.result
+	return self.result, nil
 }
 
 func (self *VM) run() {
