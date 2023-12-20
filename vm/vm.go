@@ -1,5 +1,7 @@
 package vm
 
+import "github.com/istrangers/demolanguage/parser"
+
 type ValueStack ValueArray
 
 func (self *ValueStack) expand(index int) {
@@ -114,6 +116,19 @@ func CreateVM() *VM {
 		maxCallStackSize: 999,
 	}
 	return vm
+}
+
+func (self *VM) RunScript(script string) Value {
+	parser := parser.CreateParser(1, "", script, true, true)
+	program, err := parser.Parse()
+	if err != nil {
+		panic(err.Error())
+	}
+	compiler := CreateCompiler()
+	compiler.compile(program)
+	self.program = compiler.program
+	self.runTry()
+	return self.result
 }
 
 func (self *VM) run() {

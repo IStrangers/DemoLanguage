@@ -2,24 +2,13 @@ package vm
 
 import (
 	"fmt"
-	"github.com/istrangers/demolanguage/parser"
 	"os"
 	"testing"
 )
 
 func TestCompiler(t *testing.T) {
 	content, _ := os.ReadFile("../example/example.dl")
-	parser := parser.CreateParser(1, "example.dl", string(content), true, true)
-	program, err := parser.Parse()
-	if err != nil {
-		panic(err.Error())
-	}
-	compiler := CreateCompiler()
-	compiler.compile(program)
-	evalVM := compiler.evalVM
-	evalVM.program = compiler.program
-	evalVM.program.dumpInstructions(t.Logf)
-	evalVM.runTry()
-	result := evalVM.result
+	vm := CreateVM()
+	result := vm.RunScript(string(content))
 	fmt.Printf("%v\n", result)
 }
