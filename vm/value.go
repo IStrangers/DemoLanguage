@@ -51,7 +51,7 @@ func (self *ValueArray) remove(index int) Value {
 var (
 	Const_Bool_True_Value  = BoolValue(true)
 	Const_Bool_False_Value = BoolValue(false)
-	Const_Null_Value       = NullValue{}
+	Const_Null_Value       = NullValue("null")
 )
 
 type IntValue int64
@@ -337,7 +337,7 @@ func ToBooleanValue(value bool) BoolValue {
 	return Const_Bool_False_Value
 }
 
-type NullValue struct{}
+type NullValue string
 
 func (self NullValue) isInt() bool {
 	return false
@@ -392,7 +392,7 @@ func (self NullValue) sameAs(value Value) bool {
 }
 
 func (self NullValue) toLiteral() string {
-	return "null"
+	return string(self)
 }
 
 type Object struct {
