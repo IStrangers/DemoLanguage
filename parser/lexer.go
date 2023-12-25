@@ -71,8 +71,11 @@ func (parser *Parser) scan() (tkn token.Token, literal string, value string, ind
 					if tkn == token.COMMENT {
 						comment = "//" + comment
 					} else {
-						comment = "/*" + comment + "*/"
-						parser.readChr()
+						comment = "/*" + comment
+						if parser.chr == '/' {
+							comment = comment + "*/"
+							parser.readChr()
+						}
 					}
 					literal = comment
 					if parser.skipComment {
