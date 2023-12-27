@@ -211,11 +211,7 @@ func (parser *Parser) scanComment(tkn token.Token) string {
 			}
 			return multiCommentCount > 0 && chr != -1
 		})
-		index := len(multiComment) - 1
-		if index < 0 {
-			return multiComment
-		}
-		return multiComment[:index]
+		return multiComment
 	} else {
 		return parser.scanByFilter(isNotLineTerminator)
 	}
