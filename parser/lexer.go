@@ -73,7 +73,7 @@ func (parser *Parser) scan() (tkn token.Token, literal string, value string, ind
 					} else {
 						comment = "/*" + comment
 						if parser.chr == '/' {
-							comment = comment + "*/"
+							comment += "/"
 							parser.readChr()
 						}
 					}
