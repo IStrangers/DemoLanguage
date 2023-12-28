@@ -2,6 +2,7 @@ package vm
 
 import (
 	"fmt"
+	"io"
 	"os"
 )
 
@@ -22,6 +23,8 @@ type Runtime struct {
 	globalObject *Object
 }
 
+var RuntimePrintWrite io.Writer = os.Stdout
+
 func CreateRuntime() *Runtime {
 	runtime := &Runtime{
 		globalObject: &Object{self: &BaseObject{
@@ -32,7 +35,7 @@ func CreateRuntime() *Runtime {
 					for _, arg := range call.args {
 						literals = append(literals, arg.toLiteral())
 					}
-					fmt.Fprintln(os.Stdout, literals...)
+					fmt.Fprintln(RuntimePrintWrite, literals...)
 					return nil
 				}}},
 			},
