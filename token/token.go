@@ -73,6 +73,10 @@ const (
 	DEFAULT  // default
 	CONTINUE // continue
 	THIS     // this
+	THROW    // throw
+	TRY      // try
+	CATCH    // catch
+	FINALLY  // finally
 )
 
 var tokenStringMap = [...]string{
@@ -142,6 +146,10 @@ var tokenStringMap = [...]string{
 	DEFAULT:  "default",
 	CONTINUE: "continue",
 	THIS:     "this",
+	THROW:    "throw",
+	TRY:      "try",
+	CATCH:    "catch",
+	FINALLY:  "finally",
 }
 
 var keywordMap = map[string]Token{
@@ -160,6 +168,10 @@ var keywordMap = map[string]Token{
 	"default":  DEFAULT,
 	"continue": CONTINUE,
 	"this":     THIS,
+	"throw":    THROW,
+	"try":      TRY,
+	"catch":    CATCH,
+	"finally":  FINALLY,
 }
 
 func IsKeyword(k string) (Token, bool) {

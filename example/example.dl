@@ -143,3 +143,11 @@ fun testClosure1(a = "1") {
     return s()
 }
 println(testClosure1())
+try {
+    throw
+} catch(e1,e2) {
+    println(e1)
+    println(e2)
+} finally {
+    println("finally")
+}

@@ -56,6 +56,10 @@ func (parser *Parser) parseStatement() ast.Statement {
 		return parser.parseBreakStatement()
 	case token.CONTINUE:
 		return parser.parseContinueStatement()
+	case token.THROW:
+		return parser.parseThrowStatement()
+	case token.TRY:
+		return parser.parseTryCatchFinallyStatement()
 	default:
 		return parser.parseExpressionStatement()
 	}
@@ -223,6 +227,32 @@ func (parser *Parser) parseContinueStatement() ast.Expression {
 	return &ast.ContinueStatement{
 		Continue: continueIndex,
 	}
+}
+
+func (parser *Parser) parseThrowStatement() ast.Statement {
+	return &ast.ThrowStatement{
+		Throw:     parser.expect(token.THROW),
+		Arguments: parser.parseReturnArguments(),
+	}
+}
+
+func (parser *Parser) parseTryCatchFinallyStatement() ast.Statement {
+	try := parser.expect(token.TRY)
+	tryBody := parser.parseBlockStatement()
+	parser.expect(token.CATCH)
+	catchParameters := parser.parseParameterList()
+	catchBody := parser.parseBlockStatement()
+	statement := &ast.TryCatchFinallyStatement{
+		Try:             try,
+		TryBody:         tryBody,
+		CatchParameters: catchParameters,
+		CatchBody:       catchBody,
+	}
+	if parser.token == token.FINALLY {
+		parser.expect(token.FINALLY)
+		statement.FinallyBody = parser.parseBlockStatement()
+	}
+	return statement
 }
 
 func (parser *Parser) parseExpressionStatement() ast.Statement {

@@ -59,13 +59,13 @@ func (parser *Parser) parseFunLiteral() *ast.FunLiteral {
 	if parser.token != token.LEFT_PARENTHESIS {
 		funLiteral.Name = parser.parseIdentifier()
 	}
-	funLiteral.ParameterList = parser.parseFunParameterList()
+	funLiteral.ParameterList = parser.parseParameterList()
 	funLiteral.Body, funLiteral.DeclarationList = parser.parseFunBlock(true)
 	funLiteral.FunDefinition = parser.slice(funLiteral.StartIndex(), funLiteral.EndIndex())
 	return funLiteral
 }
 
-func (parser *Parser) parseFunParameterList() *ast.ParameterList {
+func (parser *Parser) parseParameterList() *ast.ParameterList {
 	parameterList := &ast.ParameterList{
 		LeftParenthesis: parser.expect(token.LEFT_PARENTHESIS),
 	}
@@ -536,7 +536,7 @@ func (parser *Parser) parseArrowFunctionLiteral() ast.Expression {
 		Index: parser.index,
 	}
 	if parser.token == token.LEFT_PARENTHESIS {
-		arrowFunctionLiteral.ParameterList = parser.parseFunParameterList()
+		arrowFunctionLiteral.ParameterList = parser.parseParameterList()
 	} else {
 		identifier := parser.parseIdentifier()
 		arrowFunctionLiteral.ParameterList = &ast.ParameterList{

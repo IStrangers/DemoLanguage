@@ -86,6 +86,19 @@ type (
 	ContinueStatement struct {
 		Continue file.Index
 	}
+
+	ThrowStatement struct {
+		Throw     file.Index
+		Arguments []Expression
+	}
+
+	TryCatchFinallyStatement struct {
+		Try             file.Index
+		TryBody         Statement
+		CatchParameters *ParameterList
+		CatchBody       Statement
+		FinallyBody     Statement
+	}
 )
 
 func (self *BadStatement) StartIndex() file.Index {
@@ -178,6 +191,27 @@ func (self *ContinueStatement) StartIndex() file.Index {
 }
 func (self *ContinueStatement) EndIndex() file.Index {
 	return self.Continue + 8
+}
+
+func (self *ThrowStatement) StartIndex() file.Index {
+	return self.Throw
+}
+func (self *ThrowStatement) EndIndex() file.Index {
+	argsLength := len(self.Arguments)
+	if argsLength > 0 {
+		return self.Arguments[argsLength-1].EndIndex()
+	}
+	return self.Throw + 5
+}
+
+func (self *TryCatchFinallyStatement) StartIndex() file.Index {
+	return self.Try
+}
+func (self *TryCatchFinallyStatement) EndIndex() file.Index {
+	if self.FinallyBody != nil {
+		return self.FinallyBody.EndIndex()
+	}
+	return self.CatchBody.EndIndex()
 }
 
 type (
