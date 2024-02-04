@@ -51,6 +51,7 @@ var (
 	GetPropOrElem       _GetPropOrElem
 	GetPropOrElemCallee _GetPropOrElemCallee
 	LoadDynamicThis     _LoadDynamicThis
+	Throw               _Throw
 	Ret                 _Ret
 )
 
@@ -873,6 +874,17 @@ func (self LeaveBlock) exec(vm *VM) {
 		vm.sp -= self.stackSize
 	}
 	vm.pc++
+}
+
+type _Throw struct {
+}
+
+func (self _Throw) exec(vm *VM) {
+	value := vm.stack[vm.sp-1]
+	ex := &Exception{
+		value: value,
+	}
+	vm.throw(ex)
 }
 
 type EnterTry struct {

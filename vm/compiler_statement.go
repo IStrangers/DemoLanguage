@@ -83,6 +83,8 @@ func (self *Compiler) compileStatement(statement ast.Statement, needResult bool)
 		self.compileSwitchStatement(st, needResult)
 	case *ast.ForStatement:
 		self.compileForStatement(st, needResult)
+	case *ast.ThrowStatement:
+		self.compileThrowStatement(st)
 	case *ast.TryCatchFinallyStatement:
 		self.compileTryCatchFinallyStatement(st, needResult)
 	case *ast.FunStatement:
@@ -277,6 +279,15 @@ func (self *Compiler) compileForStatement(st *ast.ForStatement, needResult bool)
 	})
 
 	self.closeBlock()
+}
+
+func (self *Compiler) compileThrowStatement(st *ast.ThrowStatement) {
+	for _, argument := range st.Arguments {
+		expr := self.compileExpression(argument)
+		self.handlingGetterExpression(expr, true)
+		expr.addSourceMap()
+	}
+	self.addProgramInstructions(Throw)
 }
 
 func (self *Compiler) compileTryCatchFinallyStatement(st *ast.TryCatchFinallyStatement, needResult bool) {
