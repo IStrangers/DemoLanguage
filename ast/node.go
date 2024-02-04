@@ -79,6 +79,10 @@ type (
 		Consequent Statement
 	}
 
+	BranchStatement interface {
+		Token() token.Token
+	}
+
 	BreakStatement struct {
 		Break file.Index
 	}
@@ -185,12 +189,18 @@ func (self *BreakStatement) StartIndex() file.Index {
 func (self *BreakStatement) EndIndex() file.Index {
 	return self.Break + 5
 }
+func (self *BreakStatement) Token() token.Token {
+	return token.BREAK
+}
 
 func (self *ContinueStatement) StartIndex() file.Index {
 	return self.Continue
 }
 func (self *ContinueStatement) EndIndex() file.Index {
 	return self.Continue + 8
+}
+func (self *ContinueStatement) Token() token.Token {
+	return token.CONTINUE
 }
 
 func (self *ThrowStatement) StartIndex() file.Index {

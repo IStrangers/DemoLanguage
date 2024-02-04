@@ -875,6 +875,72 @@ func (self LeaveBlock) exec(vm *VM) {
 	vm.pc++
 }
 
+type EnterTry struct {
+	catchOffset   int
+	finallyOffset int
+}
+
+func (self EnterTry) exec(vm *VM) {
+	var catchPos, finallyPos int
+	if self.catchOffset > 0 {
+		catchPos = vm.pc + self.catchOffset
+	} else {
+		catchPos = -1
+	}
+	if self.finallyOffset > 0 {
+		finallyPos = vm.pc + self.finallyOffset
+	} else {
+		finallyPos = -1
+	}
+	vm.pushTryFrame(catchPos, finallyPos)
+	vm.pc++
+}
+
+type LeaveTry struct {
+}
+
+func (self LeaveTry) exec(vm *VM) {
+	tryStack := vm.tryStack[vm.tryStack.size()-1]
+	if tryStack.finallyPos >= 0 {
+		tryStack.finallyRet = vm.pc + 1
+		vm.pc = tryStack.finallyPos
+		tryStack.catchPos = -1
+		tryStack.finallyPos = -1
+	} else {
+		vm.popTryFrame()
+		vm.pc++
+	}
+}
+
+type EnterFinally struct {
+}
+
+func (self EnterFinally) exec(vm *VM) {
+	tryStack := vm.tryStack[vm.tryStack.size()-1]
+	tryStack.finallyPos = -1
+	vm.pc++
+}
+
+type LeaveFinally struct {
+}
+
+func (self LeaveFinally) exec(vm *VM) {
+	tryStack := vm.tryStack[vm.tryStack.size()-1]
+	ex, ret := tryStack.exception, tryStack.finallyRet
+	tryStack.exception = nil
+	vm.popTryFrame()
+	if ex != nil {
+		vm.throw(ex)
+		return
+	} else {
+		if ret != -1 {
+			vm.pc = ret
+		} else {
+			vm.pc++
+		}
+	}
+}
+
 type _LoadDynamicThis struct{}
 
 func (self _LoadDynamicThis) exec(vm *VM) {

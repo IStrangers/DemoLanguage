@@ -1,6 +1,9 @@
 package vm
 
-import "github.com/istrangers/demolanguage/ast"
+import (
+	"github.com/istrangers/demolanguage/ast"
+	"github.com/istrangers/demolanguage/token"
+)
 
 func (self *Compiler) checkStatementSyntax(st ast.Statement) {
 	exitVirtualMode := self.enterVirtualMode()
@@ -30,6 +33,23 @@ func (self *Compiler) isEmptyResultStatement(st ast.Statement) bool {
 	return false
 }
 
+func (self *Compiler) findLastResultIndex(statements []ast.Statement) (lastResultIndex int, breakingBlock *Block) {
+	lastResultIndex = -1
+	for i, statement := range statements {
+		if st, ok := statement.(ast.BranchStatement); ok {
+			if block := self.findBlockByType([]BlockType{BlockLoop, BlockSwitch}, st.Token() == token.BREAK); block != nil {
+				breakingBlock = block
+			}
+			break
+		}
+		if self.isEmptyResultStatement(statement) {
+			continue
+		}
+		lastResultIndex = i
+	}
+	return
+}
+
 func (self *Compiler) compileStatements(statements []ast.Statement, needResult bool) {
 	lastNeedResultIndex := -1
 	for i, statement := range statements {
@@ -53,10 +73,8 @@ func (self *Compiler) compileStatement(statement ast.Statement, needResult bool)
 		self.compileBlockStatement(st, needResult)
 	case *ast.VarStatement:
 		self.compileVarStatement(st)
-	case *ast.BreakStatement:
-		self.compileBreakStatement(st)
-	case *ast.ContinueStatement:
-		self.compileContinueStatement(st)
+	case ast.BranchStatement:
+		self.compileBranchStatement(st)
 	case *ast.ReturnStatement:
 		self.compileReturnStatement(st)
 	case *ast.IfStatement:
@@ -65,6 +83,8 @@ func (self *Compiler) compileStatement(statement ast.Statement, needResult bool)
 		self.compileSwitchStatement(st, needResult)
 	case *ast.ForStatement:
 		self.compileForStatement(st, needResult)
+	case *ast.TryCatchFinallyStatement:
+		self.compileTryCatchFinallyStatement(st, needResult)
 	case *ast.FunStatement:
 		self.compileFunStatement(st)
 	case *ast.ExpressionStatement:
@@ -112,15 +132,23 @@ func (self *Compiler) compileVarStatement(st *ast.VarStatement) {
 func (self *Compiler) compileBreakStatement(st *ast.BreakStatement) {
 	index := self.getInstructionSize()
 	self.addProgramInstructions(nil)
-	block := self.findBlockByType(BlockLoop)
+	block := self.findBlockByType([]BlockType{BlockLoop, BlockSwitch}, true)
 	block.breaks = append(self.block.breaks, index)
 }
 
 func (self *Compiler) compileContinueStatement(st *ast.ContinueStatement) {
 	index := self.getInstructionSize()
 	self.addProgramInstructions(nil)
-	block := self.findBlockByType(BlockLoop)
+	block := self.findBlockByType([]BlockType{BlockLoop}, false)
 	block.continues = append(self.block.continues, index)
+}
+
+func (self *Compiler) compileBranchStatement(st ast.BranchStatement) {
+	if st.Token() == token.BREAK {
+		self.compileBreakStatement(st.(*ast.BreakStatement))
+	} else {
+		self.compileContinueStatement(st.(*ast.ContinueStatement))
+	}
 }
 
 func (self *Compiler) compileReturnStatement(st *ast.ReturnStatement) {
@@ -248,6 +276,51 @@ func (self *Compiler) compileForStatement(st *ast.ForStatement, needResult bool)
 		}
 	})
 
+	self.closeBlock()
+}
+
+func (self *Compiler) compileTryCatchFinallyStatement(st *ast.TryCatchFinallyStatement, needResult bool) {
+	self.block = self.openBlockTry()
+	var bodyNeedResult bool = needResult
+	//var lp int
+	//var finallyBreaking *Block
+	//if st.FinallyBody != nil {
+	//	lp, finallyBreaking = self.findLastResultIndex(st.FinallyBody.(*ast.BlockStatement).Body)
+	//}
+	//if finallyBreaking != nil {
+	//	self.block.breaking = finallyBreaking
+	//	if lp == -1 {
+	//		bodyNeedResult = finallyBreaking.needResult
+	//	}
+	//}
+	enterTryIndex := self.getInstructionSize()
+	self.addProgramInstructions(nil)
+	self.compileBlockStatement(st.TryBody.(*ast.BlockStatement), bodyNeedResult)
+
+	var catchOffset int
+	if st.CatchBody != nil {
+		jumpIndex := self.getInstructionSize()
+		self.addProgramInstructions(nil)
+		catchOffset = self.getInstructionSize() - enterTryIndex
+		if st.CatchParameters != nil {
+
+		} else {
+			self.addProgramInstructions(Pop)
+			self.compileBlockStatement(st.CatchBody.(*ast.BlockStatement), bodyNeedResult)
+		}
+		self.setProgramInstruction(jumpIndex, Jump(self.getInstructionSize()-jumpIndex))
+	}
+
+	var finallyOffset int
+	if st.FinallyBody != nil {
+		self.addProgramInstructions(EnterFinally{})
+		finallyOffset = self.getInstructionSize() - enterTryIndex
+		self.compileBlockStatement(st.FinallyBody.(*ast.BlockStatement), false)
+		self.addProgramInstructions(LeaveFinally{})
+	} else {
+		self.addProgramInstructions(LeaveTry{})
+	}
+	self.setProgramInstruction(enterTryIndex, EnterTry{catchOffset, finallyOffset})
 	self.closeBlock()
 }
 

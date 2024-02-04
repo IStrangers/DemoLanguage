@@ -178,6 +178,10 @@ func (self *Compiler) openBlockSwitch() *Block {
 	return self.openBlock(BlockSwitch)
 }
 
+func (self *Compiler) openBlockTry() *Block {
+	return self.openBlock(BlockTry)
+}
+
 func (self *Compiler) openBlock(blockType BlockType) *Block {
 	self.block = &Block{
 		outer:     self.block,
@@ -197,10 +201,12 @@ func (self *Compiler) closeBlock() {
 	self.block = self.block.outer
 }
 
-func (self *Compiler) findBlockByType(blockType BlockType) *Block {
+func (self *Compiler) findBlockByType(blockTypes []BlockType, isBreak bool) *Block {
 	for block := self.block; block != nil; block = self.block.outer {
-		if block.blockType == blockType {
-			return block
+		for _, blockType := range blockTypes {
+			if block.blockType == blockType && (blockType != BlockSwitch || isBreak) {
+				return block
+			}
 		}
 	}
 	return nil

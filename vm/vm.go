@@ -74,15 +74,21 @@ func (self *RefStack) pop() Ref {
 }
 
 type TryFrame struct {
-	exception      *Exception
-	callStackDepth int
-	sp             int
-	catchPos       int
-	finallyPos     int
-	finallyRet     int
+	exception       *Exception
+	callStackLength int
+	refLength       int
+	sp              int
+	stash           *Stash
+	catchPos        int
+	finallyPos      int
+	finallyRet      int
 }
 
 type TryStack []TryFrame
+
+func (self *TryStack) size() int {
+	return len(*self)
+}
 
 func (self *TryStack) add(tryFrame TryFrame) {
 	*self = append(*self, tryFrame)
@@ -241,16 +247,30 @@ func (self *VM) halted() bool {
 	return pc < 0 || pc >= self.getInstructionSize()
 }
 
+func (self *VM) throw(arg any) {
+	if ex := self.handlingThrow(arg); ex != nil {
+		panic(ex)
+	}
+}
+
 func (self *VM) handlingThrow(arg any) *Exception {
 	return nil
 }
 
 func (self *VM) pushTryFrame(catchPos, finallyPos int) {
-	self.tryStack.add(TryFrame{})
+	self.tryStack.add(TryFrame{
+		callStackLength: self.callStack.size(),
+		refLength:       self.refStack.size(),
+		sp:              self.sp,
+		stash:           self.stash,
+		catchPos:        catchPos,
+		finallyPos:      finallyPos,
+		finallyRet:      -1,
+	})
 }
 
 func (self *VM) popTryFrame() {
-	self.tryStack = self.tryStack[:len(self.tryStack)-1]
+	self.tryStack = self.tryStack[:self.tryStack.size()-1]
 }
 
 func (self *VM) runTryInner() (ex *Exception) {
