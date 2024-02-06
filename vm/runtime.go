@@ -64,6 +64,6 @@ func (self *Runtime) newFun(name string) *FunObject {
 	funObject := &FunObject{}
 	funObject.className = classFunction
 	funObject.init()
-	funObject.BaseObject.setProperty("name", StringValue(name))
+	funObject.BaseObject.setProperty("name", ToStringValue(name))
 	return funObject
 }

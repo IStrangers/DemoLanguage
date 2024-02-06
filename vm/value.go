@@ -49,9 +49,10 @@ func (self *ValueArray) remove(index int) Value {
 }
 
 var (
-	Const_Bool_True_Value  = BoolValue(true)
-	Const_Bool_False_Value = BoolValue(false)
-	Const_Null_Value       = NullValue("null")
+	Const_Bool_True_Value    = BoolValue(true)
+	Const_Bool_False_Value   = BoolValue(false)
+	Const_Null_Value         = NullValue("null")
+	Const_Empty_String_Value = StringValue("")
 )
 
 type IntValue int64
@@ -257,6 +258,9 @@ func (self StringValue) toLiteral() string {
 }
 
 func ToStringValue(value string) StringValue {
+	if value == string(Const_Empty_String_Value) {
+		return Const_Empty_String_Value
+	}
 	return StringValue(value)
 }
 

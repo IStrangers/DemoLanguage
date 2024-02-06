@@ -92,8 +92,8 @@ type (
 	}
 
 	ThrowStatement struct {
-		Throw     file.Index
-		Arguments []Expression
+		Throw    file.Index
+		Argument Expression
 	}
 
 	TryCatchFinallyStatement struct {
@@ -207,9 +207,8 @@ func (self *ThrowStatement) StartIndex() file.Index {
 	return self.Throw
 }
 func (self *ThrowStatement) EndIndex() file.Index {
-	argsLength := len(self.Arguments)
-	if argsLength > 0 {
-		return self.Arguments[argsLength-1].EndIndex()
+	if self.Argument != nil {
+		return self.Argument.EndIndex()
 	}
 	return self.Throw + 5
 }

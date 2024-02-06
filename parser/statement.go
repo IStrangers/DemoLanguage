@@ -231,8 +231,8 @@ func (parser *Parser) parseContinueStatement() ast.Expression {
 
 func (parser *Parser) parseThrowStatement() ast.Statement {
 	return &ast.ThrowStatement{
-		Throw:     parser.expect(token.THROW),
-		Arguments: parser.parseReturnArguments(),
+		Throw:    parser.expect(token.THROW),
+		Argument: parser.parseReturnArguments()[0],
 	}
 }
 

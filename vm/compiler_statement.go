@@ -282,11 +282,9 @@ func (self *Compiler) compileForStatement(st *ast.ForStatement, needResult bool)
 }
 
 func (self *Compiler) compileThrowStatement(st *ast.ThrowStatement) {
-	for _, argument := range st.Arguments {
-		expr := self.compileExpression(argument)
-		self.handlingGetterExpression(expr, true)
-		expr.addSourceMap()
-	}
+	expr := self.compileExpression(st.Argument)
+	self.handlingGetterExpression(expr, true)
+	expr.addSourceMap()
 	self.addProgramInstructions(Throw)
 }
 
@@ -314,7 +312,24 @@ func (self *Compiler) compileTryCatchFinallyStatement(st *ast.TryCatchFinallySta
 		self.addProgramInstructions(nil)
 		catchOffset = self.getInstructionSize() - enterTryIndex
 		if st.CatchParameters != nil {
-
+			self.block = self.openBlockScope()
+			self.openScopeNested()
+			for _, binding := range st.CatchParameters.List {
+				self.scope.bindName(binding.Target.(*ast.Identifier).Name)
+			}
+			enterBlock := &EnterBlock{}
+			self.addProgramInstructions(enterBlock)
+			self.compileStatements(st.CatchBody.(*ast.BlockStatement).Body, bodyNeedResult)
+			self.leaveBlockScope(enterBlock)
+			if self.scope.bindings[0].inStash {
+				self.setProgramInstruction(enterTryIndex+catchOffset, &EnterCatchBlock{
+					stackSize: enterBlock.stackSize,
+					stashSize: enterBlock.stashSize,
+				})
+			} else {
+				enterBlock.stackSize--
+			}
+			self.closeScope()
 		} else {
 			self.addProgramInstructions(Pop)
 			self.compileBlockStatement(st.CatchBody.(*ast.BlockStatement), bodyNeedResult)

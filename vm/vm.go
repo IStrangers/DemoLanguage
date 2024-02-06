@@ -253,8 +253,101 @@ func (self *VM) throw(arg any) {
 	}
 }
 
+func (self *VM) formatToException(arg any) (ex *Exception) {
+	switch arg := arg.(type) {
+	case *Exception:
+		ex = arg
+	}
+	return
+}
+
+func getFunctionName(stack ValueStack, sb int) string {
+	if sb > 0 {
+		function := stack[sb-1]
+		if function.isObject() {
+			return function.toObject().self.getPropertyOrDefault("name", Const_Empty_String_Value).toString()
+		}
+	}
+	return ""
+}
+
+func (self *VM) captureStack(stackFrameArray StackFrameArray, ctxOffset int) StackFrameArray {
+	if self.program != nil || self.sb > 0 {
+		var functionName string
+		if self.program != nil {
+			functionName = self.program.functionName
+		} else {
+			functionName = getFunctionName(self.stack, self.sb)
+		}
+		stackFrameArray = append(stackFrameArray, StackFrame{program: self.program, pc: self.pc, functionName: functionName})
+	}
+	for i := self.callStack.size() - 1; i > ctxOffset-1; i-- {
+		stackFrame := self.callStack[i]
+		if stackFrame.program != nil || stackFrame.sb > 0 {
+			var functionName string
+			if stackFrame.program != nil {
+				functionName = stackFrame.program.functionName
+			} else {
+				functionName = getFunctionName(self.stack, stackFrame.sb)
+			}
+			stackFrameArray = append(stackFrameArray, StackFrame{program: stackFrame.program, pc: stackFrame.pc, functionName: functionName})
+		}
+	}
+	return stackFrameArray
+}
+
+func (self *VM) restoreStacks(refLength int) (ex *Exception) {
+	//wait adjust
+	refTail := self.refStack[refLength:]
+	for i := range refTail {
+		refTail[i] = nil
+	}
+	self.refStack = self.refStack[:refLength]
+	return
+}
+
 func (self *VM) handlingThrow(arg any) *Exception {
-	return nil
+	ex := self.formatToException(arg)
+	if ex.stack == nil {
+		ex.stack = self.captureStack(make(StackFrameArray, 0, self.callStack.size()+1), 0)
+	}
+	for self.tryStack.size() > 0 {
+		tryFrame := self.tryStack[self.tryStack.size()-1]
+		if tryFrame.catchPos == -1 && tryFrame.finallyPos == -1 || ex == nil && tryFrame.catchPos != -2 {
+			tryFrame.exception = nil
+			self.popTryFrame()
+			continue
+		}
+		if tryFrame.callStackLength < self.callStack.size() {
+			context := self.callStack[tryFrame.callStackLength]
+			self.program, self.result, self.pc, self.sb, self.args = context.program, context.result, context.pc, context.sb, context.args
+			self.callStack = self.callStack[:tryFrame.callStackLength]
+		}
+		self.sp = tryFrame.sp
+		self.stash = tryFrame.stash
+		_ = self.restoreStacks(tryFrame.refLength)
+
+		if tryFrame.catchPos == -2 {
+			break
+		}
+		if tryFrame.catchPos >= 0 {
+			self.push(ex.value)
+			self.pc = tryFrame.catchPos
+			tryFrame.catchPos = -1
+			return nil
+		}
+		if tryFrame.finallyPos >= 0 {
+			tryFrame.exception = ex
+			self.pc = tryFrame.finallyPos
+			tryFrame.finallyPos = -1
+			tryFrame.finallyRet = -2
+			return nil
+		}
+	}
+	if ex == nil {
+		panic(arg)
+	}
+	return ex
 }
 
 func (self *VM) pushTryFrame(catchPos, finallyPos int) {

@@ -924,6 +924,26 @@ func (self LeaveTry) exec(vm *VM) {
 	}
 }
 
+type EnterCatchBlock struct {
+	stackSize int
+	stashSize int
+}
+
+func (self EnterCatchBlock) exec(vm *VM) {
+	vm.newStash()
+	vm.stash.values = make(ValueArray, self.stashSize)
+	vm.sp--
+	vm.stash.values[0] = vm.stack[vm.sp]
+	ss := self.stackSize
+	vm.stack.expand(vm.sp + ss - 1)
+	vv := vm.stack[vm.sp : vm.sp+ss]
+	for i := range vv {
+		vv[i] = nil
+	}
+	vm.sp += ss
+	vm.pc++
+}
+
 type EnterFinally struct {
 }
 
