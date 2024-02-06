@@ -257,6 +257,10 @@ func (self *VM) formatToException(arg any) (ex *Exception) {
 	switch arg := arg.(type) {
 	case *Exception:
 		ex = arg
+	case *Object:
+		ex = &Exception{value: arg}
+	case Value:
+		ex = &Exception{value: arg}
 	}
 	return
 }
@@ -312,7 +316,7 @@ func (self *VM) handlingThrow(arg any) *Exception {
 		ex.stack = self.captureStack(make(StackFrameArray, 0, self.callStack.size()+1), 0)
 	}
 	for self.tryStack.size() > 0 {
-		tryFrame := self.tryStack[self.tryStack.size()-1]
+		tryFrame := &self.tryStack[self.tryStack.size()-1]
 		if tryFrame.catchPos == -1 && tryFrame.finallyPos == -1 || ex == nil && tryFrame.catchPos != -2 {
 			tryFrame.exception = nil
 			self.popTryFrame()

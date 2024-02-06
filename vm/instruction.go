@@ -469,8 +469,8 @@ func (self LoadVar) exec(vm *VM) {
 	name := string(self)
 	value := vm.getDefining(name)
 	if value == nil {
-		//wait adjust
-		panic(fmt.Sprintf("ReferenceError: '%s' is not defined", name))
+		vm.throw(vm.runtime.newReferenceError(name))
+		return
 	}
 	vm.push(value)
 	vm.pc++
@@ -912,7 +912,7 @@ type LeaveTry struct {
 }
 
 func (self LeaveTry) exec(vm *VM) {
-	tryStack := vm.tryStack[vm.tryStack.size()-1]
+	tryStack := &vm.tryStack[vm.tryStack.size()-1]
 	if tryStack.finallyPos >= 0 {
 		tryStack.finallyRet = vm.pc + 1
 		vm.pc = tryStack.finallyPos
@@ -948,7 +948,7 @@ type EnterFinally struct {
 }
 
 func (self EnterFinally) exec(vm *VM) {
-	tryStack := vm.tryStack[vm.tryStack.size()-1]
+	tryStack := &vm.tryStack[vm.tryStack.size()-1]
 	tryStack.finallyPos = -1
 	vm.pc++
 }
@@ -957,7 +957,7 @@ type LeaveFinally struct {
 }
 
 func (self LeaveFinally) exec(vm *VM) {
-	tryStack := vm.tryStack[vm.tryStack.size()-1]
+	tryStack := &vm.tryStack[vm.tryStack.size()-1]
 	ex, ret := tryStack.exception, tryStack.finallyRet
 	tryStack.exception = nil
 	vm.popTryFrame()

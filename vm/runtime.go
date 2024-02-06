@@ -20,6 +20,7 @@ type Exception struct {
 }
 
 type Runtime struct {
+	global       *Global
 	globalObject *Object
 }
 
@@ -27,6 +28,7 @@ var RuntimePrintWrite io.Writer = os.Stdout
 
 func CreateRuntime() *Runtime {
 	runtime := &Runtime{
+		global: &Global{},
 		globalObject: &Object{self: &BaseObject{
 			className: classGlobal,
 			valueMapping: map[string]Value{
@@ -66,4 +68,16 @@ func (self *Runtime) newFun(name string) *FunObject {
 	funObject.init()
 	funObject.BaseObject.setProperty("name", ToStringValue(name))
 	return funObject
+}
+
+func (self *Runtime) createReferenceError(msg string) *Object {
+	if self.global.referenceError == nil {
+		self.global.referenceError = self.newObject()
+	}
+	self.global.referenceError.self.setProperty("message", ToStringValue(msg))
+	return self.global.referenceError
+}
+
+func (self *Runtime) newReferenceError(name string) Value {
+	return self.createReferenceError(fmt.Sprintf("ReferenceError: '%s' is not defined", name))
 }

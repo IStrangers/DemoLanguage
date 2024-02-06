@@ -146,8 +146,8 @@ println(testClosure1())
 fun testException() {
     try {
         throw {value: "exception"}
-   /* } catch(e1) {
-        println(e1)*/
+    } catch(e) {
+        println(e1)
     } finally {
         println("finally")
     }
