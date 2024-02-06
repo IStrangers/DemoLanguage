@@ -9,6 +9,9 @@ import (
 func TestCompiler(t *testing.T) {
 	content, _ := os.ReadFile("../example/example.dl")
 	vm := CreateVM()
-	result, _ := vm.RunScript(string(content))
+	result, err := vm.RunScript(string(content))
+	if err != nil {
+		panic(err)
+	}
 	fmt.Printf("%v\n", result)
 }

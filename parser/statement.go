@@ -239,14 +239,14 @@ func (parser *Parser) parseThrowStatement() ast.Statement {
 func (parser *Parser) parseTryCatchFinallyStatement() ast.Statement {
 	try := parser.expect(token.TRY)
 	tryBody := parser.parseBlockStatement()
-	parser.expect(token.CATCH)
-	catchParameters := parser.parseParameterList()
-	catchBody := parser.parseBlockStatement()
 	statement := &ast.TryCatchFinallyStatement{
-		Try:             try,
-		TryBody:         tryBody,
-		CatchParameters: catchParameters,
-		CatchBody:       catchBody,
+		Try:     try,
+		TryBody: tryBody,
+	}
+	if parser.token == token.CATCH {
+		parser.expect(token.CATCH)
+		statement.CatchParameters = parser.parseParameterList()
+		statement.CatchBody = parser.parseBlockStatement()
 	}
 	if parser.token == token.FINALLY {
 		parser.expect(token.FINALLY)
