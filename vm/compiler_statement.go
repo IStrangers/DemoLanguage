@@ -294,7 +294,7 @@ func (self *Compiler) compileTryCatchFinallyStatement(st *ast.TryCatchFinallySta
 	//var lp int
 	//var finallyBreaking *Block
 	//if st.FinallyBody != nil {
-	//	lp, finallyBreaking = self.findLastResultIndex(st.FinallyBody.(*ast.BlockStatement).Body)
+	//	lp, finallyBreaking = self.findLastResultIndex(st.FinallyBody.Body)
 	//}
 	//if finallyBreaking != nil {
 	//	self.block.breaking = finallyBreaking
@@ -304,7 +304,7 @@ func (self *Compiler) compileTryCatchFinallyStatement(st *ast.TryCatchFinallySta
 	//}
 	enterTryIndex := self.getInstructionSize()
 	self.addProgramInstructions(nil)
-	self.compileBlockStatement(st.TryBody.(*ast.BlockStatement), bodyNeedResult)
+	self.compileBlockStatement(st.TryBody, bodyNeedResult)
 
 	var catchOffset int
 	if st.CatchBody != nil {
@@ -319,7 +319,7 @@ func (self *Compiler) compileTryCatchFinallyStatement(st *ast.TryCatchFinallySta
 			}
 			enterBlock := &EnterBlock{}
 			self.addProgramInstructions(enterBlock)
-			self.compileStatements(st.CatchBody.(*ast.BlockStatement).Body, bodyNeedResult)
+			self.compileStatements(st.CatchBody.Body, bodyNeedResult)
 			self.leaveBlockScope(enterBlock)
 			if self.scope.bindings[0].inStash {
 				self.setProgramInstruction(enterTryIndex+catchOffset, &EnterCatchBlock{
@@ -332,7 +332,7 @@ func (self *Compiler) compileTryCatchFinallyStatement(st *ast.TryCatchFinallySta
 			self.closeScope()
 		} else {
 			self.addProgramInstructions(Pop)
-			self.compileBlockStatement(st.CatchBody.(*ast.BlockStatement), bodyNeedResult)
+			self.compileBlockStatement(st.CatchBody, bodyNeedResult)
 		}
 		self.setProgramInstruction(jumpIndex, Jump(self.getInstructionSize()-jumpIndex))
 	}
@@ -341,7 +341,7 @@ func (self *Compiler) compileTryCatchFinallyStatement(st *ast.TryCatchFinallySta
 	if st.FinallyBody != nil {
 		self.addProgramInstructions(EnterFinally{})
 		finallyOffset = self.getInstructionSize() - enterTryIndex
-		self.compileBlockStatement(st.FinallyBody.(*ast.BlockStatement), false)
+		self.compileBlockStatement(st.FinallyBody, false)
 		self.addProgramInstructions(LeaveFinally{})
 	} else {
 		self.addProgramInstructions(LeaveTry{})

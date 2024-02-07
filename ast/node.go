@@ -19,38 +19,50 @@ type Node interface {
 type (
 	Statement interface {
 		Node
+		statement()
+	}
+
+	AbstractStatement struct {
+		Statement
 	}
 
 	BadStatement struct {
+		AbstractStatement
 		Start file.Index
 		End   file.Index
 	}
 
 	ExpressionStatement struct {
+		AbstractStatement
 		Expression Expression
 	}
 
 	BlockStatement struct {
+		AbstractStatement
 		LeftBrace  file.Index
 		Body       []Statement
 		RightBrace file.Index
 	}
 
 	VarStatement struct {
+		AbstractStatement
 		Var  file.Index
 		List []*Binding
 	}
 
 	FunStatement struct {
+		AbstractStatement
 		FunLiteral *FunLiteral
 	}
 
 	ReturnStatement struct {
+		AbstractStatement
 		Return    file.Index
 		Arguments []Expression
 	}
 
 	IfStatement struct {
+		AbstractStatement
 		If         file.Index
 		Condition  Expression
 		Consequent Statement
@@ -58,6 +70,7 @@ type (
 	}
 
 	ForStatement struct {
+		AbstractStatement
 		For         file.Index
 		Initializer Statement
 		Condition   Expression
@@ -66,6 +79,7 @@ type (
 	}
 
 	SwitchStatement struct {
+		AbstractStatement
 		Switch       file.Index
 		Discriminant Expression
 		Body         []*CaseStatement
@@ -74,36 +88,45 @@ type (
 	}
 
 	CaseStatement struct {
+		AbstractStatement
 		Case       file.Index
 		Condition  Expression
 		Consequent Statement
 	}
 
 	BranchStatement interface {
+		Statement
 		Token() token.Token
 	}
 
 	BreakStatement struct {
+		AbstractStatement
 		Break file.Index
 	}
 
 	ContinueStatement struct {
+		AbstractStatement
 		Continue file.Index
 	}
 
 	ThrowStatement struct {
+		AbstractStatement
 		Throw    file.Index
 		Argument Expression
 	}
 
 	TryCatchFinallyStatement struct {
+		AbstractStatement
 		Try             file.Index
-		TryBody         Statement
+		TryBody         *BlockStatement
 		CatchParameters *ParameterList
-		CatchBody       Statement
-		FinallyBody     Statement
+		CatchBody       *BlockStatement
+		FinallyBody     *BlockStatement
 	}
 )
+
+func (self *AbstractStatement) statement() {
+}
 
 func (self *BadStatement) StartIndex() file.Index {
 	return self.Start
@@ -226,6 +249,11 @@ func (self *TryCatchFinallyStatement) EndIndex() file.Index {
 type (
 	Expression interface {
 		Node
+		expression()
+	}
+
+	AbstractExpression struct {
+		Expression
 	}
 
 	Property interface {
@@ -237,85 +265,99 @@ type (
 	}
 
 	Binding struct {
+		AbstractExpression
 		Target      BindingTarget
 		Initializer Expression
 	}
 
 	Identifier struct {
+		AbstractExpression
 		Index file.Index
 		Name  string
 	}
 
 	AssignExpression struct {
+		AbstractExpression
 		Left     Expression
 		Operator token.Token
 		Right    Expression
 	}
 
 	NumberLiteral struct {
+		AbstractExpression
 		Index   file.Index
 		Literal string
 		Value   any
 	}
 
 	StringLiteral struct {
+		AbstractExpression
 		Index   file.Index
 		Literal string
 		Value   string
 	}
 
 	BooleanLiteral struct {
+		AbstractExpression
 		Index file.Index
 		Value bool
 	}
 
 	NullLiteral struct {
+		AbstractExpression
 		Index file.Index
 	}
 
 	ArrayLiteral struct {
+		AbstractExpression
 		LeftBracket  file.Index
 		Values       []Expression
 		RightBracket file.Index
 	}
 
 	ObjectLiteral struct {
+		AbstractExpression
 		LeftBrace  file.Index
 		Properties []Property
 		RightBrace file.Index
 	}
 
 	PropertyKeyValue struct {
+		AbstractExpression
 		Name  *Identifier
 		Colon file.Index
 		Value Expression
 	}
 
 	ParameterList struct {
+		AbstractExpression
 		LeftParenthesis  file.Index
 		List             []*Binding
 		RightParenthesis file.Index
 	}
 
 	FunLiteral struct {
+		AbstractExpression
 		Fun             file.Index
 		Name            *Identifier
 		ParameterList   *ParameterList
-		Body            Statement
+		Body            *BlockStatement
 		DeclarationList []*VariableDeclaration
 		FunDefinition   string
 	}
 
 	ArrowFunctionLiteral struct {
+		AbstractExpression
 		Index           file.Index
 		ParameterList   *ParameterList
 		Arrow           file.Index
-		Body            Statement
+		Body            *BlockStatement
 		DeclarationList []*VariableDeclaration
 		FunDefinition   string
 	}
 
 	BinaryExpression struct {
+		AbstractExpression
 		Operator   token.Token
 		Left       Expression
 		Right      Expression
@@ -323,6 +365,7 @@ type (
 	}
 
 	UnaryExpression struct {
+		AbstractExpression
 		Index    file.Index
 		Operator token.Token
 		Operand  Expression
@@ -330,16 +373,19 @@ type (
 	}
 
 	ThisExpression struct {
+		AbstractExpression
 		Index file.Index
 	}
 
 	DotExpression struct {
+		AbstractExpression
 		Left       Expression
 		Dot        file.Index
 		Identifier *Identifier
 	}
 
 	BracketExpression struct {
+		AbstractExpression
 		Left         Expression
 		LeftBracket  file.Index
 		Expression   Expression
@@ -347,6 +393,7 @@ type (
 	}
 
 	CallExpression struct {
+		AbstractExpression
 		Callee           Expression
 		LeftParenthesis  file.Index
 		Arguments        []Expression
@@ -354,10 +401,14 @@ type (
 	}
 
 	BadExpression struct {
+		AbstractExpression
 		Start file.Index
 		End   file.Index
 	}
 )
+
+func (self *AbstractExpression) expression() {
+}
 
 func (self *Binding) StartIndex() file.Index {
 	return self.Target.StartIndex()
@@ -511,9 +562,98 @@ func (self *BadExpression) EndIndex() file.Index {
 	return self.End
 }
 
+type AccessModifier int
+
+const (
+	_ AccessModifier = iota
+	PRIVATE
+	PROTECTED
+	PUBLIC
+)
+
 type (
 	VariableDeclaration struct {
 		Var  file.Index
 		List []*Binding
 	}
+
+	Declaration interface {
+		Statement
+		declaration()
+	}
+
+	AbstractDeclaration struct {
+		AbstractStatement
+		Declaration
+	}
+
+	ClassDeclaration struct {
+		AbstractDeclaration
+		Class      file.Index
+		Name       string
+		SuperClass Expression
+		Interfaces []Expression
+		LeftBrace  file.Index
+		Body       []Declaration
+		RightBrace file.Index
+	}
+
+	StaticBlockDeclaration struct {
+		AbstractDeclaration
+		Static     file.Index
+		LeftBrace  file.Index
+		Body       *BlockStatement
+		RightBrace file.Index
+	}
+
+	FieldDeclaration struct {
+		AbstractDeclaration
+		Index          file.Index
+		AccessModifier AccessModifier
+		Static         bool
+		Name           *Identifier
+		Initializer    Expression
+	}
+
+	MethodDeclaration struct {
+		AbstractDeclaration
+		Index          file.Index
+		AccessModifier AccessModifier
+		Static         bool
+		Body           *FunLiteral
+	}
 )
+
+func (self *AbstractDeclaration) declaration() {
+}
+
+func (self *ClassDeclaration) StartIndex() file.Index {
+	return self.Class
+}
+func (self *ClassDeclaration) EndIndex() file.Index {
+	return self.RightBrace
+}
+
+func (self *StaticBlockDeclaration) StartIndex() file.Index {
+	return self.Static
+}
+func (self *StaticBlockDeclaration) EndIndex() file.Index {
+	return self.RightBrace
+}
+
+func (self *FieldDeclaration) StartIndex() file.Index {
+	return self.Index
+}
+func (self *FieldDeclaration) EndIndex() file.Index {
+	if self.Initializer != nil {
+		return self.Initializer.EndIndex()
+	}
+	return self.Name.EndIndex()
+}
+
+func (self *MethodDeclaration) StartIndex() file.Index {
+	return self.Index
+}
+func (self *MethodDeclaration) EndIndex() file.Index {
+	return self.Body.EndIndex()
+}

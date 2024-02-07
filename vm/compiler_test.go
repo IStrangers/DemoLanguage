@@ -7,7 +7,7 @@ import (
 )
 
 func TestCompiler(t *testing.T) {
-	content, _ := os.ReadFile("../example/example.dl")
+	content, _ := os.ReadFile("../example/vm_example.dl")
 	vm := CreateVM()
 	result, err := vm.RunScript(string(content))
 	if err != nil {

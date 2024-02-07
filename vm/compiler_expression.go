@@ -128,7 +128,7 @@ type CompiledFunLiteralExpression struct {
 	funDefinition   string
 	name            *ast.Identifier
 	parameterList   *ast.ParameterList
-	body            ast.Statement
+	body            *ast.BlockStatement
 	declarationList []*ast.VariableDeclaration
 }
 
@@ -314,7 +314,7 @@ func (self *Compiler) compileFunLiteral(expr *ast.FunLiteral) CompiledExpression
 }
 
 func (self *Compiler) compileArrowFunctionLiteral(expr *ast.ArrowFunctionLiteral) CompiledExpression {
-	body := expr.Body.(*ast.BlockStatement).Body
+	body := expr.Body.Body
 	lastStatementIndex := len(body) - 1
 	if lastStatementIndex >= 0 {
 		if st, ok := body[lastStatementIndex].(*ast.ExpressionStatement); ok {

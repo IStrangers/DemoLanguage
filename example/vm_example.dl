@@ -127,3 +127,29 @@ println(obj1.arrowFun1(500))
 var fs = -100
 println(fs)
 println(+fs)
+fun testClosure(a = "1") {
+    var df = "东风"
+    return fun(b = "2") {
+        return fun() {
+            return df + a + b
+        }
+    }
+}
+println(testClosure()()())
+fun testClosure1(a = "1") {
+    var s = fun(b = "2") {
+        return a + b
+    }
+    return s()
+}
+println(testClosure1())
+fun testException() {
+    try {
+        throw {value: "exception"}
+    } catch(e) {
+        println(e)
+    } finally {
+        println("finally")
+    }
+}
+testException()

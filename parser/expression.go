@@ -76,7 +76,7 @@ func (parser *Parser) parseParameterList() *ast.ParameterList {
 	return parameterList
 }
 
-func (parser *Parser) parseFunBlock(openScope bool) (statement ast.Statement, variableDeclarations []*ast.VariableDeclaration) {
+func (parser *Parser) parseFunBlock(openScope bool) (statement *ast.BlockStatement, variableDeclarations []*ast.VariableDeclaration) {
 	if openScope {
 		parser.openScope()
 		defer parser.closeScope()

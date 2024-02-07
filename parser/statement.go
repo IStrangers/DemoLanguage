@@ -65,7 +65,7 @@ func (parser *Parser) parseStatement() ast.Statement {
 	}
 }
 
-func (parser *Parser) parseBlockStatement() ast.Statement {
+func (parser *Parser) parseBlockStatement() *ast.BlockStatement {
 	return &ast.BlockStatement{
 		LeftBrace: parser.expect(token.LEFT_BRACE),
 		Body: parser.parseStatementListByCondition(func(tkn token.Token) bool {
@@ -205,7 +205,7 @@ func (parser *Parser) parseCaseStatement() *ast.CaseStatement {
 	return caseStatement
 }
 
-func (parser *Parser) parseBreakStatement() ast.Expression {
+func (parser *Parser) parseBreakStatement() ast.Statement {
 	breakIndex := parser.expect(token.BREAK)
 	if !parser.scope.inIteration {
 		parser.error(breakIndex, "Illegal break statement")
@@ -217,7 +217,7 @@ func (parser *Parser) parseBreakStatement() ast.Expression {
 	}
 }
 
-func (parser *Parser) parseContinueStatement() ast.Expression {
+func (parser *Parser) parseContinueStatement() ast.Statement {
 	continueIndex := parser.expect(token.CONTINUE)
 	if !parser.scope.inIteration {
 		parser.error(continueIndex, "Illegal continue statement")

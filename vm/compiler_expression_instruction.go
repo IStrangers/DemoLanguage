@@ -394,7 +394,7 @@ func (self *Compiler) handlingGetterCompiledFunLiteralExpression(expr *CompiledF
 	}
 
 	self.compileDeclarationList(expr.declarationList)
-	body := expr.body.(*ast.BlockStatement).Body
+	body := expr.body.Body
 	self.compileStatements(body, false)
 	lastStatementIndex := len(body) - 1
 	var lastStatement ast.Statement
