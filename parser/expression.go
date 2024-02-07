@@ -59,6 +59,10 @@ func (parser *Parser) parseFunLiteral() *ast.FunLiteral {
 	if parser.token != token.LEFT_PARENTHESIS {
 		funLiteral.Name = parser.parseIdentifier()
 	}
+	return parser.parseAnonymousFunLiteral(funLiteral)
+}
+
+func (parser *Parser) parseAnonymousFunLiteral(funLiteral *ast.FunLiteral) *ast.FunLiteral {
 	funLiteral.ParameterList = parser.parseParameterList()
 	funLiteral.Body, funLiteral.DeclarationList = parser.parseFunBlock(true)
 	funLiteral.FunDefinition = parser.slice(funLiteral.StartIndex(), funLiteral.EndIndex())

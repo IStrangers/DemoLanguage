@@ -310,19 +310,24 @@ func (parser *Parser) parseDeclaration() ast.Declaration {
 			parser.expect(token.STATIC)
 			static = true
 		}
-		if parser.token == token.FUN {
+		name := parser.parseIdentifier()
+		if parser.token == token.LEFT_PARENTHESIS {
+			funLiteral := &ast.FunLiteral{
+				Fun:  index,
+				Name: name,
+			}
 			return &ast.MethodDeclaration{
 				Index:          index,
 				AccessModifier: parser.token,
 				Static:         static,
-				Body:           parser.parseFunLiteral(),
+				Body:           parser.parseAnonymousFunLiteral(funLiteral),
 			}
 		} else {
 			fieldDeclaration := &ast.FieldDeclaration{
 				Index:          index,
 				AccessModifier: parser.token,
 				Static:         static,
-				Name:           parser.parseIdentifier(),
+				Name:           name,
 			}
 			if parser.token == token.ASSIGN {
 				parser.expect(token.ASSIGN)
