@@ -60,23 +60,30 @@ const (
 	LOGICAL_AND      // &&
 	LOGICAL_OR       // ||
 
-	VAR    // var
-	FUN    // fun
-	RETURN // return
-
-	IF       // if
-	ELSE     // else
-	BREAK    // break
-	FOR      // for
-	SWITCH   // switch
-	CASE     // case
-	DEFAULT  // default
-	CONTINUE // continue
-	THIS     // this
-	THROW    // throw
-	TRY      // try
-	CATCH    // catch
-	FINALLY  // finally
+	VAR        // var
+	FUN        // fun
+	RETURN     // return
+	IF         // if
+	ELSE       // else
+	BREAK      // break
+	FOR        // for
+	SWITCH     // switch
+	CASE       // case
+	DEFAULT    // default
+	CONTINUE   // continue
+	THIS       // this
+	THROW      // throw
+	TRY        // try
+	CATCH      // catch
+	FINALLY    // finally
+	CLASS      // class
+	EXTENDS    // extends
+	IMPLEMENTS // implements
+	STATIC     // static
+	SUPER      // super
+	PRIVATE    // private
+	PROTECTED  // protected
+	PUBLIC     // public
 )
 
 var tokenStringMap = [...]string{
@@ -133,45 +140,60 @@ var tokenStringMap = [...]string{
 	LOGICAL_AND:      "&&",
 	LOGICAL_OR:       "||",
 
-	VAR:    "var",
-	FUN:    "fun",
-	RETURN: "return",
-
-	IF:       "if",
-	ELSE:     "else",
-	BREAK:    "break",
-	FOR:      "for",
-	SWITCH:   "switch",
-	CASE:     "case",
-	DEFAULT:  "default",
-	CONTINUE: "continue",
-	THIS:     "this",
-	THROW:    "throw",
-	TRY:      "try",
-	CATCH:    "catch",
-	FINALLY:  "finally",
+	VAR:        "var",
+	FUN:        "fun",
+	RETURN:     "return",
+	IF:         "if",
+	ELSE:       "else",
+	BREAK:      "break",
+	FOR:        "for",
+	SWITCH:     "switch",
+	CASE:       "case",
+	DEFAULT:    "default",
+	CONTINUE:   "continue",
+	THIS:       "this",
+	THROW:      "throw",
+	TRY:        "try",
+	CATCH:      "catch",
+	FINALLY:    "finally",
+	CLASS:      "class",
+	EXTENDS:    "extends",
+	IMPLEMENTS: "implements",
+	STATIC:     "static",
+	SUPER:      "super",
+	PRIVATE:    "private",
+	PROTECTED:  "protected",
+	PUBLIC:     "public",
 }
 
 var keywordMap = map[string]Token{
-	"true":     BOOLEAN,
-	"false":    BOOLEAN,
-	"null":     NULL,
-	"var":      VAR,
-	"fun":      FUN,
-	"return":   RETURN,
-	"if":       IF,
-	"else":     ELSE,
-	"break":    BREAK,
-	"for":      FOR,
-	"switch":   SWITCH,
-	"case":     CASE,
-	"default":  DEFAULT,
-	"continue": CONTINUE,
-	"this":     THIS,
-	"throw":    THROW,
-	"try":      TRY,
-	"catch":    CATCH,
-	"finally":  FINALLY,
+	"true":       BOOLEAN,
+	"false":      BOOLEAN,
+	"null":       NULL,
+	"var":        VAR,
+	"fun":        FUN,
+	"return":     RETURN,
+	"if":         IF,
+	"else":       ELSE,
+	"break":      BREAK,
+	"for":        FOR,
+	"switch":     SWITCH,
+	"case":       CASE,
+	"default":    DEFAULT,
+	"continue":   CONTINUE,
+	"this":       THIS,
+	"throw":      THROW,
+	"try":        TRY,
+	"catch":      CATCH,
+	"finally":    FINALLY,
+	"class":      CLASS,
+	"extends":    EXTENDS,
+	"implements": IMPLEMENTS,
+	"static":     STATIC,
+	"super":      SUPER,
+	"private":    PRIVATE,
+	"protected":  PROTECTED,
+	"public":     PUBLIC,
 }
 
 func IsKeyword(k string) (Token, bool) {
