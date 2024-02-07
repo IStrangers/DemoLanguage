@@ -155,5 +155,21 @@ fun testException() {
 testException()
 class CustomClass extends Object implements CustomInterface {
 
+    static {
+        CLASS_NAME = ""
+    }
+
+    public static CLASS_NAME = "CustomClass"
+    private value
+    public name
+
+    public fun getValue() {
+        return this.value
+    }
+
+    public fun setValue(value) {
+        this.value = value
+    }
+
 }
 var customObj = new CustomClass()

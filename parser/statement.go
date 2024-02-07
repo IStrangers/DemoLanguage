@@ -24,7 +24,8 @@ func (parser *Parser) nextStatement() {
 	for {
 		switch parser.token {
 		case token.VAR, token.FUN, token.RETURN, token.IF,
-			token.FOR, token.SWITCH, token.BREAK, token.CONTINUE:
+			token.FOR, token.SWITCH, token.BREAK, token.CONTINUE,
+			token.THROW, token.TRY, token.CATCH, token.FINALLY:
 			return
 		case token.EOF:
 			return
@@ -281,9 +282,62 @@ func (parser *Parser) parseClassDeclaration() ast.Statement {
 	}
 
 	classDeclaration.LeftBrace = parser.expect(token.LEFT_BRACE)
-
+	classDeclaration.Body = parser.parseDeclarations()
 	classDeclaration.RightBrace = parser.expect(token.RIGHT_BRACE)
+	classDeclaration.ClassDefinition = parser.slice(classDeclaration.StartIndex(), classDeclaration.EndIndex())
 	return classDeclaration
+}
+
+func (parser *Parser) parseDeclarations() (declarations []ast.Declaration) {
+	for parser.token != token.RIGHT_BRACE && parser.token != token.EOF {
+		declarations = append(declarations, parser.parseDeclaration())
+	}
+	return
+}
+
+func (parser *Parser) parseDeclaration() ast.Declaration {
+	index := parser.index
+	switch parser.token {
+	case token.STATIC:
+		return &ast.StaticBlockDeclaration{
+			Index: parser.expect(token.STATIC),
+			Body:  parser.parseBlockStatement(),
+		}
+	case token.PRIVATE, token.PROTECTED, token.PUBLIC:
+		index := parser.expect(parser.token)
+		static := false
+		if parser.token == token.STATIC {
+			parser.expect(token.STATIC)
+			static = true
+		}
+		if parser.token == token.FUN {
+			return &ast.MethodDeclaration{
+				Index:          index,
+				AccessModifier: parser.token,
+				Static:         static,
+				Body:           parser.parseFunLiteral(),
+			}
+		} else {
+			fieldDeclaration := &ast.FieldDeclaration{
+				Index:          index,
+				AccessModifier: parser.token,
+				Static:         static,
+				Name:           parser.parseIdentifier(),
+			}
+			if parser.token == token.ASSIGN {
+				parser.expect(token.ASSIGN)
+				fieldDeclaration.Initializer = parser.parseExpression()
+			}
+			return fieldDeclaration
+		}
+	default:
+		parser.error(parser.index, "Illegal break declaration")
+		parser.nextStatement()
+		return &ast.BadDeclaration{
+			Start: index,
+			End:   parser.index,
+		}
+	}
 }
 
 func (parser *Parser) parseExpressionStatement() ast.Statement {

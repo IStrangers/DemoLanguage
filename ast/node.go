@@ -578,15 +578,6 @@ func (self *BadExpression) EndIndex() file.Index {
 	return self.End
 }
 
-type AccessModifier int
-
-const (
-	_ AccessModifier = iota
-	PRIVATE
-	PROTECTED
-	PUBLIC
-)
-
 type (
 	VariableDeclaration struct {
 		Var  file.Index
@@ -613,29 +604,28 @@ type (
 	ClassDeclaration struct {
 		AbstractStatement
 		AbstractDeclaration
-		Index      file.Index
-		Name       *Identifier
-		SuperClass *Identifier
-		Interfaces []*Identifier
-		LeftBrace  file.Index
-		Body       []Declaration
-		RightBrace file.Index
+		Index           file.Index
+		Name            *Identifier
+		SuperClass      *Identifier
+		Interfaces      []*Identifier
+		LeftBrace       file.Index
+		Body            []Declaration
+		RightBrace      file.Index
+		ClassDefinition string
 	}
 
 	StaticBlockDeclaration struct {
 		AbstractStatement
 		AbstractDeclaration
-		Static     file.Index
-		LeftBrace  file.Index
-		Body       *BlockStatement
-		RightBrace file.Index
+		Index file.Index
+		Body  *BlockStatement
 	}
 
 	FieldDeclaration struct {
 		AbstractStatement
 		AbstractDeclaration
 		Index          file.Index
-		AccessModifier AccessModifier
+		AccessModifier token.Token
 		Static         bool
 		Name           *Identifier
 		Initializer    Expression
@@ -645,9 +635,16 @@ type (
 		AbstractStatement
 		AbstractDeclaration
 		Index          file.Index
-		AccessModifier AccessModifier
+		AccessModifier token.Token
 		Static         bool
 		Body           *FunLiteral
+	}
+
+	BadDeclaration struct {
+		AbstractStatement
+		AbstractDeclaration
+		Start file.Index
+		End   file.Index
 	}
 )
 
@@ -658,21 +655,21 @@ func (self *InterfaceDeclaration) StartIndex() file.Index {
 	return self.Index
 }
 func (self *InterfaceDeclaration) EndIndex() file.Index {
-	return self.RightBrace
+	return self.RightBrace + 1
 }
 
 func (self *ClassDeclaration) StartIndex() file.Index {
 	return self.Index
 }
 func (self *ClassDeclaration) EndIndex() file.Index {
-	return self.RightBrace
+	return self.RightBrace + 1
 }
 
 func (self *StaticBlockDeclaration) StartIndex() file.Index {
-	return self.Static
+	return self.Index
 }
 func (self *StaticBlockDeclaration) EndIndex() file.Index {
-	return self.RightBrace
+	return self.Body.EndIndex()
 }
 
 func (self *FieldDeclaration) StartIndex() file.Index {
@@ -690,4 +687,11 @@ func (self *MethodDeclaration) StartIndex() file.Index {
 }
 func (self *MethodDeclaration) EndIndex() file.Index {
 	return self.Body.EndIndex()
+}
+
+func (self *BadDeclaration) StartIndex() file.Index {
+	return self.Start
+}
+func (self *BadDeclaration) EndIndex() file.Index {
+	return self.End
 }
