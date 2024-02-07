@@ -76,6 +76,7 @@ const (
 	TRY        // try
 	CATCH      // catch
 	FINALLY    // finally
+	INTERFACE  // interface
 	CLASS      // class
 	EXTENDS    // extends
 	IMPLEMENTS // implements
@@ -156,6 +157,7 @@ var tokenStringMap = [...]string{
 	TRY:        "try",
 	CATCH:      "catch",
 	FINALLY:    "finally",
+	INTERFACE:  "interface",
 	CLASS:      "class",
 	EXTENDS:    "extends",
 	IMPLEMENTS: "implements",
@@ -186,6 +188,7 @@ var keywordMap = map[string]Token{
 	"try":        TRY,
 	"catch":      CATCH,
 	"finally":    FINALLY,
+	"interface":  INTERFACE,
 	"class":      CLASS,
 	"extends":    EXTENDS,
 	"implements": IMPLEMENTS,

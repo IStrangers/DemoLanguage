@@ -587,9 +587,17 @@ type (
 		Declaration
 	}
 
+	InterfaceDeclaration struct {
+		AbstractDeclaration
+		Index      file.Index
+		LeftBrace  file.Index
+		Body       []Declaration
+		RightBrace file.Index
+	}
+
 	ClassDeclaration struct {
 		AbstractDeclaration
-		Class      file.Index
+		Index      file.Index
 		Name       string
 		SuperClass Expression
 		Interfaces []Expression
@@ -627,8 +635,15 @@ type (
 func (self *AbstractDeclaration) declaration() {
 }
 
+func (self *InterfaceDeclaration) StartIndex() file.Index {
+	return self.Index
+}
+func (self *InterfaceDeclaration) EndIndex() file.Index {
+	return self.RightBrace
+}
+
 func (self *ClassDeclaration) StartIndex() file.Index {
-	return self.Class
+	return self.Index
 }
 func (self *ClassDeclaration) EndIndex() file.Index {
 	return self.RightBrace
