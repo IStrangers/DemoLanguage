@@ -13,7 +13,7 @@ func (self *Compiler) checkStatementSyntax(st ast.Statement) {
 
 func (self *Compiler) isEmptyResultStatement(st ast.Statement) bool {
 	switch st := st.(type) {
-	case *ast.VarStatement, *ast.BreakStatement, *ast.ContinueStatement, *ast.FunStatement:
+	case *ast.VarStatement, *ast.BreakStatement, *ast.ContinueStatement, *ast.FunStatement, *ast.ClassDeclaration:
 		return true
 	case *ast.BlockStatement:
 		for _, s := range st.Body {
