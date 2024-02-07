@@ -60,6 +60,8 @@ func (parser *Parser) parseStatement() ast.Statement {
 		return parser.parseThrowStatement()
 	case token.TRY:
 		return parser.parseTryCatchFinallyStatement()
+	case token.CLASS:
+		return parser.parseClassDeclaration()
 	default:
 		return parser.parseExpressionStatement()
 	}
@@ -253,6 +255,35 @@ func (parser *Parser) parseTryCatchFinallyStatement() ast.Statement {
 		statement.FinallyBody = parser.parseBlockStatement()
 	}
 	return statement
+}
+
+func (parser *Parser) parseClassDeclaration() ast.Statement {
+	classDeclaration := &ast.ClassDeclaration{
+		Index: parser.expect(token.CLASS),
+		Name:  parser.parseIdentifier(),
+	}
+
+	if parser.token == token.EXTENDS {
+		parser.expect(token.EXTENDS)
+		classDeclaration.SuperClass = parser.parseIdentifier()
+	}
+
+	if parser.token == token.IMPLEMENTS {
+		parser.expect(token.IMPLEMENTS)
+		for parser.token != token.LEFT_BRACE && parser.token != token.EOF {
+			classDeclaration.Interfaces = append(classDeclaration.Interfaces, parser.parseIdentifier())
+			if parser.token == token.COMMA {
+				parser.expect(token.COMMA)
+			} else {
+				break
+			}
+		}
+	}
+
+	classDeclaration.LeftBrace = parser.expect(token.LEFT_BRACE)
+
+	classDeclaration.RightBrace = parser.expect(token.RIGHT_BRACE)
+	return classDeclaration
 }
 
 func (parser *Parser) parseExpressionStatement() ast.Statement {

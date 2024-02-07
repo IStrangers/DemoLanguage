@@ -166,6 +166,15 @@ func (self CompiledBracketExpression) isConstExpression() bool {
 	return false
 }
 
+type CompiledNewExpression struct {
+	CompiledBaseExpression
+	CompiledCallExpression *CompiledCallExpression
+}
+
+func (self CompiledNewExpression) isConstExpression() bool {
+	return false
+}
+
 func (self *Compiler) createCompiledBaseExpression(index file.Index) CompiledBaseExpression {
 	return CompiledBaseExpression{self, int(index) - 1}
 }
@@ -206,6 +215,8 @@ func (self *Compiler) compileExpression(expression ast.Expression) CompiledExpre
 		return self.compileDotExpression(expr)
 	case *ast.BracketExpression:
 		return self.compileBracketExpression(expr)
+	case *ast.NewExpression:
+		return self.compileNewExpression(expr)
 	default:
 		return self.throwSyntaxError(int(expression.StartIndex())-1, "Unknown expression type: %T", expression)
 	}
@@ -334,15 +345,19 @@ func (self *Compiler) compileArrowFunctionLiteral(expr *ast.ArrowFunctionLiteral
 	}
 }
 
-func (self *Compiler) compileCallExpression(expr *ast.CallExpression) CompiledExpression {
-	var arguments []CompiledExpression
-	for _, argument := range expr.Arguments {
-		arguments = append(arguments, self.compileExpression(argument))
+func (self *Compiler) compileCallArguments(arguments []ast.Expression) []CompiledExpression {
+	var args []CompiledExpression
+	for _, argument := range arguments {
+		args = append(args, self.compileExpression(argument))
 	}
+	return args
+}
+
+func (self *Compiler) compileCallExpression(expr *ast.CallExpression) CompiledExpression {
 	return &CompiledCallExpression{
 		self.createCompiledBaseExpression(expr.StartIndex()),
 		self.compileExpression(expr.Callee),
-		arguments,
+		self.compileCallArguments(expr.Arguments),
 	}
 }
 
@@ -359,5 +374,16 @@ func (self *Compiler) compileBracketExpression(expr *ast.BracketExpression) Comp
 		self.createCompiledBaseExpression(expr.StartIndex()),
 		self.compileExpression(expr.Left),
 		self.compileExpression(expr.Expression),
+	}
+}
+
+func (self *Compiler) compileNewExpression(expr *ast.NewExpression) CompiledExpression {
+	return &CompiledNewExpression{
+		self.createCompiledBaseExpression(expr.StartIndex()),
+		&CompiledCallExpression{
+			self.createCompiledBaseExpression(expr.StartIndex()),
+			self.compileExpression(expr.Callee),
+			self.compileCallArguments(expr.Arguments),
+		},
 	}
 }

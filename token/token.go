@@ -85,6 +85,7 @@ const (
 	PRIVATE    // private
 	PROTECTED  // protected
 	PUBLIC     // public
+	NEW        // new
 )
 
 var tokenStringMap = [...]string{
@@ -166,6 +167,7 @@ var tokenStringMap = [...]string{
 	PRIVATE:    "private",
 	PROTECTED:  "protected",
 	PUBLIC:     "public",
+	NEW:        "new",
 }
 
 var keywordMap = map[string]Token{
@@ -197,6 +199,7 @@ var keywordMap = map[string]Token{
 	"private":    PRIVATE,
 	"protected":  PROTECTED,
 	"public":     PUBLIC,
+	"new":        NEW,
 }
 
 func IsKeyword(k string) (Token, bool) {

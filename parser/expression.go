@@ -346,7 +346,7 @@ func (parser *Parser) parseUpdateExpression() ast.Expression {
 	if isUpdateToken(operator) {
 		isPostfix = false
 	} else {
-		operand = parser.parseLeftHandSideExpressionAllowCall()
+		operand = parser.parseLeftHandSideExpressionAllowCall([]token.Token{})
 		if isUpdateToken(parser.token) {
 			isPostfix = true
 			index = parser.index
@@ -375,10 +375,23 @@ func (parser *Parser) parseUpdateExpression() ast.Expression {
 	return operand
 }
 
-func (parser *Parser) parseLeftHandSideExpressionAllowCall() ast.Expression {
-	left := parser.parsePrimaryExpression()
+func (parser *Parser) parseLeftHandSideExpressionAllowCall(stopTokens []token.Token) (left ast.Expression) {
+	isStopToken := func(token token.Token) bool {
+		for _, stopToken := range stopTokens {
+			if token == stopToken {
+				return true
+			}
+		}
+		return false
+	}
 
-	for {
+	if parser.token == token.NEW {
+		left = parser.parseNewExpression()
+	} else {
+		left = parser.parsePrimaryExpression()
+	}
+
+	for !isStopToken(parser.token) {
 		switch parser.token {
 		case token.DOT:
 			left = parser.parseDotExpression(left)
@@ -394,6 +407,15 @@ func (parser *Parser) parseLeftHandSideExpressionAllowCall() ast.Expression {
 	}
 
 	return left
+}
+
+func (parser *Parser) parseNewExpression() ast.Expression {
+	newExpression := &ast.NewExpression{
+		New:    parser.expect(token.NEW),
+		Callee: parser.parseLeftHandSideExpressionAllowCall([]token.Token{token.LEFT_PARENTHESIS}),
+	}
+	newExpression.LeftParenthesis, newExpression.Arguments, newExpression.RightParenthesis = parser.parseArguments()
+	return newExpression
 }
 
 func (parser *Parser) parsePrimaryExpression() ast.Expression {
@@ -595,7 +617,7 @@ func (parser *Parser) parseBracketExpression(left ast.Expression) ast.Expression
 	return dotExpression
 }
 
-func (parser *Parser) parseCallExpression(left ast.Expression) ast.Expression {
+func (parser *Parser) parseCallExpression(left ast.Expression) *ast.CallExpression {
 	leftParenthesis, arguments, rightParenthesis := parser.parseArguments()
 	return &ast.CallExpression{
 		Callee:           left,

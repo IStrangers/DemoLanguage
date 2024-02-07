@@ -153,3 +153,7 @@ fun testException() {
     }
 }
 testException()
+class CustomClass extends Object implements CustomInterface {
+
+}
+var customObj = new CustomClass()

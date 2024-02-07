@@ -400,6 +400,15 @@ type (
 		RightParenthesis file.Index
 	}
 
+	NewExpression struct {
+		AbstractExpression
+		New              file.Index
+		Callee           Expression
+		LeftParenthesis  file.Index
+		Arguments        []Expression
+		RightParenthesis file.Index
+	}
+
 	BadExpression struct {
 		AbstractExpression
 		Start file.Index
@@ -555,6 +564,13 @@ func (self *CallExpression) EndIndex() file.Index {
 	return self.RightParenthesis + 1
 }
 
+func (self *NewExpression) StartIndex() file.Index {
+	return self.New
+}
+func (self *NewExpression) EndIndex() file.Index {
+	return self.Callee.EndIndex()
+}
+
 func (self *BadExpression) StartIndex() file.Index {
 	return self.Start
 }
@@ -578,16 +594,15 @@ type (
 	}
 
 	Declaration interface {
-		Statement
 		declaration()
 	}
 
 	AbstractDeclaration struct {
-		AbstractStatement
 		Declaration
 	}
 
 	InterfaceDeclaration struct {
+		AbstractStatement
 		AbstractDeclaration
 		Index      file.Index
 		LeftBrace  file.Index
@@ -596,17 +611,19 @@ type (
 	}
 
 	ClassDeclaration struct {
+		AbstractStatement
 		AbstractDeclaration
 		Index      file.Index
-		Name       string
-		SuperClass Expression
-		Interfaces []Expression
+		Name       *Identifier
+		SuperClass *Identifier
+		Interfaces []*Identifier
 		LeftBrace  file.Index
 		Body       []Declaration
 		RightBrace file.Index
 	}
 
 	StaticBlockDeclaration struct {
+		AbstractStatement
 		AbstractDeclaration
 		Static     file.Index
 		LeftBrace  file.Index
@@ -615,6 +632,7 @@ type (
 	}
 
 	FieldDeclaration struct {
+		AbstractStatement
 		AbstractDeclaration
 		Index          file.Index
 		AccessModifier AccessModifier
@@ -624,6 +642,7 @@ type (
 	}
 
 	MethodDeclaration struct {
+		AbstractStatement
 		AbstractDeclaration
 		Index          file.Index
 		AccessModifier AccessModifier
