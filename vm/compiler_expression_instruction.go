@@ -339,6 +339,16 @@ func (self *Compiler) handlingGetterCompiledAssignExpression(expr *CompiledAssig
 }
 
 func (self *Compiler) handlingGetterCompiledFunLiteralExpression(expr *CompiledFunLiteralExpression, putOnStack bool) {
+	funProgram, _ := self.compileFunProgram(expr)
+	newFun := &NewFun{TrimWhitespace(expr.funDefinition), funProgram.functionName, funProgram}
+	self.addProgramInstructions(newFun)
+
+	if !putOnStack {
+		self.addProgramInstructions(Pop)
+	}
+}
+
+func (self *Compiler) compileFunProgram(expr *CompiledFunLiteralExpression) (*Program, int) {
 	originProgram := self.program
 	self.program = &Program{
 		source:       originProgram.source,
@@ -419,15 +429,11 @@ func (self *Compiler) handlingGetterCompiledFunLiteralExpression(expr *CompiledF
 		self.closeScope()
 	}
 
+	funProgram := self.program
 	self.closeScope()
-
-	newFun := &NewFun{TrimWhitespace(expr.funDefinition), self.program.functionName, self.program}
 	self.program = originProgram
-	self.addProgramInstructions(newFun)
 
-	if !putOnStack {
-		self.addProgramInstructions(Pop)
-	}
+	return funProgram, len(expr.parameterList.List)
 }
 
 func (self *Compiler) handlingGetterCompiledCallExpression(expr *CompiledCallExpression, putOnStack bool) {

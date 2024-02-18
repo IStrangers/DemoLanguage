@@ -313,7 +313,7 @@ func (self *Compiler) compileAssignExpression(expr *ast.AssignExpression) Compil
 	}
 }
 
-func (self *Compiler) compileFunLiteral(expr *ast.FunLiteral) CompiledExpression {
+func (self *Compiler) compileFunLiteral(expr *ast.FunLiteral) *CompiledFunLiteralExpression {
 	return &CompiledFunLiteralExpression{
 		self.createCompiledBaseExpression(expr.StartIndex()),
 		expr.FunDefinition,

@@ -32,7 +32,9 @@ type Compiler struct {
 	program *Program
 	scope   *Scope
 	block   *Block
-	evalVM  *VM
+
+	classScope *ClassScope
+	evalVM     *VM
 }
 
 func CreateCompiler() *Compiler {
@@ -236,6 +238,17 @@ func (self *Compiler) leaveBlockScope(enterBlock *EnterBlock) {
 	}
 	self.block.breaks = nil
 	self.closeBlock()
+}
+
+func (self *Compiler) openClassScope() *ClassScope {
+	self.classScope = &ClassScope{
+		outer: self.classScope,
+	}
+	return self.classScope
+}
+
+func (self *Compiler) closeClassScope() {
+	self.classScope = self.classScope.outer
 }
 
 func (self *Compiler) enterVirtualMode() func() {

@@ -876,6 +876,34 @@ func (self LeaveBlock) exec(vm *VM) {
 	vm.pc++
 }
 
+type NewClass struct {
+	name               string
+	source             string
+	constructorMapping map[int]*Program
+	init               *Program
+
+	privateFields, privateMethods []string
+}
+
+func (self NewClass) exec(vm *VM) {
+	vm.pc++
+}
+
+type NewDerivedClass struct {
+	newClass *NewClass
+}
+
+func (self NewDerivedClass) exec(vm *VM) {
+	vm.pc++
+}
+
+type ClassStaticPropInit struct {
+}
+
+func (self ClassStaticPropInit) exec(vm *VM) {
+	vm.pc++
+}
+
 type _Throw struct {
 }
 

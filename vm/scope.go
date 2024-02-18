@@ -210,3 +210,17 @@ func (self *Scope) finaliseVarAlloc(stackOffset int) (int, int) {
 	}
 	return stackIndex, stashIndex
 }
+
+type EnvRegistry struct {
+	fieldNames, methodNames []string
+}
+type PrivateName struct {
+	index    int
+	isStatic bool
+	isMethod bool
+}
+type ClassScope struct {
+	outer                                *ClassScope
+	privateNames                         map[string]*PrivateName
+	privateInstanceEnv, privateStaticEnv *EnvRegistry
+}

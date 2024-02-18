@@ -89,6 +89,8 @@ func (self *Compiler) compileStatement(statement ast.Statement, needResult bool)
 		self.compileTryCatchFinallyStatement(st, needResult)
 	case *ast.FunStatement:
 		self.compileFunStatement(st)
+	case *ast.ClassDeclaration:
+		self.compileClassDeclaration(st, needResult)
 	case *ast.ExpressionStatement:
 		self.compileExpressionStatement(st, needResult)
 	}
@@ -353,6 +355,80 @@ func (self *Compiler) compileTryCatchFinallyStatement(st *ast.TryCatchFinallySta
 func (self *Compiler) compileFunStatement(st *ast.FunStatement) {
 	funLiteralExpr := self.compileExpression(st.FunLiteral)
 	self.handlingGetterExpression(funLiteralExpr, true)
+}
+
+func (self *Compiler) compileClassDeclaration(st *ast.ClassDeclaration, needResult bool) {
+	//self.openScopeNested()
+	//
+	//enterBlock := &EnterBlock{}
+	//markIndex := self.getInstructionSize()
+	//self.addProgramInstructions(enterBlock)
+	//self.block = self.openBlockScope()
+	//clsBinding, _ := self.scope.bindName(st.Name.Name)
+	//classScope := self.openClassScope()
+	//
+	//newClass := &NewClass{
+	//	name:   st.Name.Name,
+	//	source: st.ClassDefinition,
+	//}
+	//
+	//var newClassInstruction Instruction
+	//isDerivedClass := false
+	//if st.SuperClass != nil {
+	//	isDerivedClass = true
+	//	newClassInstruction = &NewDerivedClass{
+	//		newClass: newClass,
+	//	}
+	//} else {
+	//	newClassInstruction = newClass
+	//}
+	//
+	//var instanceDecls, staticDecls []ast.Declaration
+	//instanceCount, staticCount := 0, 0
+	//for _, declaration := range st.Body {
+	//	switch decl := declaration.(type) {
+	//	case *ast.StaticBlockDeclaration:
+	//		if len(decl.Body.Body) > 0 {
+	//			staticDecls = append(staticDecls, decl)
+	//			staticCount++
+	//		}
+	//	case *ast.FieldDeclaration:
+	//		if decl.Static {
+	//			staticDecls = append(staticDecls, decl)
+	//			staticCount++
+	//		} else {
+	//			instanceDecls = append(instanceDecls, decl)
+	//			instanceCount++
+	//		}
+	//	case *ast.MethodDeclaration:
+	//		if decl.Static {
+	//			staticCount++
+	//		}
+	//		if newClass.name == decl.Body.Name.Name {
+	//			program, paramNum := self.compileConstructor(decl.Body, isDerivedClass)
+	//			newClass.constructorMapping[paramNum] = program
+	//		} else {
+	//			self.handlingGetterExpression(self.compileExpression(decl.Body), true)
+	//		}
+	//	}
+	//}
+	//
+	//if staticCount > 0 {
+	//	self.addProgramInstructions(&ClassStaticPropInit{})
+	//}
+	//
+	//if isDerivedClass {
+	//	self.handlingGetterExpression(self.compileExpression(st.SuperClass), true)
+	//}
+	//self.program.addSourceMap(int(st.StartIndex() - 1))
+	//self.addProgramInstructions(newClassInstruction)
+	//
+	//self.closeClassScope()
+	//self.closeScope()
+}
+
+func (self *Compiler) compileConstructor(funLiteral *ast.FunLiteral, isDerivedClass bool) (*Program, int) {
+	return self.compileFunProgram(self.compileFunLiteral(funLiteral))
 }
 
 func (self *Compiler) compileExpressionStatement(st *ast.ExpressionStatement, needResult bool) {
