@@ -358,73 +358,148 @@ func (self *Compiler) compileFunStatement(st *ast.FunStatement) {
 }
 
 func (self *Compiler) compileClassDeclaration(st *ast.ClassDeclaration, needResult bool) {
-	//self.openScopeNested()
-	//
-	//enterBlock := &EnterBlock{}
+	self.openScopeNested()
+
+	enterBlock := &EnterBlock{}
 	//markIndex := self.getInstructionSize()
-	//self.addProgramInstructions(enterBlock)
-	//self.block = self.openBlockScope()
-	//clsBinding, _ := self.scope.bindName(st.Name.Name)
-	//classScope := self.openClassScope()
-	//
-	//newClass := &NewClass{
-	//	name:   st.Name.Name,
-	//	source: st.ClassDefinition,
-	//}
-	//
-	//var newClassInstruction Instruction
-	//isDerivedClass := false
-	//if st.SuperClass != nil {
-	//	isDerivedClass = true
-	//	newClassInstruction = &NewDerivedClass{
-	//		newClass: newClass,
-	//	}
-	//} else {
-	//	newClassInstruction = newClass
-	//}
-	//
-	//var instanceDecls, staticDecls []ast.Declaration
-	//instanceCount, staticCount := 0, 0
-	//for _, declaration := range st.Body {
-	//	switch decl := declaration.(type) {
-	//	case *ast.StaticBlockDeclaration:
-	//		if len(decl.Body.Body) > 0 {
-	//			staticDecls = append(staticDecls, decl)
-	//			staticCount++
-	//		}
-	//	case *ast.FieldDeclaration:
-	//		if decl.Static {
-	//			staticDecls = append(staticDecls, decl)
-	//			staticCount++
-	//		} else {
-	//			instanceDecls = append(instanceDecls, decl)
-	//			instanceCount++
-	//		}
-	//	case *ast.MethodDeclaration:
-	//		if decl.Static {
-	//			staticCount++
-	//		}
-	//		if newClass.name == decl.Body.Name.Name {
-	//			program, paramNum := self.compileConstructor(decl.Body, isDerivedClass)
-	//			newClass.constructorMapping[paramNum] = program
-	//		} else {
-	//			self.handlingGetterExpression(self.compileExpression(decl.Body), true)
-	//		}
-	//	}
-	//}
-	//
-	//if staticCount > 0 {
-	//	self.addProgramInstructions(&ClassStaticPropInit{})
-	//}
-	//
-	//if isDerivedClass {
-	//	self.handlingGetterExpression(self.compileExpression(st.SuperClass), true)
-	//}
-	//self.program.addSourceMap(int(st.StartIndex() - 1))
-	//self.addProgramInstructions(newClassInstruction)
-	//
-	//self.closeClassScope()
-	//self.closeScope()
+	self.addProgramInstructions(enterBlock)
+	self.block = self.openBlockScope()
+	self.scope.bindName(st.Name.Name)
+	self.openClassScope()
+
+	newClass := &NewClass{
+		name:   st.Name.Name,
+		source: st.ClassDefinition,
+	}
+
+	var newClassInstruction Instruction
+	isDerivedClass := false
+	if st.SuperClass != nil {
+		isDerivedClass = true
+		newClassInstruction = &NewDerivedClass{
+			newClass: newClass,
+		}
+	} else {
+		newClassInstruction = newClass
+	}
+
+	var staticBlocks []*ast.StaticBlockDeclaration
+	var instanceFieldDecls, staticFieldDecls []*ast.FieldDeclaration
+	var instanceMethodDecls, staticMethodDecls []*ast.MethodDeclaration
+	instanceCount, staticCount := 0, 0
+	for _, declaration := range st.Body {
+		switch decl := declaration.(type) {
+		case *ast.StaticBlockDeclaration:
+			if len(decl.Body.Body) > 0 {
+				staticBlocks = append(staticBlocks, decl)
+				staticCount++
+			}
+		case *ast.FieldDeclaration:
+			if decl.Static {
+				staticFieldDecls = append(staticFieldDecls, decl)
+				staticCount++
+			} else {
+				instanceFieldDecls = append(instanceFieldDecls, decl)
+				instanceCount++
+			}
+		case *ast.MethodDeclaration:
+			if newClass.name == decl.Body.Name.Name {
+				program, paramNum := self.compileConstructor(decl.Body, isDerivedClass)
+				newClass.constructorList = append(newClass.constructorList, &Constructor{
+					paramNum,
+					program,
+				})
+			} else {
+				if decl.Static {
+					staticMethodDecls = append(staticMethodDecls, decl)
+					staticCount++
+				} else {
+					instanceMethodDecls = append(instanceMethodDecls, decl)
+					instanceCount++
+				}
+			}
+		}
+	}
+
+	if instanceCount > 0 {
+		newClass.init = self.compileDeclarations("<instance_members_initializer>", nil, instanceFieldDecls, instanceMethodDecls)
+	}
+
+	if isDerivedClass {
+		self.handlingGetterExpression(self.compileExpression(st.SuperClass), true)
+	}
+	self.program.addSourceMap(int(st.StartIndex() - 1))
+	self.addProgramInstructions(newClassInstruction)
+
+	if staticCount > 0 {
+		self.addProgramInstructions(&ClassStaticPropInit{
+			init: self.compileDeclarations("<static_initializer>", staticBlocks, staticFieldDecls, staticMethodDecls),
+		})
+	}
+
+	self.closeClassScope()
+	self.closeScope()
+}
+
+func (self *Compiler) compileDeclarations(functionName string, blocks []*ast.StaticBlockDeclaration, fields []*ast.FieldDeclaration, methods []*ast.MethodDeclaration) *Program {
+	originBlock, originProgram := self.block, self.program
+	defer func() {
+		self.block = originBlock
+		self.program = originProgram
+	}()
+
+	self.openBlockScope()
+	self.program = &Program{
+		source:       originProgram.source,
+		functionName: functionName,
+		instructions: InstructionArray{},
+	}
+
+	self.openScope()
+	for _, block := range blocks {
+		self.addProgramInstructions(Dup)
+		self.handlingGetterCompiledFunLiteralExpression(self.compileFunLiteral(&ast.FunLiteral{
+			Fun:             block.Index,
+			ParameterList:   &ast.ParameterList{},
+			Body:            block.Body,
+			DeclarationList: []*ast.VariableDeclaration{},
+			FunDefinition:   block.Source,
+		}), true)
+		self.program.addSourceMap(int(block.Index - 1))
+		self.addProgramInstructions(Call(0), Pop)
+	}
+
+	for _, field := range fields {
+		if field.Initializer != nil {
+			valueExpr := self.compileExpression(field.Initializer)
+			self.chooseHandlingGetterExpression(valueExpr, true)
+		} else {
+			self.addProgramInstructions(LoadNull)
+		}
+		self.addProgramInstructions(AddProp(field.Name.Name))
+	}
+
+	for _, method := range methods {
+		funLiteral := method.Body
+		self.handlingGetterCompiledFunLiteralExpression(self.compileFunLiteral(funLiteral), true)
+		self.addProgramInstructions(AddProp(funLiteral.Name.Name))
+	}
+	stashSize, stackSize := self.scope.finaliseVarAlloc(0)
+	if stackSize != 0 {
+		panic("Compiler bug: stackSize != 0 in initFields")
+	}
+	if stashSize > 0 {
+		if stashSize != 1 {
+			panic("Compiler bug: stashSize != 1 in initFields")
+		}
+		self.setProgramInstruction(0, &EnterFunStash{
+			stashSize: 1,
+		})
+	}
+
+	program := self.program
+	self.closeScope()
+	return program
 }
 
 func (self *Compiler) compileConstructor(funLiteral *ast.FunLiteral, isDerivedClass bool) (*Program, int) {

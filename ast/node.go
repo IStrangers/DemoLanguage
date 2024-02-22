@@ -617,8 +617,9 @@ type (
 	StaticBlockDeclaration struct {
 		AbstractStatement
 		AbstractDeclaration
-		Index file.Index
-		Body  *BlockStatement
+		Index  file.Index
+		Body   *BlockStatement
+		Source string
 	}
 
 	FieldDeclaration struct {

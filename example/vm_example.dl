@@ -153,7 +153,22 @@ fun testException() {
     }
 }
 testException()
-class CustomClass extends Object implements CustomInterface {
+/*
+class TestExtends{
+
+    private test1
+    public test2
+
+    public setTest1(test1) {
+        this.test1 = test1
+    }
+
+    public getE() {
+        return this.test1
+    }
+
+}
+class CustomClass extends TestExtends{
 
     public static CLASS_NAME = "CustomClass"
 
@@ -177,4 +192,4 @@ class CustomClass extends Object implements CustomInterface {
     }
 
 }
-var customObj = new CustomClass()
+var customObj = new CustomClass()*/

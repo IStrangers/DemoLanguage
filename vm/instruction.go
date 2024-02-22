@@ -876,11 +876,15 @@ func (self LeaveBlock) exec(vm *VM) {
 	vm.pc++
 }
 
+type Constructor struct {
+	paramNum int
+	program  *Program
+}
 type NewClass struct {
-	name               string
-	source             string
-	constructorMapping map[int]*Program
-	init               *Program
+	name            string
+	source          string
+	constructorList []*Constructor
+	init            *Program
 
 	privateFields, privateMethods []string
 }
@@ -898,6 +902,7 @@ func (self NewDerivedClass) exec(vm *VM) {
 }
 
 type ClassStaticPropInit struct {
+	init *Program
 }
 
 func (self ClassStaticPropInit) exec(vm *VM) {

@@ -299,10 +299,12 @@ func (parser *Parser) parseDeclaration() ast.Declaration {
 	index := parser.index
 	switch parser.token {
 	case token.STATIC:
-		return &ast.StaticBlockDeclaration{
+		sbdecl := &ast.StaticBlockDeclaration{
 			Index: parser.expect(token.STATIC),
 			Body:  parser.parseBlockStatement(),
 		}
+		sbdecl.Source = parser.slice(sbdecl.StartIndex(), sbdecl.EndIndex())
+		return sbdecl
 	case token.PRIVATE, token.PROTECTED, token.PUBLIC:
 		index := parser.expect(parser.token)
 		static := false
