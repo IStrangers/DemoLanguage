@@ -360,9 +360,9 @@ func (self *Compiler) compileFunStatement(st *ast.FunStatement) {
 func (self *Compiler) compileClassDeclaration(st *ast.ClassDeclaration, needResult bool) {
 	self.openScopeNested()
 
-	enterBlock := &EnterBlock{}
+	//enterBlock := &EnterBlock{}
 	//markIndex := self.getInstructionSize()
-	self.addProgramInstructions(enterBlock)
+	//self.addProgramInstructions(enterBlock)
 	self.block = self.openBlockScope()
 	self.scope.bindName(st.Name.Name)
 	self.openClassScope()
@@ -404,9 +404,10 @@ func (self *Compiler) compileClassDeclaration(st *ast.ClassDeclaration, needResu
 			}
 		case *ast.MethodDeclaration:
 			if newClass.name == decl.Body.Name.Name {
-				program, paramNum := self.compileConstructor(decl.Body, isDerivedClass)
-				newClass.constructorList = append(newClass.constructorList, &Constructor{
-					paramNum,
+				program, argNum := self.compileConstructor(decl.Body, isDerivedClass)
+				newClass.constructors = append(newClass.constructors, &Constructor{
+					decl.Body.FunDefinition,
+					argNum,
 					program,
 				})
 			} else {

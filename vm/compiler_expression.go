@@ -168,7 +168,7 @@ func (self CompiledBracketExpression) isConstExpression() bool {
 
 type CompiledNewExpression struct {
 	CompiledBaseExpression
-	CompiledCallExpression *CompiledCallExpression
+	callExpression *CompiledCallExpression
 }
 
 func (self CompiledNewExpression) isConstExpression() bool {

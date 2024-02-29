@@ -3,6 +3,7 @@ package vm
 import (
 	"fmt"
 	"math"
+	"sort"
 	"strings"
 )
 
@@ -728,12 +729,13 @@ func (self _PushArrayValue) exec(vm *VM) {
 type NewFun struct {
 	funDefinition string
 	name          string
+	argNum        int
 	program       *Program
 }
 
 func (self NewFun) exec(vm *VM) {
-	fun := vm.runtime.newFun(self.name)
-	fun.funDefinition = TrimWhitespace(self.funDefinition)
+	fun := vm.runtime.newFun(self.name, self.argNum)
+	fun.funDefinition = self.funDefinition
 	fun.program = self.program
 	fun.stash = vm.stash
 	vm.push(Object{fun})
@@ -877,19 +879,37 @@ func (self LeaveBlock) exec(vm *VM) {
 }
 
 type Constructor struct {
-	paramNum int
-	program  *Program
+	funDefinition string
+	argNum        int
+	program       *Program
 }
 type NewClass struct {
-	name            string
-	source          string
-	constructorList []*Constructor
-	init            *Program
+	name         string
+	source       string
+	constructors []*Constructor
+	init         *Program
 
 	privateFields, privateMethods []string
 }
 
 func (self NewClass) exec(vm *VM) {
+	obj := vm.runtime.newClassObject(self.name)
+	classObject := obj.self.(*ClassObject)
+	classObject.classDefinition = self.source
+
+	sort.SliceStable(self.constructors, func(i, j int) bool {
+		return self.constructors[i].argNum < self.constructors[j].argNum
+	})
+	for _, constructor := range self.constructors {
+		program := constructor.program
+		fun := vm.runtime.newClassFun(program.functionName, constructor.argNum)
+		fun.funDefinition = constructor.funDefinition
+		fun.program = program
+		fun.stash = vm.stash
+		classObject.constructors = append(classObject.constructors, fun)
+	}
+
+	vm.push(obj)
 	vm.pc++
 }
 
@@ -1024,6 +1044,19 @@ func (self Call) exec(vm *VM) {
 	}
 	object := value.toObject()
 	object.self.vmCall(vm, n)
+}
+
+type New uint32
+
+func (self New) exec(vm *VM) {
+	argNum := int(self)
+	sp := vm.sp - argNum
+	obj := vm.stack[sp-1]
+	classObject := obj.toObject().self.(*ClassObject)
+	constructor := classObject.findConstructor(argNum)
+	vm.stack[sp-1] = constructor.construct(vm.runtime, vm.stack[sp:vm.sp])
+	vm.sp = sp
+	vm.pc++
 }
 
 type _Ret struct{}

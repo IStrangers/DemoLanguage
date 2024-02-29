@@ -82,3 +82,18 @@ func (self *BaseObject) vmCall(vm *VM, n int) {
 	//wait adjust
 	panic("Not a function: " + self.className)
 }
+
+type ClassObject struct {
+	BaseObject
+	classDefinition string
+	constructors    []*ClassFunObject
+}
+
+func (self *ClassObject) findConstructor(argNum int) *ClassFunObject {
+	for _, constructor := range self.constructors {
+		if constructor.argNum <= argNum {
+			return constructor
+		}
+	}
+	return nil
+}

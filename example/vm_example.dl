@@ -153,7 +153,6 @@ fun testException() {
     }
 }
 testException()
-/*
 class TestExtends{
 
     private test1
@@ -168,7 +167,7 @@ class TestExtends{
     }
 
 }
-class CustomClass extends TestExtends{
+class CustomClass {
 
     public static CLASS_NAME = "CustomClass"
 
@@ -192,4 +191,5 @@ class CustomClass extends TestExtends{
     }
 
 }
-var customObj = new CustomClass()*/
+var customObj = new CustomClass("CustomClass")
+println(customObj.getValue())

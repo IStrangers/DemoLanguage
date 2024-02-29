@@ -116,12 +116,7 @@ type VM struct {
 
 func CreateVM() *VM {
 	runtime := CreateRuntime()
-	vm := &VM{
-		runtime:          runtime,
-		sb:               -1,
-		maxCallStackSize: 999,
-	}
-	return vm
+	return runtime.vm
 }
 
 func (self *VM) RunScript(script string) (Value, error) {

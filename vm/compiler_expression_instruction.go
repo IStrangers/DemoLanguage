@@ -106,11 +106,13 @@ func (self *Compiler) handlingGetterExpression(expr CompiledExpression, putOnSta
 	case *CompiledFunLiteralExpression:
 		self.handlingGetterCompiledFunLiteralExpression(expr, putOnStack)
 	case *CompiledCallExpression:
-		self.handlingGetterCompiledCallExpression(expr, putOnStack)
+		self.handlingGetterCompiledCallExpression(expr, false, putOnStack)
 	case *CompiledDotExpression:
 		self.handlingGetterCompiledDotExpression(expr, putOnStack)
 	case *CompiledBracketExpression:
 		self.handlingGetterCompiledBracketExpression(expr, putOnStack)
+	case *CompiledNewExpression:
+		self.handlingGetterCompiledNewExpression(expr, putOnStack)
 	}
 }
 
@@ -339,8 +341,8 @@ func (self *Compiler) handlingGetterCompiledAssignExpression(expr *CompiledAssig
 }
 
 func (self *Compiler) handlingGetterCompiledFunLiteralExpression(expr *CompiledFunLiteralExpression, putOnStack bool) {
-	funProgram, _ := self.compileFunProgram(expr)
-	newFun := &NewFun{TrimWhitespace(expr.funDefinition), funProgram.functionName, funProgram}
+	funProgram, argNum := self.compileFunProgram(expr)
+	newFun := &NewFun{TrimWhitespace(expr.funDefinition), funProgram.functionName, argNum, funProgram}
 	self.addProgramInstructions(newFun)
 
 	if !putOnStack {
@@ -436,7 +438,7 @@ func (self *Compiler) compileFunProgram(expr *CompiledFunLiteralExpression) (*Pr
 	return funProgram, len(expr.parameterList.List)
 }
 
-func (self *Compiler) handlingGetterCompiledCallExpression(expr *CompiledCallExpression, putOnStack bool) {
+func (self *Compiler) handlingGetterCompiledCallExpression(expr *CompiledCallExpression, isNewCall bool, putOnStack bool) {
 	switch callee := expr.callee.(type) {
 	case *CompiledIdentifierExpression:
 		callee.addSourceMap()
@@ -463,7 +465,11 @@ func (self *Compiler) handlingGetterCompiledCallExpression(expr *CompiledCallExp
 		self.chooseHandlingGetterExpression(argument, true)
 	}
 
-	self.addProgramInstructions(Call(len(expr.arguments)))
+	if isNewCall {
+		self.addProgramInstructions(New(len(expr.arguments)))
+	} else {
+		self.addProgramInstructions(Call(len(expr.arguments)))
+	}
 
 	if !putOnStack {
 		self.addProgramInstructions(Pop)
@@ -485,6 +491,15 @@ func (self *Compiler) handlingGetterCompiledBracketExpression(expr *CompiledBrac
 	self.handlingGetterExpression(expr.indexOrName, true)
 	expr.addSourceMap()
 	self.addProgramInstructions(GetPropOrElem)
+
+	if !putOnStack {
+		self.addProgramInstructions(Pop)
+	}
+}
+
+func (self *Compiler) handlingGetterCompiledNewExpression(expr *CompiledNewExpression, putOnStack bool) {
+	callExpression := expr.callExpression
+	self.handlingGetterCompiledCallExpression(callExpression, true, true)
 
 	if !putOnStack {
 		self.addProgramInstructions(Pop)

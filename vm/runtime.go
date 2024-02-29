@@ -22,6 +22,7 @@ type Exception struct {
 type Runtime struct {
 	global       *Global
 	globalObject *Object
+	vm           *VM
 }
 
 var RuntimePrintWrite io.Writer = os.Stdout
@@ -43,12 +44,24 @@ func CreateRuntime() *Runtime {
 			},
 		}},
 	}
+	runtime.vm = &VM{
+		runtime:          runtime,
+		sb:               -1,
+		maxCallStackSize: 999,
+	}
 	return runtime
 }
 
 func (self *Runtime) newObject() *Object {
 	baseObject := &BaseObject{}
 	baseObject.className = classObject
+	baseObject.init()
+	return &Object{self: baseObject}
+}
+
+func (self *Runtime) newClassObject(className string) *Object {
+	baseObject := &ClassObject{}
+	baseObject.className = className
 	baseObject.init()
 	return &Object{baseObject}
 }
@@ -62,11 +75,21 @@ func (self *Runtime) newArray(values ValueArray) *Object {
 	return &Object{arrayObject}
 }
 
-func (self *Runtime) newFun(name string) *FunObject {
+func (self *Runtime) newFun(name string, length int) *FunObject {
 	funObject := &FunObject{}
 	funObject.className = classFunction
 	funObject.init()
-	funObject.BaseObject.setProperty("name", ToStringValue(name))
+	funObject.setProperty("name", ToStringValue(name))
+	funObject.setProperty("length", ToIntValue(int64(length)))
+	return funObject
+}
+
+func (self *Runtime) newClassFun(name string, length int) *ClassFunObject {
+	funObject := &ClassFunObject{}
+	funObject.className = classFunction
+	funObject.init()
+	funObject.setProperty("name", ToStringValue(name))
+	funObject.setProperty("length", ToIntValue(int64(length)))
 	return funObject
 }
 
