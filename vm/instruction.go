@@ -906,6 +906,7 @@ func (self NewClass) exec(vm *VM) {
 		fun.funDefinition = constructor.funDefinition
 		fun.program = program
 		fun.stash = vm.stash
+		fun.initProgram = self.init
 		classObject.constructors = append(classObject.constructors, fun)
 	}
 
