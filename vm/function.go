@@ -36,7 +36,7 @@ func (self *ClassFunObject) vmCall(vm *VM, n int) {
 }
 
 func (self *ClassFunObject) construct(runtime *Runtime, args []Value) *Object {
-	thisObj := runtime.newClassObject(self.getProperty("name").toString() + classObject)
+	thisObj := runtime.newObjectByClass(self.getProperty("name").toString() + classObject)
 	if self.program != nil {
 
 		self.call(runtime, thisObj, args)
