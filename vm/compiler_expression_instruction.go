@@ -111,6 +111,8 @@ func (self *Compiler) handlingGetterExpression(expr CompiledExpression, putOnSta
 		self.handlingGetterCompiledDotExpression(expr, putOnStack)
 	case *CompiledBracketExpression:
 		self.handlingGetterCompiledBracketExpression(expr, putOnStack)
+	case *CompiledClassLiteralExpression:
+		self.handlingGetterCompiledClassLiteralExpression(expr, putOnStack)
 	case *CompiledNewExpression:
 		self.handlingGetterCompiledNewExpression(expr, putOnStack)
 	}
@@ -495,6 +497,95 @@ func (self *Compiler) handlingGetterCompiledBracketExpression(expr *CompiledBrac
 	if !putOnStack {
 		self.addProgramInstructions(Pop)
 	}
+}
+
+func (self *Compiler) handlingGetterCompiledClassLiteralExpression(expr *CompiledClassLiteralExpression, putOnStack bool) {
+	self.openScopeNested()
+
+	//enterBlock := &EnterBlock{}
+	//markIndex := self.getInstructionSize()
+	//self.addProgramInstructions(enterBlock)
+	self.block = self.openBlockScope()
+	self.scope.bindName(expr.name.Name)
+	self.openClassScope()
+
+	newClass := &NewClass{
+		name:   expr.name.Name,
+		source: expr.classDefinition,
+	}
+
+	var newClassInstruction Instruction
+	isDerivedClass := false
+	if expr.superClass != nil {
+		isDerivedClass = true
+		newClassInstruction = &NewDerivedClass{
+			newClass: newClass,
+		}
+	} else {
+		newClassInstruction = newClass
+	}
+
+	var staticBlocks []*ast.StaticBlockDeclaration
+	var instanceFieldDecls, staticFieldDecls []*ast.FieldDeclaration
+	var instanceMethodDecls, staticMethodDecls []*ast.MethodDeclaration
+	instanceCount, staticCount := 0, 0
+	for _, declaration := range expr.body {
+		switch decl := declaration.(type) {
+		case *ast.StaticBlockDeclaration:
+			if len(decl.Body.Body) > 0 {
+				staticBlocks = append(staticBlocks, decl)
+				staticCount++
+			}
+		case *ast.FieldDeclaration:
+			if decl.Static {
+				staticFieldDecls = append(staticFieldDecls, decl)
+				staticCount++
+			} else {
+				instanceFieldDecls = append(instanceFieldDecls, decl)
+				instanceCount++
+			}
+		case *ast.MethodDeclaration:
+			if newClass.name == decl.Body.Name.Name {
+				program, argNum := self.compileConstructor(decl.Body, isDerivedClass)
+				newClass.constructors = append(newClass.constructors, &Constructor{
+					decl.Body.FunDefinition,
+					argNum,
+					program,
+				})
+			} else {
+				if decl.Static {
+					staticMethodDecls = append(staticMethodDecls, decl)
+					staticCount++
+				} else {
+					instanceMethodDecls = append(instanceMethodDecls, decl)
+					instanceCount++
+				}
+			}
+		}
+	}
+
+	if instanceCount > 0 {
+		newClass.init = self.compileDeclarations("<instance_members_initializer>", nil, instanceFieldDecls, instanceMethodDecls)
+	}
+
+	if isDerivedClass {
+		self.handlingGetterExpression(self.compileExpression(expr.superClass), true)
+	}
+	expr.addSourceMap()
+	self.addProgramInstructions(newClassInstruction)
+
+	if staticCount > 0 {
+		self.addProgramInstructions(&ClassStaticPropInit{
+			init: self.compileDeclarations("<static_initializer>", staticBlocks, staticFieldDecls, staticMethodDecls),
+		})
+	}
+
+	if !putOnStack {
+		self.addProgramInstructions(Pop)
+	}
+
+	self.closeClassScope()
+	self.closeScope()
 }
 
 func (self *Compiler) handlingGetterCompiledNewExpression(expr *CompiledNewExpression, putOnStack bool) {

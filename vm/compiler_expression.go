@@ -166,6 +166,19 @@ func (self CompiledBracketExpression) isConstExpression() bool {
 	return false
 }
 
+type CompiledClassLiteralExpression struct {
+	CompiledBaseExpression
+	name            *ast.Identifier
+	superClass      *ast.Identifier
+	interfaces      []*ast.Identifier
+	body            []ast.Declaration
+	classDefinition string
+}
+
+func (self CompiledClassLiteralExpression) isConstExpression() bool {
+	return false
+}
+
 type CompiledNewExpression struct {
 	CompiledBaseExpression
 	callExpression *CompiledCallExpression
@@ -215,6 +228,8 @@ func (self *Compiler) compileExpression(expression ast.Expression) CompiledExpre
 		return self.compileDotExpression(expr)
 	case *ast.BracketExpression:
 		return self.compileBracketExpression(expr)
+	case *ast.ClassDeclaration:
+		return self.compileClassLiteralExpression(expr)
 	case *ast.NewExpression:
 		return self.compileNewExpression(expr)
 	default:
@@ -374,6 +389,17 @@ func (self *Compiler) compileBracketExpression(expr *ast.BracketExpression) Comp
 		self.createCompiledBaseExpression(expr.StartIndex()),
 		self.compileExpression(expr.Left),
 		self.compileExpression(expr.Expression),
+	}
+}
+
+func (self *Compiler) compileClassLiteralExpression(expr *ast.ClassDeclaration) CompiledExpression {
+	return &CompiledClassLiteralExpression{
+		self.createCompiledBaseExpression(expr.StartIndex()),
+		expr.Name,
+		expr.SuperClass,
+		expr.Interfaces,
+		expr.Body,
+		expr.ClassDefinition,
 	}
 }
 

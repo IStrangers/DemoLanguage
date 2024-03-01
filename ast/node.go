@@ -603,6 +603,7 @@ type (
 
 	ClassDeclaration struct {
 		AbstractStatement
+		AbstractExpression
 		AbstractDeclaration
 		Index           file.Index
 		Name            *Identifier
