@@ -1,4 +1,4 @@
-/*var a = 99.99
+var a = 99.99
 var b = true
 var c = false
 var d = null
@@ -166,7 +166,7 @@ class TestExtends{
         return this.test1
     }
 
-}*/
+}
 class CustomClass {
 
     public static CLASS_NAME = "CustomClass"
@@ -191,5 +191,6 @@ class CustomClass {
     }
 
 }
+println(CustomClass)
 var customObj = new CustomClass("CustomClass")
-println(customObj.getValue())
+println(customObj)

@@ -54,6 +54,7 @@ func CreateRuntime() *Runtime {
 
 func (self *Runtime) newObject() *Object {
 	baseObject := &BaseObject{}
+	baseObject.objectType = normalObject
 	baseObject.className = classObject
 	baseObject.init()
 	return &Object{self: baseObject}
@@ -61,6 +62,7 @@ func (self *Runtime) newObject() *Object {
 
 func (self *Runtime) newObjectByClass(className string) *Object {
 	baseObject := &BaseObject{}
+	baseObject.objectType = normalObject
 	baseObject.className = className
 	baseObject.init()
 	return &Object{self: baseObject}
@@ -68,6 +70,7 @@ func (self *Runtime) newObjectByClass(className string) *Object {
 
 func (self *Runtime) newClassObject(className string) *Object {
 	baseObject := &ClassObject{}
+	baseObject.objectType = classDefinitionObject
 	baseObject.className = className
 	baseObject.init()
 	return &Object{baseObject}

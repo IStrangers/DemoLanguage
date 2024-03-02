@@ -134,7 +134,7 @@ func (self *VM) RunScript(script string) (Value, error) {
 
 func (self *VM) run() {
 	for {
-		if self.pc >= self.getInstructionSize() {
+		if self.pc < 0 || self.pc >= self.getInstructionSize() {
 			break
 		}
 		self.execInstruction(self.pc)

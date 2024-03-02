@@ -25,7 +25,16 @@ type ObjectImpl interface {
 	vmCall(vm *VM, n int)
 }
 
+type ObjectType int
+
+const (
+	_ = iota
+	normalObject
+	classDefinitionObject
+)
+
 type BaseObject struct {
+	objectType   ObjectType
 	className    string
 	valueMapping map[string]Value
 }
@@ -39,19 +48,18 @@ func (self *BaseObject) getClassName() string {
 }
 
 func (self *BaseObject) toLiteral() string {
-	className := self.getClassName()
-	if className != classObject {
-		return fmt.Sprintf("[Object %s]", className)
-	}
-	var literals []string
-	for name, value := range self.valueMapping {
-		valueFormat := "%s"
-		if value.isString() {
-			valueFormat = "\"%s\""
+	if self.objectType == normalObject {
+		var literals []string
+		for name, value := range self.valueMapping {
+			valueFormat := "%s"
+			if value.isString() {
+				valueFormat = "\"%s\""
+			}
+			literals = append(literals, fmt.Sprintf("%s: %s", name, fmt.Sprintf(valueFormat, value.toLiteral())))
 		}
-		literals = append(literals, fmt.Sprintf("%s: %s", name, fmt.Sprintf(valueFormat, value.toLiteral())))
+		return fmt.Sprintf("{%s}", strings.Join(literals, ","))
 	}
-	return fmt.Sprintf("{%s}", strings.Join(literals, ","))
+	return fmt.Sprintf("[Object %s]", self.getClassName())
 }
 
 func (self *BaseObject) getValueByIndex(prop IntValue, defaultValue Value) Value {
@@ -87,6 +95,10 @@ type ClassObject struct {
 	BaseObject
 	classDefinition string
 	constructors    []*ClassFunObject
+}
+
+func (self *ClassObject) toLiteral() string {
+	return self.classDefinition
 }
 
 func (self *ClassObject) findConstructor(argNum int) *ClassFunObject {
