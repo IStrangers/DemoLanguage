@@ -601,6 +601,8 @@ func (self *Compiler) handlingSetterExpression(expr CompiledExpression, valueExp
 	switch expr := expr.(type) {
 	case *CompiledIdentifierExpression:
 		self.handlingSetterCompiledIdentifierExpression(expr, valueExpr, putOnStack)
+	case *CompiledDotExpression:
+		self.handlingSetterCompiledDotExpression(expr, valueExpr, putOnStack)
 	}
 }
 
@@ -613,6 +615,17 @@ func (self *Compiler) handlingSetterCompiledIdentifierExpression(expr *CompiledI
 		self.addProgramInstructions(PutStackVar(0))
 	} else {
 		self.addProgramInstructions(PutVar(0))
+	}
+}
+
+func (self *Compiler) handlingSetterCompiledDotExpression(expr *CompiledDotExpression, valueExpr CompiledExpression, putOnStack bool) {
+	self.handlingGetterExpression(expr.left, true)
+	self.handlingGetterExpression(valueExpr, true)
+	expr.addSourceMap()
+	self.addProgramInstructions(AddProp(expr.name))
+
+	if !putOnStack {
+		self.addProgramInstructions(Pop)
 	}
 }
 

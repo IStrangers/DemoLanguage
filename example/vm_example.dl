@@ -193,4 +193,6 @@ class CustomClass {
 }
 println(CustomClass)
 var customObj = new CustomClass("CustomClass")
+customObj.setValue(1)
 println(customObj)
+customObj.getValue()
