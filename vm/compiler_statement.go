@@ -376,18 +376,6 @@ func (self *Compiler) compileDeclarations(functionName string, blocks []*ast.Sta
 	}
 
 	self.openScope()
-	for _, block := range blocks {
-		self.addProgramInstructions(Dup)
-		self.handlingGetterCompiledFunLiteralExpression(self.compileFunLiteral(&ast.FunLiteral{
-			Fun:             block.Index,
-			ParameterList:   &ast.ParameterList{},
-			Body:            block.Body,
-			DeclarationList: []*ast.VariableDeclaration{},
-			FunDefinition:   block.Source,
-		}), true)
-		self.program.addSourceMap(int(block.Index - 1))
-		self.addProgramInstructions(Call(0), Pop)
-	}
 
 	for _, field := range fields {
 		if field.Initializer != nil {
@@ -404,6 +392,19 @@ func (self *Compiler) compileDeclarations(functionName string, blocks []*ast.Sta
 		self.handlingGetterCompiledFunLiteralExpression(self.compileFunLiteral(funLiteral), true)
 		self.addProgramInstructions(AddProp(funLiteral.Name.Name))
 	}
+
+	for _, block := range blocks {
+		self.handlingGetterCompiledFunLiteralExpression(self.compileFunLiteral(&ast.FunLiteral{
+			Fun:             block.Index,
+			ParameterList:   &ast.ParameterList{},
+			Body:            block.Body,
+			DeclarationList: []*ast.VariableDeclaration{},
+			FunDefinition:   block.Source,
+		}), true)
+		self.program.addSourceMap(int(block.Index - 1))
+		self.addProgramInstructions(Call(0), Pop)
+	}
+
 	stashSize, stackSize := self.scope.finaliseVarAlloc(0)
 	if stackSize != 0 {
 		panic("Compiler bug: stackSize != 0 in initFields")

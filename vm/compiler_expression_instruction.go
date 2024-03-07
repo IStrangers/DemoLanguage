@@ -564,8 +564,12 @@ func (self *Compiler) handlingGetterCompiledClassLiteralExpression(expr *Compile
 		}
 	}
 
+	if staticCount > 0 {
+		newClass.staticInit = self.compileDeclarations("<static_initializer>", staticBlocks, staticFieldDecls, staticMethodDecls)
+	}
+
 	if instanceCount > 0 {
-		newClass.init = self.compileDeclarations("<instance_members_initializer>", nil, instanceFieldDecls, instanceMethodDecls)
+		newClass.instanceInit = self.compileDeclarations("<instance_members_initializer>", nil, instanceFieldDecls, instanceMethodDecls)
 	}
 
 	if isDerivedClass {
@@ -573,12 +577,6 @@ func (self *Compiler) handlingGetterCompiledClassLiteralExpression(expr *Compile
 	}
 	expr.addSourceMap()
 	self.addProgramInstructions(newClassInstruction)
-
-	if staticCount > 0 {
-		self.addProgramInstructions(&ClassStaticPropInit{
-			init: self.compileDeclarations("<static_initializer>", staticBlocks, staticFieldDecls, staticMethodDecls),
-		})
-	}
 
 	if !putOnStack {
 		self.addProgramInstructions(Pop)

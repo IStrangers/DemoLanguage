@@ -68,10 +68,10 @@ func (self *Runtime) newObjectByClass(className string) *Object {
 	return &Object{self: baseObject}
 }
 
-func (self *Runtime) newClassObject(className string) *Object {
+func (self *Runtime) newClassObject() *Object {
 	baseObject := &ClassObject{}
 	baseObject.objectType = classDefinitionObject
-	baseObject.className = className
+	baseObject.className = classObject
 	baseObject.init()
 	return &Object{baseObject}
 }

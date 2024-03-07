@@ -887,13 +887,16 @@ type NewClass struct {
 	name         string
 	source       string
 	constructors []*Constructor
-	init         *Program
+	staticInit   *Program
+	instanceInit *Program
 
 	privateFields, privateMethods []string
 }
 
 func (self NewClass) exec(vm *VM) {
-	obj := vm.runtime.newClassObject(self.name)
+	fun := vm.runtime.newClassFun(self.name, 0)
+	fun.initProgram = self.staticInit
+	obj := fun.classConstruct(vm.runtime, nil)
 	classObject := obj.self.(*ClassObject)
 	classObject.classDefinition = self.source
 
@@ -906,7 +909,7 @@ func (self NewClass) exec(vm *VM) {
 		fun.funDefinition = constructor.funDefinition
 		fun.program = program
 		fun.stash = vm.stash
-		fun.initProgram = self.init
+		fun.initProgram = self.instanceInit
 		classObject.constructors = append(classObject.constructors, fun)
 	}
 
@@ -919,14 +922,6 @@ type NewDerivedClass struct {
 }
 
 func (self NewDerivedClass) exec(vm *VM) {
-	vm.pc++
-}
-
-type ClassStaticPropInit struct {
-	init *Program
-}
-
-func (self ClassStaticPropInit) exec(vm *VM) {
 	vm.pc++
 }
 
@@ -1055,7 +1050,7 @@ func (self New) exec(vm *VM) {
 	obj := vm.stack[sp-1]
 	classObject := obj.toObject().self.(*ClassObject)
 	constructor := classObject.findConstructor(argNum)
-	vm.stack[sp-1] = constructor.construct(vm.runtime, vm.stack[sp:vm.sp])
+	vm.stack[sp-1] = constructor.instanceConstruct(vm.runtime, vm.stack[sp:vm.sp])
 	vm.sp = sp
 	vm.pc++
 }

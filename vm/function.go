@@ -35,36 +35,46 @@ func (self *ClassFunObject) vmCall(vm *VM, n int) {
 	panic("Class constructor cannot be invoked without 'new'")
 }
 
-func (self *ClassFunObject) construct(runtime *Runtime, args []Value) *Object {
-	thisObj := runtime.newObjectByClass(self.getProperty("name").toString() + classObject)
-	if self.program != nil {
-		self.initObject(runtime, thisObj)
-		self.call(runtime, thisObj, args)
-	} else {
-	}
+func (self *ClassFunObject) classConstruct(runtime *Runtime, args []Value) *Object {
+	thisObj := runtime.newClassObject()
+	return self.construct(runtime, thisObj, args)
+}
+
+func (self *ClassFunObject) instanceConstruct(runtime *Runtime, args []Value) *Object {
+	thisObj := runtime.newObjectByClass(self.getProperty("name").toString())
+	return self.construct(runtime, thisObj, args)
+}
+
+func (self *ClassFunObject) construct(runtime *Runtime, thisObj *Object, args []Value) *Object {
+	self.initObject(runtime, thisObj)
+	self.call(runtime, thisObj, args)
 	return thisObj
 }
 
 func (self *ClassFunObject) initObject(runtime *Runtime, thisObj *Object) {
-	if self.initProgram != nil {
-		vm := runtime.vm
-		vm.pushCtx()
-		vm.program = self.initProgram
-		vm.stash = self.stash
-
-		vm.sb = vm.sp
-		vm.push(thisObj)
-		vm.pc = 0
-		ex := vm.runTry()
-		vm.popCtx()
-		if ex != nil {
-			panic(ex)
-		}
-		vm.sp -= 2
+	if self.initProgram == nil {
+		return
 	}
+	vm := runtime.vm
+	vm.pushCtx()
+	vm.program = self.initProgram
+	vm.stash = self.stash
+
+	vm.sb = vm.sp
+	vm.push(thisObj)
+	vm.pc = 0
+	ex := vm.runTry()
+	vm.popCtx()
+	if ex != nil {
+		panic(ex)
+	}
+	vm.sp -= 2
 }
 
 func (self *ClassFunObject) call(runtime *Runtime, thisObj *Object, args []Value) (Value, *Exception) {
+	if self.program == nil {
+		return nil, nil
+	}
 	vm := runtime.vm
 	vm.stack.expand(vm.sp + len(args) + 1)
 	vm.sp++
