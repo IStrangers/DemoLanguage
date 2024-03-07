@@ -169,10 +169,10 @@ class TestExtends{
 }
 class CustomClass {
 
-    public static CLASS_NAME = "CustomClass"
+    public static CLASS_NAME = ""
 
     static {
-        CLASS_NAME = ""
+        this.CLASS_NAME = "CustomClass"
     }
 
     private value
