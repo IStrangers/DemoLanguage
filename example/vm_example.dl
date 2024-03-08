@@ -197,3 +197,11 @@ customObj.setValue(1)
 println(customObj)
 customObj.getValue()
 println(CustomClass.CLASS_NAME)
+class Test {
+    public static name
+
+    static {
+       this.name = 123
+    }
+}
+println(Test.name)

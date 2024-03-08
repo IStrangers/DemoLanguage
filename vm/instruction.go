@@ -894,12 +894,14 @@ type NewClass struct {
 }
 
 func (self NewClass) exec(vm *VM) {
+	sp := vm.sp
 	fun := vm.runtime.newClassFun(self.name, 0)
 	fun.initProgram = self.staticInit
 	obj := fun.classConstruct(vm.runtime, nil)
+	vm.sp = sp
+
 	classObject := obj.self.(*ClassObject)
 	classObject.classDefinition = self.source
-
 	sort.SliceStable(self.constructors, func(i, j int) bool {
 		return self.constructors[i].argNum < self.constructors[j].argNum
 	})
@@ -912,7 +914,6 @@ func (self NewClass) exec(vm *VM) {
 		fun.initProgram = self.instanceInit
 		classObject.constructors = append(classObject.constructors, fun)
 	}
-
 	vm.push(obj)
 	vm.pc++
 }
