@@ -128,6 +128,8 @@ func (self *VM) RunScript(script string) (Value, error) {
 	compiler := CreateCompiler()
 	compiler.compile(program)
 	self.program = compiler.program
+	self.pc = 0
+	self.result = nil
 	self.runTry()
 	return self.result, nil
 }
