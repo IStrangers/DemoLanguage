@@ -20,6 +20,9 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
+		if result == nil {
+			continue
+		}
 		fmt.Printf("%v\n", result)
 	}
 }

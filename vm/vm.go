@@ -131,6 +131,9 @@ func (self *VM) RunScript(script string) (Value, error) {
 	self.pc = 0
 	self.result = nil
 	self.runTry()
+	if self.result == Const_Null_Value {
+		return nil, nil
+	}
 	return self.result, nil
 }
 
