@@ -645,6 +645,6 @@ func (self *Compiler) handlingUnaryCompiledIdentifierExpression(expr *CompiledId
 		self.addProgramInstructions(ResolveVar(expr.name))
 		self.chooseHandlingGetterExpression(expr, true)
 		instructionBody()
-		self.addProgramInstructions(PutVar(-1))
+		self.addProgramInstructions(PutVar(0))
 	}
 }
