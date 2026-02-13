@@ -78,12 +78,16 @@ for (var i = 0; i < 10; i++) {
 }
 
 // Switch 语句
-switch (day) {
-    case 1:
-        println("Monday");
-        break;
-    default:
-        println("Other day");
+switch a {
+    case 1 {
+        r = 1
+    }
+    case 2 {
+        r = 2
+    }
+    default {
+        r = 0
+    }
 }
 ```
 
